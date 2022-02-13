@@ -1,6 +1,8 @@
-package main.tracker;
+package tracker;
 
-import main.model.Query;
+import dao.MediaTrackerDao;
+import dao.MediaTrackerDaoImpl;
+import model.MediaQuery;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -9,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.nio.file.StandardWatchEventKinds.*;
-import static main.util.MediaFilter.*;
+import static util.MediaFilter.*;
 
 public class MediaTracker {
 
@@ -30,10 +32,9 @@ public class MediaTracker {
         });
     }
 
-    private static void watch(WatchService watchService, Path path) throws IOException, InterruptedException {
+    private static void watch(WatchService watchService, Path path, MediaTrackerDao dao) throws IOException, InterruptedException {
         registerTree(watchService, path);
 
-//        boolean valid = true;
         while (true) {
             WatchKey watchKey = watchService.take();
 
@@ -43,27 +44,36 @@ public class MediaTracker {
                 Path directory = watchKeyToPathMap.get(watchKey); // directory for specified event key
                 Path child = directory.resolve(eventPath);
 
+                String tempFileName = eventPath.toString();
+                boolean validExtension = validateExtension(tempFileName);
+                String filePath = Path.of(directory.toString(), eventPath.toString()).toString();
+
                 // if newly created object is directory add it to watchlist
                 if (kind == ENTRY_CREATE && Files.isDirectory(child)) {
                     registerTree(watchService, child);
                 }
 
-                if (kind == ENTRY_DELETE) {
+                // if source file is deleted check if there's matching
+                // symlink, remove it with db element
+                if (kind == ENTRY_DELETE && validExtension) {
                     System.out.println(kind.toString());
+                    MediaQuery queryByName = dao.findQueryByName(tempFileName);
+                    if (queryByName != null) {
+                        System.out.println("Found mathing query");
+                        dao.removeQueryFromQueue(queryByName);
+                        System.out.println("Query deleted");
+                    }
                 }
 
                 // if newly created object is file
-                if (kind == ENTRY_CREATE) {
+                if (kind == ENTRY_CREATE && validExtension) {
                     System.out.println("Type " + kind.toString());
-                    String tempFileName = eventPath.toString();
-                    if (validateExtension(tempFileName)) {
-                        String fileNameWithoutExt = getFileName(tempFileName);
-                        Query query = new Query(fileNameWithoutExt, tempFileName);
+                    System.out.println("Valid media.");
+                    MediaQuery query = new MediaQuery(tempFileName, filePath);
+                    dao.addQueryToQueue(query);
+                    System.out.println("Query added to db.");
+                    System.out.println(filePath);
 
-                        // create media obj
-                        // add to db
-                        System.out.println(Path.of(directory.toString(), eventPath.toString()));
-                    }
                 }
             }
             boolean valid = watchKey.reset();
@@ -78,11 +88,11 @@ public class MediaTracker {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        MediaTrackerDao dao = new MediaTrackerDaoImpl();
         String path = "./test-folder/";
         Path mediaFolder = Paths.get(path);
         WatchService watchService = FileSystems.getDefault().newWatchService();
-        watch(watchService, mediaFolder);
-
+        watch(watchService, mediaFolder, dao);
 
 
     }

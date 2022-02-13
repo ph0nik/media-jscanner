@@ -1,4 +1,4 @@
-package main.util;
+package util;
 
 import java.io.File;
 import java.util.List;
@@ -39,7 +39,6 @@ public class MediaFilter {
     * Returns file name without extension
     * */
     public static String getFileName(String file) {
-        String dot = ".";
-        return file.substring(0, file.lastIndexOf(dot));
+        return file.substring(0, file.lastIndexOf("."));
     }
 }

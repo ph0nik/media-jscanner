@@ -1,4 +1,5 @@
-package main.util;
+package util;
+
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,5 +28,12 @@ class MediaFilterTest {
         File file = new File("./test-folder/2");
 //        System.out.println(file.getCanonicalPath());
         Assertions.assertFalse(MediaFilter.checkForEmptyDirectory(file));
+    }
+
+    @Test
+    public void extractFileName() {
+        String filenameWithExt = "Army.of.Darkness.1992.Director's.Cut.Hybrid.1080p.BluRay.DTS.x264-IDE.mkv";
+        String filenameOnly = "Army.of.Darkness.1992.Director's.Cut.Hybrid.1080p.BluRay.DTS.x264-IDE";
+        Assertions.assertEquals(filenameOnly, MediaFilter.getFileName(filenameWithExt));
     }
 }
