@@ -1,7 +1,9 @@
 package dao;
 
-import model.MediaLInk;
+import model.MediaLink;
 import model.MediaQuery;
+
+import java.util.List;
 
 public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
@@ -21,12 +23,27 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     @Override
-    public void addNewLink(MediaLInk mediaLInk) {
+    public List<MediaQuery> getAllMediaQueries() {
+        return null;
+    }
+
+    @Override
+    public void addNewLink(MediaLink mediaLInk) {
 
     }
 
     @Override
-    public void removeLink(MediaLInk mediaLInk) {
+    public void removeLink(MediaLink mediaLInk) {
 
+    }
+
+    @Override
+    public List<MediaLink> getAllMediaLinks() {
+        return null;
+    }
+
+    @Override
+    public MediaLink findMediaLinkByName(String name) {
+        return null;
     }
 }

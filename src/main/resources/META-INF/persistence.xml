@@ -7,7 +7,7 @@
         <description>Test configuration file for mysql connection</description>
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>com.phonik.media-jscanner.model.MediaQuery</class>
-        <class>com.phonik.media-jscanner.model.MediaLInk</class>
+        <class>com.phonik.media-jscanner.model.MediaLink</class>
 
         <properties>
 <!--            <property name="dialect" value="org.hibernate.dialect.SQLiteDialect" />-->

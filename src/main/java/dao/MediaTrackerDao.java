@@ -1,7 +1,9 @@
 package dao;
 
-import model.MediaLInk;
+import model.MediaLink;
 import model.MediaQuery;
+
+import java.util.List;
 
 public interface MediaTrackerDao {
 
@@ -11,9 +13,15 @@ public interface MediaTrackerDao {
 
     MediaQuery findQueryByName(String path);
 
-    void addNewLink(MediaLInk mediaLInk);
+    List<MediaQuery> getAllMediaQueries();
 
-    void removeLink(MediaLInk mediaLInk);
+    void addNewLink(MediaLink mediaLInk);
+
+    void removeLink(MediaLink mediaLInk);
+
+    List<MediaLink> getAllMediaLinks();
+
+    MediaLink findMediaLinkByName(String name);
 
 
 
