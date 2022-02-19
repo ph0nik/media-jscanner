@@ -1,4 +1,91 @@
 package model;
 
-public class QueryResult {
+import java.util.Objects;
+
+public class QueryResult implements Comparable<QueryResult> {
+
+    private long id;
+    private String url;
+    private int theMovieDbId;
+    private String title;
+    private String description;
+    private String filePath;
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public int getTheMovieDbId() {
+        return theMovieDbId;
+    }
+
+    public void setTheMovieDbId(int theMovieDbId) {
+        this.theMovieDbId = theMovieDbId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "QueryResult{" +
+                "id=" + id +
+                ", url='" + url + '\'' +
+                ", theMovieDbId=" + theMovieDbId +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", filePath='" + filePath + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        QueryResult that = (QueryResult) o;
+        return theMovieDbId == that.theMovieDbId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(theMovieDbId);
+    }
+
+    @Override
+    public int compareTo(QueryResult o) {
+        return this.getTheMovieDbId() - o.getTheMovieDbId();
+    }
 }

@@ -25,7 +25,8 @@ public class MediaQuery {
     }
 
     public String getQuery() {
-        return fileName.substring(0, fileName.lastIndexOf("."));
+        String substring = fileName.substring(0, fileName.lastIndexOf("."));
+        return substring.replace(".", " ");
     }
 
     public String getFilePath() {
