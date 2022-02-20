@@ -11,7 +11,7 @@ public interface MediaTrackerDao {
 
     void removeQueryFromQueue(MediaQuery query);
 
-    MediaQuery findQueryByName(String path);
+    MediaQuery findQueryByFilePath(String filePath);
 
     List<MediaQuery> getAllMediaQueries();
 
@@ -21,7 +21,7 @@ public interface MediaTrackerDao {
 
     List<MediaLink> getAllMediaLinks();
 
-    MediaLink findMediaLinkByName(String name);
+    MediaLink findMediaLinkByFilePath(String filePath);
 
 
 

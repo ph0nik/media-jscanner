@@ -19,6 +19,8 @@ public class MediaQuery {
     @Column(name = "file_path")
     private String filePath;
 
+    public MediaQuery() {}
+
     public MediaQuery(String fileName, String filePath) {
         this.fileName = fileName;
         this.filePath = filePath;

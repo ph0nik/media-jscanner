@@ -1,5 +1,6 @@
 package model;
 
+
 import javax.persistence.*;
 
 @Entity
@@ -17,7 +18,7 @@ public class MediaLink {
     @Column(name = "destination_path")
     private String destPath;
 
-    private String theMovieDbId;
+    private int theMovieDbId;
 
     private String sourceParentPath;
 
@@ -45,11 +46,11 @@ public class MediaLink {
         this.destPath = destPath;
     }
 
-    public String getTheMovieDbId() {
+    public int getTheMovieDbId() {
         return theMovieDbId;
     }
 
-    public void setTheMovieDbId(String theMovieDbId) {
+    public void setTheMovieDbId(int theMovieDbId) {
         this.theMovieDbId = theMovieDbId;
     }
 
@@ -59,5 +60,16 @@ public class MediaLink {
 
     public void setSourceParentPath(String sourceParentPath) {
         this.sourceParentPath = sourceParentPath;
+    }
+
+    @Override
+    public String toString() {
+        return "MediaLink{" +
+                "mediaId=" + mediaId +
+                ", sourcePath='" + sourcePath + '\'' +
+                ", destPath='" + destPath + '\'' +
+                ", theMovieDbId='" + theMovieDbId + '\'' +
+                ", sourceParentPath='" + sourceParentPath + '\'' +
+                '}';
     }
 }

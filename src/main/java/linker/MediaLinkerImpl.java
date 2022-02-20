@@ -1,10 +1,16 @@
 package linker;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
+import model.MediaData;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,9 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 public class MediaLinkerImpl implements MediaLinker {
 
@@ -35,23 +43,48 @@ public class MediaLinkerImpl implements MediaLinker {
         return mediaTrackerDao.getAllMediaQueries();
     }
 
+
     @Override
-    public List<QueryResult> executeQuery(MediaQuery mediaQuery) {
+    public List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery) {
+        String query = (customQuery.isEmpty()) ? mediaQuery.getQuery() : customQuery;
         String document = null;
         try {
-            document = searchEngineRequest(mediaQuery.getQuery());
+            System.out.println("[ query ]: " + customQuery);
+            document = searchEngineRequest(query);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // TODO check for null return after query
-        System.out.println(document);
         return parseReturn(document, Path.of(mediaQuery.getFilePath()));
-        // send jsoup request with given query
-        // parse response if no errors occured
-        // form QueryResult list and return
     }
 
-    public List<QueryResult> parseReturn(String document, Path filePath) {
+    private String searchEngineRequest(String query) throws IOException {
+        String queryFormatted = new StringBuilder()
+                .append(linkerProperties.getProperty("preQuery"))
+                .append(" ")
+                .append(query)
+                .toString();
+        System.out.println("[ search ]: " + queryFormatted);
+        // POST connection - redirect fails
+//        Connection.Response post = Jsoup.connect(linkerProperties.getProperty("searchUrlPost"))
+//                .data("query", queryFormatted)
+//                .userAgent(linkerProperties.getProperty("User-Agent"))
+//                .followRedirects(false)
+//                .timeout(3000)
+//                .execute();
+        // GET connection
+        Connection.Response response = Jsoup.connect(linkerProperties.getProperty("searchUrlGet") + queryFormatted)
+                .userAgent(linkerProperties.getProperty("User-Agent"))
+                .timeout(3000)
+                .execute();
+        System.out.println("[ response ]: " + response.statusCode());
+        return response.body();
+    }
+
+    /*
+     * Parses response html element.
+     * Accepts string and path.
+     * */
+    private List<QueryResult> parseReturn(String document, Path filePath) {
         Set<QueryResult> queryResultSet = new TreeSet<>();
         Document parsedDocument = Jsoup.parse(document);
         Element linksBase = parsedDocument.getElementById("links");
@@ -96,48 +129,11 @@ public class MediaLinkerImpl implements MediaLinker {
         String pattern = ".+/movie/\\d+";
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(url);
-        while (m.find()) {
+        // check only first instance of match
+        if (m.find()) {
             String found = m.group();
             return found.substring(found.lastIndexOf('/') + 1);
         }
-        return null;
-    }
-
-    private String searchEngineRequest(String query) throws IOException {
-        String queryFormatted = new StringBuilder()
-                .append(linkerProperties.getProperty("preQuery"))
-                .append(" ")
-                .append(query)
-                .toString();
-        // POST connection - redirect fails
-//        Connection.Response post = Jsoup.connect(linkerProperties.getProperty("searchUrlPost"))
-//                .data("query", queryFormatted)
-//                .userAgent(linkerProperties.getProperty("User-Agent"))
-//                .followRedirects(false)
-//                .timeout(3000)
-//                .execute();
-        // GET connection
-        Document document = Jsoup.connect(linkerProperties.getProperty("searchUrlGet") + queryFormatted)
-                .userAgent(linkerProperties.getProperty("User-Agent"))
-                .timeout(3000)
-                .get();
-        return document.toString();
-    }
-
-    public String tmdbApiRequest(QueryResult queryResult) throws IOException {
-        String apiRequest = new StringBuilder()
-                .append(linkerProperties.getProperty("tmdb_api3"))
-                .append("/movie/")
-                .append(queryResult.getTheMovieDbId())
-                .toString();
-        Document document = Jsoup.connect(apiRequest)
-                .userAgent(linkerProperties.getProperty("User-Agent"))
-                .header("Authorization", "Bearer " + linkerProperties.getProperty("api_key_v4"))
-                .ignoreContentType(true)
-//                .header("Content-Type", "application/json;charset=utf-8")
-                .timeout(3000)
-                .get();
-        System.out.println(document);
         return null;
     }
 
@@ -145,22 +141,35 @@ public class MediaLinkerImpl implements MediaLinker {
     public MediaLink createSymLink(QueryResult queryResult) {
         // Film (2018) [tmdbid-65567]
         // send request to themoviedb api with given query result
-        // get the data
-        // form path name and file name with given pattern
-        // return true if all went well
+        MediaData mediaData = null;
+        try {
+            String response = tmdbApiRequest(queryResult);
+            mediaData = parseJson(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (mediaData == null) throw new NoSuchElementException();
         Path sourceFolder = SymLinkProperties.getMovieFolder();
         Path targetPath = Path.of(queryResult.getFilePath());
-        // test data
+        // check for number of parts
         int discNumber = checkForMultiDiscs(queryResult.getFilePath());
+        // check for illegal characters in title
+        String title = characterPrison(mediaData.getTitle());
+        int year = mediaData.getYear();
         String extension = getExtension(queryResult.getFilePath());
         String special = "";
         String part = (discNumber > 0) ? "-cd" + discNumber : "";
         // build path names
-        StringBuilder movieFolder = new StringBuilder("title ")
-                .append("(" + "year" + ") ")
-                .append("[tmdbid-" + queryResult.getTheMovieDbId() + "]");
-        StringBuilder movieName = new StringBuilder("title ")
-                .append("(" + "year" + ")")
+        StringBuilder movieFolder = new StringBuilder()
+                .append(title)
+                .append(" (")
+                .append(year)
+                .append(") ")
+                .append("[tmdbid-")
+                .append(queryResult.getTheMovieDbId())
+                .append("]");
+        StringBuilder movieName = new StringBuilder()
+                .append(title)
                 .append(part)
                 .append(special)
                 .append(".")
@@ -168,28 +177,88 @@ public class MediaLinkerImpl implements MediaLinker {
         Path sourcePath = sourceFolder
                 .resolve(movieFolder.toString());
         Path sourceFile = Path.of(movieName.toString());
+        MediaLink mediaLink = new MediaLink();
+        mediaLink.setMediaId(1);
+        mediaLink.setDestPath(targetPath.toString());
+        mediaLink.setSourcePath(sourcePath.toString());
+        mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
+
+//        try {
+//            if (!Files.exists(sourcePath)) {
+//                Files.createDirectories(sourcePath);
+//            }
+//            Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        return mediaLink;
+    }
+
+    /*
+     * TheMovieDB API request, returns json object within html body.
+     * */
+    private String tmdbApiRequest(QueryResult queryResult) throws IOException {
+        String apiRequest = new StringBuilder()
+                .append(linkerProperties.getProperty("tmdb_api3"))
+                .append(linkerProperties.getProperty("tmdb_movie_category"))
+                .append(queryResult.getTheMovieDbId())
+                .append(linkerProperties.getProperty("tmdb_request_lang"))
+                .toString();
+        String document = Jsoup.connect(apiRequest)
+                .userAgent(linkerProperties.getProperty("User-Agent"))
+                .header("Authorization", "Bearer " + linkerProperties.getProperty("api_key_v4"))
+                .ignoreContentType(true)
+                .timeout(3000)
+                .execute()
+                .body();
+        return document;
+    }
+
+    /*
+     * Returns string value of title element if found, otherwise returns null.
+     * Accepts json object as String.
+     * */
+    private MediaData parseJson(String jsonWithinHtmlBody) {
         try {
-            if (!Files.exists(sourcePath)) {
-                Files.createDirectories(sourcePath);
+            System.out.println("[ json ] extracting data...");
+            JsonElement jsonElement = JsonParser.parseString(jsonWithinHtmlBody);
+            String titleElement = linkerProperties.getProperty("tmdb_movietitle");
+            String yearElement = linkerProperties.getProperty("tmdb_movieyear");
+            if (jsonElement.isJsonObject()) {
+                JsonObject asJsonObject = jsonElement.getAsJsonObject();
+                if (asJsonObject.has(titleElement) && asJsonObject.has(yearElement)) {
+                    MediaData mediaData = new MediaData();
+                    mediaData.setTitle(asJsonObject.get(titleElement).getAsString());
+                    String rawDate = asJsonObject.get(yearElement).getAsString();
+                    LocalDate ld = LocalDate.parse(rawDate);
+                    mediaData.setYear(ld.getYear());
+                    return mediaData;
+                }
             }
-            Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (JsonParseException e) {
+            System.out.println(e.getMessage());
         }
         return null;
     }
 
+    /*
+     * Extracts file extension.
+     * */
     private String getExtension(String filename) {
         return filename.substring(filename.lastIndexOf('.') + 1);
     }
 
+    /*
+     * Search for phrases within filename that indicate multi disc release.
+     * If that is the case, it returns number that points to the part of the movie.
+     * */
     private int checkForMultiDiscs(String filename) {
         List<String> pattern = Arrays.asList("cd[^A-Za-z]?\\d", "disc[^A-Za-z]?\\d", "part[^A-Za-z]?\\d", "chapter[^A-Za-z]?\\d", "s\\d\\de\\d\\d");
         String nameOnly = filename.substring(filename.lastIndexOf("\\") + 1, filename.lastIndexOf(".")).toLowerCase();
         for (String s : pattern) {
             Pattern p = Pattern.compile(s);
             Matcher m = p.matcher(nameOnly);
-            while (m.find()) {
+            if (m.find()) {
                 String found = m.group();
                 String noDigit = "\\D";
                 String output = found.replaceAll(noDigit, "");
@@ -199,12 +268,18 @@ public class MediaLinkerImpl implements MediaLinker {
         return 0;
     }
 
+    /*
+     * Replaces all illegal characters within provided string with underscores
+     * */
     private String characterPrison(String title) {
-
-        return "";
+        String illegalNames = "[#%&{}\\<>*?/$!\"+:@`|=]+";
+        Pattern p = Pattern.compile(illegalNames);
+        return p.matcher(title).replaceAll("_");
     }
 
-
+    /*
+     * Loads properties object from configuration file.
+     * */
     private void loadConnectionProperties() {
         String configPath = "src/main/resources/network.properties";
         try (InputStream is = new FileInputStream(configPath)) {
@@ -231,15 +306,27 @@ public class MediaLinkerImpl implements MediaLinker {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // test parser
         List<QueryResult> queryResults = ml.parseReturn(importedHtml, filePath);
-        System.out.println(queryResults);
-        try {
-            ml.tmdbApiRequest(queryResults.get(1));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        System.out.println(queryResults.get(1));
-//        ml.createSymLink(queryResults.get(4));
+
+//        System.out.println(queryResults);
+
+        // test api query
+//        try {
+//
+//            String s = ml.tmdbApiRequest(queryResults.get(1));
+//            ml.parseJson(s);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
+        // test symlink
+        System.out.println(queryResults.get(1));
+        MediaLink symLink = ml.createSymLink(queryResults.get(1));
+        System.out.println(symLink);
 
 
     }
