@@ -2,6 +2,7 @@ package model;
 
 
 import javax.persistence.*;
+import java.nio.file.Path;
 import java.util.Objects;
 
 @Entity
@@ -13,22 +14,28 @@ public class MediaQuery {
     @Column(name = "id")
     private long queryId;
 
-    @Column(name = "file_name")
-    private String fileName;
-
     @Column(name = "file_path")
     private String filePath;
 
     public MediaQuery() {}
 
-    public MediaQuery(String fileName, String filePath) {
-        this.fileName = fileName;
+    public MediaQuery(String filePath) {
         this.filePath = filePath;
     }
 
+    public long getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(long queryId) {
+        this.queryId = queryId;
+    }
+
     public String getQuery() {
-        String substring = fileName.substring(0, fileName.lastIndexOf("."));
-        return substring.replace(".", " ");
+        Path path = Path.of(filePath);
+        String fileName = path.getName(path.getNameCount() - 1).toString();
+        String sub = fileName.substring(0, fileName.lastIndexOf("."));
+        return sub.replace(".", " ");
     }
 
     public String getFilePath() {
@@ -39,32 +46,23 @@ public class MediaQuery {
         this.filePath = filePath;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MediaQuery that = (MediaQuery) o;
-        return fileName.equals(that.fileName) && filePath.equals(that.filePath);
+        return filePath.equals(that.filePath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileName, filePath);
+        return Objects.hash(filePath);
     }
 
     @Override
     public String toString() {
         return "MediaQuery{" +
                 "queryId=" + queryId +
-                ", fileName='" + fileName + '\'' +
                 ", filePath='" + filePath + '\'' +
                 '}';
     }

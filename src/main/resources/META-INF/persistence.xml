@@ -10,6 +10,11 @@
 <!--        <class>com.phonik.media-jscanner.model.MediaLink</class>-->
 
         <properties>
+            <property name="javax.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.schema-generation.scripts.action" value="create"/>
+            <property name="javax.persistence.schema-generation.create-script-source" value="META-INF/sql/create.sql"/>
+            <property name="javax.persistence.schema-generation.scripts.create-target" value="samplecreate.ddl"/>
+            <property name="javax.persistence.schema-generation.scripts.drop-target" value="sampledrop.ddl"/>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
 <!--            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/jscanner" />-->
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:file:./jscanner" />
@@ -21,7 +26,7 @@
             <property name="hibernate.show_sql" value="true" />
             <property name="format_sql" value="true" />
             <property name="hibernate.connection.charSet" value="UTF-8" />
-            <property name="hibernate.hbm2ddl.auto" value="create-drop" />
+            <property name="hibernate.hbm2ddl.auto" value="create" />
         </properties>
     </persistence-unit>
 </persistence>

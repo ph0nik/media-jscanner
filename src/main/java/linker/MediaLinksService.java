@@ -6,12 +6,12 @@ import model.QueryResult;
 
 import java.util.List;
 
-public interface MediaLinker {
+public interface MediaLinksService {
 
     /*
      * Get list of all queries from db
      * */
-    List<MediaQuery> mediaQueryList();
+    List<MediaQuery> getMediaQueryList();
 
     /*
      * For a given query perform online search for matching elements within given domain.
@@ -25,6 +25,11 @@ public interface MediaLinker {
      * Create symlink with specified query result and link properties
      * */
     MediaLink createSymLink(QueryResult queryResult);
+
+    /*
+    * Returns list of existing media links
+    * */
+    List<MediaLink> getMediaLinks();
 
 
 }

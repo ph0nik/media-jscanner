@@ -28,7 +28,7 @@ public class JPAUtil {
         EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
         entityManager.getTransaction().begin();
 
-        MediaQuery mediaQuery = new MediaQuery("aaa", "bbb");
+        MediaQuery mediaQuery = new MediaQuery("bbb");
         entityManager.persist(mediaQuery);
         entityManager.getTransaction().commit();
         entityManager.close();

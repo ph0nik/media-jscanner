@@ -27,20 +27,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class MediaLinkerImpl implements MediaLinker {
+public class MediaLinksServiceImpl implements MediaLinksService {
 
     private MediaTrackerDao mediaTrackerDao;
     private Properties linkerProperties;
 
-    public MediaLinkerImpl() {
+    public MediaLinksServiceImpl(MediaTrackerDao dao) {
         loadConnectionProperties();
         SymLinkProperties.loadSymLinkProperties();
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = dao;
     }
 
     @Override
-    public List<MediaQuery> mediaQueryList() {
-        return mediaTrackerDao.getAllMediaQueries();
+    public List<MediaQuery> getMediaQueryList() {
+        List<MediaQuery> mq =  mediaTrackerDao.getAllMediaQueries();
+        if (mq == null) return List.of();
+        return mq;
     }
 
 
@@ -149,7 +151,7 @@ public class MediaLinkerImpl implements MediaLinker {
             e.printStackTrace();
         }
         if (mediaData == null) throw new NoSuchElementException();
-        Path sourceFolder = SymLinkProperties.getMovieFolder();
+        Path linkRootFolder = SymLinkProperties.getMovieFolder();
         Path targetPath = Path.of(queryResult.getFilePath());
         // check for number of parts
         int discNumber = checkForMultiDiscs(queryResult.getFilePath());
@@ -174,24 +176,29 @@ public class MediaLinkerImpl implements MediaLinker {
                 .append(special)
                 .append(".")
                 .append(extension);
-        Path sourcePath = sourceFolder
+        Path sourcePath = linkRootFolder
                 .resolve(movieFolder.toString());
         Path sourceFile = Path.of(movieName.toString());
         MediaLink mediaLink = new MediaLink();
         mediaLink.setMediaId(1);
-        mediaLink.setDestPath(targetPath.toString());
-        mediaLink.setSourcePath(sourcePath.toString());
+        mediaLink.setTargetPath(targetPath.toString());
+        mediaLink.setLinkPath(sourcePath.resolve(sourceFile).toString());
         mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
 
-//        try {
-//            if (!Files.exists(sourcePath)) {
-//                Files.createDirectories(sourcePath);
-//            }
-//            Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            if (!Files.exists(sourcePath)) {
+                Files.createDirectories(sourcePath);
+            }
+            Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return mediaLink;
+    }
+
+    @Override
+    public List<MediaLink> getMediaLinks() {
+        return mediaTrackerDao.getAllMediaLinks();
     }
 
     /*
@@ -291,7 +298,8 @@ public class MediaLinkerImpl implements MediaLinker {
     }
 
     public static void main(String[] args) {
-        MediaLinkerImpl ml = new MediaLinkerImpl();
+        MediaTrackerDao mediaTrackerDao = new MediaTrackerDaoImpl();
+        MediaLinksServiceImpl ml = new MediaLinksServiceImpl(mediaTrackerDao);
         String searchExample = "Army.of.Darkness.1992.Director's.Cut.Hybrid.1080p.BluRay.DTS.x264-IDE.mkv";
 
 //        MediaQuery mq = new MediaQuery(searchExample, "folder");

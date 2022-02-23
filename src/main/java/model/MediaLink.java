@@ -12,12 +12,13 @@ public class MediaLink {
     @Column(name = "id")
     private long mediaId;
 
-    @Column(name = "source_path")
-    private String sourcePath;
+    @Column(name = "link_path")
+    private String linkPath;
 
-    @Column(name = "destination_path")
-    private String destPath;
+    @Column(name = "target_path")
+    private String targetPath;
 
+    @Column(name = "the_movie_db_id")
     private int theMovieDbId;
 
     private String sourceParentPath;
@@ -30,20 +31,20 @@ public class MediaLink {
         this.mediaId = mediaId;
     }
 
-    public String getSourcePath() {
-        return sourcePath;
+    public String getLinkPath() {
+        return linkPath;
     }
 
-    public void setSourcePath(String sourcePath) {
-        this.sourcePath = sourcePath;
+    public void setLinkPath(String linkPath) {
+        this.linkPath = linkPath;
     }
 
-    public String getDestPath() {
-        return destPath;
+    public String getTargetPath() {
+        return targetPath;
     }
 
-    public void setDestPath(String destPath) {
-        this.destPath = destPath;
+    public void setTargetPath(String targetPath) {
+        this.targetPath = targetPath;
     }
 
     public int getTheMovieDbId() {
@@ -66,8 +67,8 @@ public class MediaLink {
     public String toString() {
         return "MediaLink{" +
                 "mediaId=" + mediaId +
-                ", sourcePath='" + sourcePath + '\'' +
-                ", destPath='" + destPath + '\'' +
+                ", sourcePath='" + linkPath + '\'' +
+                ", destPath='" + targetPath + '\'' +
                 ", theMovieDbId='" + theMovieDbId + '\'' +
                 ", sourceParentPath='" + sourceParentPath + '\'' +
                 '}';

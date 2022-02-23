@@ -70,7 +70,7 @@ public class MediaTracker {
                 // if newly created object is file
                 if (kind == ENTRY_CREATE && validExtension) {
                     System.out.println("Type " + kind.toString());
-                    addNewQuery(dao, tempFileName, filePath);
+                    addNewQuery(dao, filePath);
 
                 }
             }
@@ -89,28 +89,55 @@ public class MediaTracker {
     * adds all untracked elements to the queue
     * */
     private static void initialScan(MediaTrackerDao dao) {
+        // read all lists from db
+        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
+        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
+//        System.out.println(allMediaQueries);
         for (WatchKey watchKey : watchKeyToPathMap.keySet()) {
             Path path = watchKeyToPathMap.get(watchKey);
             String[] list = watchKeyToPathMap.get(watchKey).toFile().list();
-            List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
             if (list != null) {
                 for (String singleFile : list) {
                     if (validateExtension(singleFile)) {
                     String filePath = Path.of(path.toString(), singleFile).toString();
-                        if (!findMatchingLink(allMediaLinks, filePath)) {
-                            addNewQuery(dao, singleFile, path.toString());
+                    // check if file name already exists in db
+                        boolean matchingLink = findMatchingLink(allMediaLinks, filePath);
+                        boolean matchingQuery = findMatchingQuery(allMediaQueries, filePath);
+                        if (!matchingLink && !matchingQuery) {
+                            System.out.println("[ init ] found new file: " + filePath);
+                            addNewQuery(dao, filePath);
+                        } else if (matchingLink && !matchingQuery) {
+                            System.out.println("[ init ] existing link: ");
                         }
                     }
                 }
             }
         }
+
     }
 
-
+    /*
+    * Checks file path string against list of media links from db.
+    * Returns true if match found.
+    * */
     private static boolean findMatchingLink(List<MediaLink> allMediaLinks, String filePath) {
+        // get link matching given filepath TODO
+        List<MediaLink> mediaLinkList = List.of();
         if (allMediaLinks != null) {
             for (MediaLink mediaLink : allMediaLinks) {
-                if (mediaLink.getSourcePath().equals(filePath)) return true;
+                if (mediaLink.getLinkPath().equals(filePath)) {
+                    mediaLinkList.add(mediaLink);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean findMatchingQuery(List<MediaQuery> allMediaQueries, String filePath ) {
+        if (allMediaQueries != null) {
+            for (MediaQuery mediaQuery : allMediaQueries) {
+                if (mediaQuery.getFilePath().equals(filePath)) return true;
             }
         }
         return false;
@@ -119,12 +146,10 @@ public class MediaTracker {
     /*
     * Adds new query to queue
     * */
-    private static void addNewQuery(MediaTrackerDao dao, String tempFileName, String filePath) {
-        MediaQuery query = new MediaQuery(tempFileName, filePath);
+    private static void addNewQuery(MediaTrackerDao dao, String filePath) {
+        MediaQuery query = new MediaQuery(filePath);
         dao.addQueryToQueue(query);
-        System.out.println("Query added to db.");
-        System.out.println("filePath : " + filePath);
-        System.out.println("fileName : " + tempFileName);
+        System.out.println("[ MediaQuery ] added to db with filepath: " + filePath);
     }
 
     /*
