@@ -64,6 +64,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         } finally {
             entityManager.close();
         }
+
        return singleResult;
     }
 
@@ -163,16 +164,19 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             System.out.println(mq);
         }
 
-        MediaQuery findQuery = dao.findQueryByFilePath(file);
-        System.out.println(findQuery);
+//        MediaQuery findQuery = dao.findQueryByFilePath(file);
+//        System.out.println(findQuery);
+//
+//        dao.removeQueryFromQueue(findQuery);
+//        allMediaQueries = dao.getAllMediaQueries();
+//        for (MediaQuery mq : allMediaQueries) {
+//            System.out.println(mq);
+//        }
 
-        dao.removeQueryFromQueue(findQuery);
-        allMediaQueries = dao.getAllMediaQueries();
-        for (MediaQuery mq : allMediaQueries) {
-            System.out.println(mq);
+        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
+        for (MediaLink ml : allMediaLinks) {
+            System.out.println(ml);
         }
-
-
 
     }
 

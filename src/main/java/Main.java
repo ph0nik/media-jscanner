@@ -1,4 +1,7 @@
+import runner.MenuRunner;
+import runner.TrackerRunner;
 
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -15,5 +18,20 @@ public class Main {
     *
     * */
 
+    public static void main(String[] args) {
+        Thread tracker = new Thread(new TrackerRunner());
+        Thread menu = new Thread(new MenuRunner());
+        tracker.start();
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+        }
+        menu.start();
+        System.out.println(menu.isAlive());
+
+
+    }
 
 }

@@ -1,4 +1,4 @@
-package linker;
+package service;
 
 import model.MediaLink;
 import model.MediaQuery;

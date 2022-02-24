@@ -1,7 +1,6 @@
-package tracker;
+package service;
 
 import dao.MediaTrackerDao;
-import dao.MediaTrackerDaoImpl;
 import model.MediaLink;
 import model.MediaQuery;
 
@@ -15,10 +14,11 @@ import java.util.Map;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static util.MediaFilter.validateExtension;
 
-public class MediaTracker {
+public class MediaTrackerService {
 
     // pairing keys with paths
     private static final Map<WatchKey, Path> watchKeyToPathMap = new HashMap<>();
+    private static MediaTrackerDao mediaTrackerDao;
 
     private static void registerTree(WatchService watchService, Path root) throws IOException {
         Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
@@ -33,13 +33,15 @@ public class MediaTracker {
         });
     }
 
-    private static void watch(WatchService watchService, List<Path> paths, MediaTrackerDao dao) throws IOException, InterruptedException {
+    // changed from private to public
+    public static void watch(WatchService watchService, List<Path> paths, MediaTrackerDao dao) throws IOException, InterruptedException {
+        mediaTrackerDao = dao;
         for (Path path : paths) {
             registerTree(watchService, path);
         }
         // after starting watchservice scan all files within watched folders
         // and compare to existing ones
-        initialScan(dao);
+        initialScan();
 
         while (true) {
             WatchKey watchKey = watchService.take();
@@ -63,14 +65,14 @@ public class MediaTracker {
                 // symlink, remove it with db element
                 if (kind == ENTRY_DELETE && validExtension) {
                     System.out.println(kind.toString());
-                    removeQuery(dao, filePath);
-                    removeLink(dao, filePath);
+                    removeQuery(filePath);
+                    removeLink(filePath);
                 }
 
                 // if newly created object is file
                 if (kind == ENTRY_CREATE && validExtension) {
                     System.out.println("Type " + kind.toString());
-                    addNewQuery(dao, filePath);
+                    addNewQuery(filePath);
 
                 }
             }
@@ -88,10 +90,11 @@ public class MediaTracker {
     * Crosschecks initially watched folders against link database,
     * adds all untracked elements to the queue
     * */
-    private static void initialScan(MediaTrackerDao dao) {
+    private static void initialScan() {
+        MediaTrackerDao dao = mediaTrackerDao;
         // read all lists from db
-        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
-        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
+//        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
+//        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
 //        System.out.println(allMediaQueries);
         for (WatchKey watchKey : watchKeyToPathMap.keySet()) {
             Path path = watchKeyToPathMap.get(watchKey);
@@ -101,11 +104,15 @@ public class MediaTracker {
                     if (validateExtension(singleFile)) {
                     String filePath = Path.of(path.toString(), singleFile).toString();
                     // check if file name already exists in db
-                        boolean matchingLink = findMatchingLink(allMediaLinks, filePath);
-                        boolean matchingQuery = findMatchingQuery(allMediaQueries, filePath);
+                        MediaLink mediaLinkByFilePath = dao.findMediaLinkByFilePath(filePath);
+                        boolean matchingLink = mediaLinkByFilePath != null;
+//                        boolean matchingLink = findMatchingLink(allMediaLinks, filePath);
+                        MediaQuery queryByFilePath = dao.findQueryByFilePath(filePath);
+                        boolean matchingQuery = queryByFilePath != null;
+//                        boolean matchingQuery = findMatchingQuery(allMediaQueries, filePath);
                         if (!matchingLink && !matchingQuery) {
                             System.out.println("[ init ] found new file: " + filePath);
-                            addNewQuery(dao, filePath);
+                            addNewQuery(filePath);
                         } else if (matchingLink && !matchingQuery) {
                             System.out.println("[ init ] existing link: ");
                         }
@@ -122,11 +129,9 @@ public class MediaTracker {
     * */
     private static boolean findMatchingLink(List<MediaLink> allMediaLinks, String filePath) {
         // get link matching given filepath TODO
-        List<MediaLink> mediaLinkList = List.of();
         if (allMediaLinks != null) {
             for (MediaLink mediaLink : allMediaLinks) {
                 if (mediaLink.getLinkPath().equals(filePath)) {
-                    mediaLinkList.add(mediaLink);
                     return true;
                 }
             }
@@ -146,7 +151,8 @@ public class MediaTracker {
     /*
     * Adds new query to queue
     * */
-    private static void addNewQuery(MediaTrackerDao dao, String filePath) {
+    private static void addNewQuery(String filePath) {
+        MediaTrackerDao dao = mediaTrackerDao;
         MediaQuery query = new MediaQuery(filePath);
         dao.addQueryToQueue(query);
         System.out.println("[ MediaQuery ] added to db with filepath: " + filePath);
@@ -155,36 +161,38 @@ public class MediaTracker {
     /*
     *  Removes existing link
     * */
-    private static void removeLink(MediaTrackerDao dao, String filePath) {
+    private static void removeLink(String filePath) {
+        MediaTrackerDao dao = mediaTrackerDao;
         MediaLink mediaLinkByName = dao.findMediaLinkByFilePath(filePath);
         if (mediaLinkByName != null) {
-            System.out.println("Found matching link");
+            System.out.println("[ remove_link ] Found matching link");
             dao.removeLink(mediaLinkByName);
-            System.out.println("Link deleted");
+            System.out.println("[ remove_link ] Link deleted");
         }
     }
 
     /*
     * Removes existing query
     * */
-    private static void removeQuery(MediaTrackerDao dao, String filePath) {
+    private static void removeQuery(String filePath) {
+        MediaTrackerDao dao = mediaTrackerDao;
         MediaQuery queryByName = dao.findQueryByFilePath(filePath);
         if (queryByName != null) {
-            System.out.println("Found matching query");
+            System.out.println("[ remove_query ] Found matching query");
             dao.removeQueryFromQueue(queryByName);
-            System.out.println("Query deleted");
+            System.out.println("[ remove_query ] Query deleted");
         }
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-
-        MediaTrackerDao dao = new MediaTrackerDaoImpl();
-        String path = "./test-folder/";
-        List<Path> mediaFolder = List.of(Paths.get(path));
-        WatchService watchService = FileSystems.getDefault().newWatchService();
-        watch(watchService, mediaFolder, dao);
-
-
-
-    }
+//    public static void main(String[] args) throws IOException, InterruptedException {
+//
+//        MediaTrackerDao dao = new MediaTrackerDaoImpl();
+//        String path = "./test-folder/";
+//        List<Path> mediaFolder = List.of(Paths.get(path));
+//        WatchService watchService = FileSystems.getDefault().newWatchService();
+//        watch(watchService, mediaFolder, dao);
+//
+//
+//
+//    }
 }

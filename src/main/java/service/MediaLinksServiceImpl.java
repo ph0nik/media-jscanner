@@ -1,4 +1,4 @@
-package linker;
+package service;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -59,6 +59,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return parseReturn(document, Path.of(mediaQuery.getFilePath()));
     }
 
+    // TODO get different details from search results - regular webpage
     private String searchEngineRequest(String query) throws IOException {
         String queryFormatted = new StringBuilder()
                 .append(linkerProperties.getProperty("preQuery"))
@@ -162,6 +163,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         String special = "";
         String part = (discNumber > 0) ? "-cd" + discNumber : "";
         // build path names
+        System.out.println("[ symlink ] creating path names...");
         StringBuilder movieFolder = new StringBuilder()
                 .append(title)
                 .append(" (")
@@ -180,18 +182,21 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                 .resolve(movieFolder.toString());
         Path sourceFile = Path.of(movieName.toString());
         MediaLink mediaLink = new MediaLink();
-        mediaLink.setMediaId(1);
         mediaLink.setTargetPath(targetPath.toString());
         mediaLink.setLinkPath(sourcePath.resolve(sourceFile).toString());
         mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
-
         try {
             if (!Files.exists(sourcePath)) {
                 Files.createDirectories(sourcePath);
+                System.out.println("[ symlink ] creating folder...");
             }
+            System.out.println("[ symlink ] creating symlink");
             Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // forgot to add dao element here, new links didn't show in db.
+            mediaTrackerDao.addNewLink(mediaLink);
+            System.out.println("[ symlink ] " + mediaLink.getLinkPath() + " => " + mediaLink.getTargetPath());
+        } catch (IOException | SecurityException e) {
+            System.out.println(e.getMessage());
         }
         return mediaLink;
     }
