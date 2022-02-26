@@ -21,134 +21,137 @@ public class MainMenu {
         mediaLinksService = new MediaLinksServiceImpl(dao);
     }
 
-    //TODO tests
     public void getMainMenu() {
-
         System.out.println(":: Main Menu ::");
         System.out.println("( 1 ) Show Query");
         System.out.println("( 2 ) Show Existing Links");
-        System.out.println("( 3 ) Exit");
+        System.out.println("( 3 ) Exit program");
         System.out.print("Select option: ");
-        boolean running = true;
-        while (running) {
-            Scanner sc = new Scanner(System.in);
-            String s = sc.nextLine();
-            Matcher m = p.matcher(s);
-            if (m.find()) {
-                int selection = Integer.parseInt(s);
-                if (selection == 1) getQueryMenu();
-                if (selection == 2) getExistingLinks();
-                if (selection == 3) running = false;
-            } else {
-                System.out.println("Wrong number or illegal character");
-            }
 
+        Scanner sc = new Scanner(System.in);
+        String s = sc.nextLine();
+        Matcher m = p.matcher(s);
+        if (m.find()) {
+            int selection = Integer.parseInt(s);
+            if (selection == 1) getQueryMenu();
+            if (selection == 2) getExistingLinks();
+            if (selection == 3) return;
+        } else {
+            System.out.println("Wrong number or illegal character");
         }
-        // TODO make exiting program without printing anything below command
-//        getMainMenu();
-
-
-    }
-
-    private void close(){
-        return;
     }
 
     public void getQueryMenu() {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        int index = 1;
 
         System.out.println(":: Media Query List ::");
-        int index = 1;
         if (allMediaQueries.isEmpty()) {
             System.out.println("No queries found");
             getMainMenu();
         }
         for (MediaQuery mq : allMediaQueries) {
-            System.out.println("( " + index + " ): " + mq.getFilePath());
+            System.out.println("( " + index + " ) " + mq.getFilePath());
             index++;
         }
-        System.out.println("(" + index + ") Return to main menu");
-        while (true) {
+        System.out.println("( " + index + " ) <- Return to main menu");
+        System.out.println("Input media query number: ");
+        boolean selectionStatus = true;
+        while (selectionStatus) {
             Scanner sc = new Scanner(System.in);
-            System.out.println("Input media query number: ");
             String s = sc.nextLine();
             Matcher m = p.matcher(s);
             if (m.find()) {
-                int selection = Integer.parseInt(s);
-
-                if (selection >= 0 && selection < allMediaQueries.size()) {
+                int selection = Integer.parseInt(s) - 1;
+                int max = allMediaQueries.size();
+                if (selection >= 0 && selection < max) {
+                    selectionStatus = false;
                     getResultsMenu(allMediaQueries.get(selection));
                 }
-                if (selection == index) getMainMenu();
+                if (selection == max)
+                    selectionStatus = false;
+                    getMainMenu();
+            } else {
+                System.out.println("Wrong number or illegal character");
             }
-            System.out.println("Wrong number or illegal character");
-
         }
+
     }
 
-    //TODO manage empty lists
     public void getResultsMenu(MediaQuery mediaQuery) {
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", mediaQuery);
-        int selection = 1;
+        int index = 1;
         System.out.println(":: Query Results Menu ::");
         System.out.println("Search Results for file [" + mediaQuery.getFilePath() + "]:");
         for (QueryResult qr : queryResults) {
-            System.out.println("( " + selection + " ) " + qr);
-            selection++;
+            System.out.println("( " + index + " ) " + qr);
+            index++;
         }
-        System.out.println("( " + selection + " ) Use custom query");
-        selection++;
-        System.out.println("( " + selection + " ) Go back to query list");
-        while (true) {
+        System.out.println("( " + index + " ) Use custom query");
+        index++;
+        System.out.println("( " + index + " ) Go back to query list");
+        boolean selectionStatus = true;
+        while (selectionStatus) {
             System.out.print("Select matching element or option: ");
             Scanner sc = new Scanner(System.in);
             String s = sc.nextLine();
             Matcher m = p.matcher(s);
             if (m.find()) {
-                int input = Integer.parseInt(s);
-                if (input >= 0 && input < selection - 1) {
-                    mediaLinksService.createSymLink(queryResults.get(input));
+                int selection = Integer.parseInt(s) - 1;
+                int max = queryResults.size() + 1;
+                if (selection >= 0 && selection < max - 2) {
+                    mediaLinksService.createSymLink(queryResults.get(selection));
+                    selectionStatus = false;
                     getExistingLinks();
                 }
-                if (input == selection - 1) {
+                if (selection == max - 1) {
                     System.out.println("Input custom query for this file:");
+                    selectionStatus = false;
                     s = sc.nextLine();
                     getCustomSearchMenu(s, mediaQuery);
                 }
-                if (input == selection) {
-                    getQueryMenu();
+                if (selection == max) {
+                    selectionStatus = false;
                 }
+            } else {
+                System.out.println("Wrong number or illegal character");
             }
-            System.out.println("Wrong number or illegal character");
-
         }
-
+        getQueryMenu();
     }
 
     public void getCustomSearchMenu(String customPhrase, MediaQuery mediaQuery) {
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(customPhrase, mediaQuery);
-        int selection = 0;
+        int index = 1;
         System.out.println(":: Custom Query Menu ::");
         System.out.println("Search results:");
         for (QueryResult qr : queryResults) {
-            System.out.print("( " + selection + " )" + qr);
-            selection++;
+            System.out.println("( " + index + " )" + qr);
+            index++;
         }
-        while (true) {
+        System.out.println("( " + index + " ) Go back to query list");
+        boolean selectionStatus = true;
+        while (selectionStatus) {
             System.out.print("Select matching element: ");
             Scanner sc = new Scanner(System.in);
             String s = sc.nextLine();
             Matcher m = p.matcher(s);
             if (m.find()) {
-                int input = Integer.parseInt(s);
-                if (input >= 0 && input < selection) {
-                    mediaLinksService.createSymLink(queryResults.get(input));
+                int selection = Integer.parseInt(s) - 1;
+                int max = queryResults.size();
+                if (selection > 0 && selection <= max) {
+                    mediaLinksService.createSymLink(queryResults.get(selection));
+                    selectionStatus = false;
                     getExistingLinks();
                 }
+                if (selection == max) {
+                    selectionStatus = false;
+                }
+            } else {
+                System.out.println("Wrong number or illegal character");
             }
-            System.out.println("Wrong number or illegal character");
-
         }
+        getQueryMenu();
     }
 
     public void getExistingLinks() {
@@ -159,14 +162,7 @@ public class MainMenu {
             System.out.println(ml);
         }
         getMainMenu();
-
     }
-
-//    public static void main(String[] args) {
-//        MediaTrackerDao dao = new MediaTrackerDaoImpl();
-//        MainMenu menu = new MainMenu(dao);
-//        menu.getMainMenu();
-//    }
 
 
 }

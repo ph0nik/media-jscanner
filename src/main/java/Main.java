@@ -18,9 +18,10 @@ public class Main {
     *
     * */
 
+    // TODO use Daemon thread?
     public static void main(String[] args) {
         Thread tracker = new Thread(new TrackerRunner());
-        Thread menu = new Thread(new MenuRunner());
+        Thread menu = new Thread(new MenuRunner(tracker));
         tracker.start();
         try {
             TimeUnit.SECONDS.sleep(3);
@@ -29,7 +30,7 @@ public class Main {
             e.printStackTrace();
         }
         menu.start();
-        System.out.println(menu.isAlive());
+
 
 
     }

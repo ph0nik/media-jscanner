@@ -194,6 +194,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
             // forgot to add dao element here, new links didn't show in db.
             mediaTrackerDao.addNewLink(mediaLink);
+            // remove query after creating symlink
+            MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(queryResult.getFilePath());
+            mediaTrackerDao.removeQueryFromQueue(queryByFilePath);
             System.out.println("[ symlink ] " + mediaLink.getLinkPath() + " => " + mediaLink.getTargetPath());
         } catch (IOException | SecurityException e) {
             System.out.println(e.getMessage());

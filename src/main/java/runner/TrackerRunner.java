@@ -31,11 +31,10 @@ public class TrackerRunner implements Runnable {
             watchService = FileSystems.getDefault().newWatchService();
             MediaTrackerService.watch(watchService, mediaFolder, dao);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            System.out.println("[ tracker ] closing...");
+//            e.printStackTrace();
         }
     }
-
-
 
     private void getRootFolders() {
         String rootFoldersFilename = "src/main/resources/root.properties";

@@ -76,6 +76,7 @@ public class MediaTrackerService {
 
                 }
             }
+
             boolean valid = watchKey.reset();
             if (!valid) {
                 watchKeyToPathMap.remove(watchKey);
@@ -92,10 +93,6 @@ public class MediaTrackerService {
     * */
     private static void initialScan() {
         MediaTrackerDao dao = mediaTrackerDao;
-        // read all lists from db
-//        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
-//        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
-//        System.out.println(allMediaQueries);
         for (WatchKey watchKey : watchKeyToPathMap.keySet()) {
             Path path = watchKeyToPathMap.get(watchKey);
             String[] list = watchKeyToPathMap.get(watchKey).toFile().list();
@@ -106,10 +103,8 @@ public class MediaTrackerService {
                     // check if file name already exists in db
                         MediaLink mediaLinkByFilePath = dao.findMediaLinkByFilePath(filePath);
                         boolean matchingLink = mediaLinkByFilePath != null;
-//                        boolean matchingLink = findMatchingLink(allMediaLinks, filePath);
                         MediaQuery queryByFilePath = dao.findQueryByFilePath(filePath);
                         boolean matchingQuery = queryByFilePath != null;
-//                        boolean matchingQuery = findMatchingQuery(allMediaQueries, filePath);
                         if (!matchingLink && !matchingQuery) {
                             System.out.println("[ init ] found new file: " + filePath);
                             addNewQuery(filePath);
@@ -121,31 +116,6 @@ public class MediaTrackerService {
             }
         }
 
-    }
-
-    /*
-    * Checks file path string against list of media links from db.
-    * Returns true if match found.
-    * */
-    private static boolean findMatchingLink(List<MediaLink> allMediaLinks, String filePath) {
-        // get link matching given filepath TODO
-        if (allMediaLinks != null) {
-            for (MediaLink mediaLink : allMediaLinks) {
-                if (mediaLink.getLinkPath().equals(filePath)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean findMatchingQuery(List<MediaQuery> allMediaQueries, String filePath ) {
-        if (allMediaQueries != null) {
-            for (MediaQuery mediaQuery : allMediaQueries) {
-                if (mediaQuery.getFilePath().equals(filePath)) return true;
-            }
-        }
-        return false;
     }
 
     /*
@@ -168,6 +138,8 @@ public class MediaTrackerService {
             System.out.println("[ remove_link ] Found matching link");
             dao.removeLink(mediaLinkByName);
             System.out.println("[ remove_link ] Link deleted");
+        } else {
+            System.out.println("[ remove_link ] No link found with this path");
         }
     }
 
@@ -181,6 +153,8 @@ public class MediaTrackerService {
             System.out.println("[ remove_query ] Found matching query");
             dao.removeQueryFromQueue(queryByName);
             System.out.println("[ remove_query ] Query deleted");
+        } else {
+            System.out.println("[ remove_query ] No query found with this path");
         }
     }
 
