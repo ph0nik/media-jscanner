@@ -19,6 +19,7 @@ import org.jsoup.select.Elements;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -181,10 +182,12 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         Path sourcePath = linkRootFolder
                 .resolve(movieFolder.toString());
         Path sourceFile = Path.of(movieName.toString());
+        // set medialink object
         MediaLink mediaLink = new MediaLink();
         mediaLink.setTargetPath(targetPath.toString());
         mediaLink.setLinkPath(sourcePath.resolve(sourceFile).toString());
         mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
+        boolean success = false;
         try {
             if (!Files.exists(sourcePath)) {
                 Files.createDirectories(sourcePath);
@@ -192,14 +195,20 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             }
             System.out.println("[ symlink ] creating symlink");
             Files.createSymbolicLink(sourcePath.resolve(sourceFile), targetPath);
-            // forgot to add dao element here, new links didn't show in db.
+            success = true;
+        } catch (FileAlreadyExistsException e) {
+            System.out.println("[ symlink ] Link already exists");
+            success = true;
+        } catch (IOException | SecurityException e) {
+            System.out.println(e.getMessage());
+        }
+        if (success) {
+            // add link to db
             mediaTrackerDao.addNewLink(mediaLink);
             // remove query after creating symlink
             MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(queryResult.getFilePath());
             mediaTrackerDao.removeQueryFromQueue(queryByFilePath);
             System.out.println("[ symlink ] " + mediaLink.getLinkPath() + " => " + mediaLink.getTargetPath());
-        } catch (IOException | SecurityException e) {
-            System.out.println(e.getMessage());
         }
         return mediaLink;
     }

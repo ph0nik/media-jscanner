@@ -2,5 +2,5 @@ package util;
 
 public class CleanerService {
 
-    // cleaning folders with invalid likns
+    // TODO cleaning folders with invalid links
 }

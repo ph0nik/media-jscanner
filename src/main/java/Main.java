@@ -18,21 +18,25 @@ public class Main {
     *
     * */
 
-    // TODO use Daemon thread?
+
     public static void main(String[] args) {
-        Thread tracker = new Thread(new TrackerRunner());
-        Thread menu = new Thread(new MenuRunner(tracker));
-        tracker.start();
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            e.printStackTrace();
+        if (args.length == 0)
+            System.out.println("You need to provide at least one path");
+        else {
+            for (String s : args) {
+                System.out.println(s);
+            }
+            Thread tracker = new Thread(new TrackerRunner(args));
+            Thread menu = new Thread(new MenuRunner(tracker));
+            tracker.start();
+            try {
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                e.printStackTrace();
+            }
+            menu.start();
         }
-        menu.start();
-
-
-
     }
 
 }

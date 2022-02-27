@@ -39,6 +39,7 @@ public class MainMenu {
         } else {
             System.out.println("Wrong number or illegal character");
         }
+
     }
 
     public void getQueryMenu() {
@@ -70,11 +71,11 @@ public class MainMenu {
                 }
                 if (selection == max)
                     selectionStatus = false;
-                    getMainMenu();
             } else {
                 System.out.println("Wrong number or illegal character");
             }
         }
+        getMainMenu();
 
     }
 
