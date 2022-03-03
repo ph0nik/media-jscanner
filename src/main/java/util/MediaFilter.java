@@ -11,6 +11,7 @@ public class MediaFilter {
 
     /*
     * Checking if given element name ends with one of given extensions.
+    * If any of listed elements match given string method returns true.
     * */
     public static boolean validateExtension(String name) {
         for (String s : extensions) {

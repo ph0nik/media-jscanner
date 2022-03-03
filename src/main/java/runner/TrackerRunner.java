@@ -3,6 +3,8 @@ package runner;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import service.MediaTrackerService;
+import util.CleanerService;
+import util.CleanerServiceImpl;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -14,19 +16,26 @@ import java.util.List;
 public class TrackerRunner implements Runnable {
 
     private static List<Path> rootFolder;
+//    private static MediaTrackerService mediaTrackerService;
+
+//    private CleanerService cleanerService;
 
     public TrackerRunner(String[] rootFoldersList) {
         getRootFolders(rootFoldersList);
+//        mediaTrackerService = new MediaTrackerService();
     }
 
     @Override
     public void run() {
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
+        CleanerService cs = new CleanerServiceImpl();
+        MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
         List<Path> mediaFolder = rootFolder;
         WatchService watchService = null;
+
         try {
             watchService = FileSystems.getDefault().newWatchService();
-            MediaTrackerService.watch(watchService, mediaFolder, dao);
+            mediaTrackerService.watch(watchService, mediaFolder);
         } catch (IOException | InterruptedException e) {
             System.out.println("[ tracker ] closing...");
 //            e.printStackTrace();

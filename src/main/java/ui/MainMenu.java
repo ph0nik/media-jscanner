@@ -1,11 +1,9 @@
 package ui;
 
-import dao.MediaTrackerDao;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
 import service.MediaLinksService;
-import service.MediaLinksServiceImpl;
 
 import java.util.List;
 import java.util.Scanner;
@@ -17,8 +15,8 @@ public class MainMenu {
     private MediaLinksService mediaLinksService;
     private final Pattern p = Pattern.compile("^\\d+$");
 
-    public MainMenu(MediaTrackerDao dao) {
-        mediaLinksService = new MediaLinksServiceImpl(dao);
+    public MainMenu(MediaLinksService mls) {
+        this.mediaLinksService = mls;
     }
 
     public void getMainMenu() {
@@ -39,6 +37,7 @@ public class MainMenu {
         } else {
             System.out.println("Wrong number or illegal character");
         }
+        return;
 
     }
 

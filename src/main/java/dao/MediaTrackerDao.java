@@ -15,11 +15,15 @@ public interface MediaTrackerDao {
 
     List<MediaQuery> getAllMediaQueries();
 
+    List<MediaQuery> findQueryByParentPath(String filePath);
+
     void addNewLink(MediaLink mediaLInk);
 
     void removeLink(MediaLink mediaLInk);
 
     List<MediaLink> getAllMediaLinks();
+
+    List<MediaLink> findMediaLinkByParentPath(String filePath);
 
     MediaLink findMediaLinkByFilePath(String filePath);
 

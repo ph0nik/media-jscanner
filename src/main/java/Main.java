@@ -23,9 +23,10 @@ public class Main {
         if (args.length == 0)
             System.out.println("You need to provide at least one path");
         else {
-            for (String s : args) {
-                System.out.println(s);
-            }
+//            printing parameter values
+//            for (String s : args) {
+//                System.out.println(s);
+//            }
             Thread tracker = new Thread(new TrackerRunner(args));
             Thread menu = new Thread(new MenuRunner(tracker));
             tracker.start();

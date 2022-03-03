@@ -3,7 +3,11 @@ package dao;
 import model.MediaLink;
 import model.MediaQuery;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
+import java.nio.file.Path;
 import java.util.List;
 
 public class MediaTrackerDaoImpl implements MediaTrackerDao {
@@ -90,6 +94,24 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     @Override
+    public List<MediaQuery> findQueryByParentPath(String filePath) {
+        // typed query throws exception if nothing is found
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        List<MediaQuery> listResult = null;
+        try {
+
+            TypedQuery<MediaQuery> typedQuery = entityManager.createQuery("SELECT q FROM MediaQuery q WHERE q.parentPath=:filepath" , MediaQuery.class);
+            typedQuery.setParameter("filepath", filePath);
+            listResult = typedQuery.getResultList();
+        } catch (NoResultException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return listResult;
+    }
+
+    @Override
     public void addNewLink(MediaLink mediaLInk) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
         EntityTransaction transaction = null;
@@ -141,6 +163,22 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     @Override
+    public List<MediaLink> findMediaLinkByParentPath(String filePath) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        List<MediaLink> listResult = null;
+        try {
+            TypedQuery<MediaLink> typedQuery = entityManager.createQuery("SELECT q FROM MediaLink q WHERE q.parentPath=:filepath" , MediaLink.class);
+            typedQuery.setParameter("filepath", filePath);
+            listResult = typedQuery.getResultList();
+        } catch (NoResultException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return listResult;
+    }
+
+    @Override
     public MediaLink findMediaLinkByFilePath(String filePath) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
         MediaLink singleResult = null;
@@ -158,11 +196,26 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     public static void main(String[] args) {
         String file = ".\\test-folder\\movies-target\\Arang\\Arang_korean_hun.avi";
+        Path testPath = Path.of(file).getParent();
+
+        System.out.println("parent " + testPath + " of " + file);
+
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
+
+        MediaQuery mq = new MediaQuery();
+        mq.setFilePath(file);
+        mq.setParentPath(testPath.toString());
+        dao.addQueryToQueue(mq);
+
         List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
-        for (MediaQuery mq : allMediaQueries) {
-            System.out.println(mq);
+        for (MediaQuery mq1 : allMediaQueries) {
+            System.out.println(mq1);
         }
+
+
+        List<MediaQuery> queryByFilePath = dao.findQueryByParentPath(".\\test-folder\\movies-target\\Arang");
+
+        System.out.println("found " + queryByFilePath);
 
 //        MediaQuery findQuery = dao.findQueryByFilePath(file);
 //        System.out.println(findQuery);
@@ -173,10 +226,10 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 //            System.out.println(mq);
 //        }
 
-        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
-        for (MediaLink ml : allMediaLinks) {
-            System.out.println(ml);
-        }
+//        List<MediaLink> allMediaLinks = dao.getAllMediaLinks();
+//        for (MediaLink ml : allMediaLinks) {
+//            System.out.println(ml);
+//        }
 
     }
 

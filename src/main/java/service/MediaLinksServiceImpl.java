@@ -16,9 +16,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,12 +28,19 @@ import java.util.regex.Pattern;
 
 public class MediaLinksServiceImpl implements MediaLinksService {
 
+//    private static final String NETWORK_PROPERTIES_FILE = "src/main/resources/network.properties";
+
     private MediaTrackerDao mediaTrackerDao;
-    private Properties linkerProperties;
+    private Properties networkProperties;
+    private Properties mediaFoldersProperties;
 
     public MediaLinksServiceImpl(MediaTrackerDao dao) {
-        loadConnectionProperties();
-        SymLinkProperties.loadSymLinkProperties();
+        SymLinkProperties props = new SymLinkProperties();
+        networkProperties = props.getNetworkProperties();
+        mediaFoldersProperties = props.getSymLinkProperties();
+//        loadConnectionProperties();
+//        SymLinkProperties.loadSymLinkProperties();
+        // TODO movie configuration into single class
         mediaTrackerDao = dao;
     }
 
@@ -63,7 +68,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     // TODO get different details from search results - regular webpage
     private String searchEngineRequest(String query) throws IOException {
         String queryFormatted = new StringBuilder()
-                .append(linkerProperties.getProperty("preQuery"))
+                .append(networkProperties.getProperty("preQuery"))
                 .append(" ")
                 .append(query)
                 .toString();
@@ -76,8 +81,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 //                .timeout(3000)
 //                .execute();
         // GET connection
-        Connection.Response response = Jsoup.connect(linkerProperties.getProperty("searchUrlGet") + queryFormatted)
-                .userAgent(linkerProperties.getProperty("User-Agent"))
+        Connection.Response response = Jsoup.connect(networkProperties.getProperty("searchUrlGet") + queryFormatted)
+                .userAgent(networkProperties.getProperty("User-Agent"))
                 .timeout(3000)
                 .execute();
         System.out.println("[ response ]: " + response.statusCode());
@@ -153,12 +158,13 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             e.printStackTrace();
         }
         if (mediaData == null) throw new NoSuchElementException();
-        Path linkRootFolder = SymLinkProperties.getMovieFolder();
+//        Path linkRootFolder = SymLinkProperties.getMovieFolder();
+        Path linkRootFolder = Path.of(mediaFoldersProperties.getProperty("linkFolderMovie"));
         Path targetPath = Path.of(queryResult.getFilePath());
         // check for number of parts
         int discNumber = checkForMultiDiscs(queryResult.getFilePath());
         // check for illegal characters in title
-        String title = characterPrison(mediaData.getTitle());
+        String title = replaceIllegalCharacters(mediaData.getTitle());
         int year = mediaData.getYear();
         String extension = getExtension(queryResult.getFilePath());
         String special = "";
@@ -223,14 +229,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      * */
     private String tmdbApiRequest(QueryResult queryResult) throws IOException {
         String apiRequest = new StringBuilder()
-                .append(linkerProperties.getProperty("tmdb_api3"))
-                .append(linkerProperties.getProperty("tmdb_movie_category"))
+                .append(networkProperties.getProperty("tmdb_api3"))
+                .append(networkProperties.getProperty("tmdb_movie_category"))
                 .append(queryResult.getTheMovieDbId())
-                .append(linkerProperties.getProperty("tmdb_request_lang"))
+                .append(networkProperties.getProperty("tmdb_request_lang"))
                 .toString();
         String document = Jsoup.connect(apiRequest)
-                .userAgent(linkerProperties.getProperty("User-Agent"))
-                .header("Authorization", "Bearer " + linkerProperties.getProperty("api_key_v4"))
+                .userAgent(networkProperties.getProperty("User-Agent"))
+                .header("Authorization", "Bearer " + networkProperties.getProperty("api_key_v4"))
                 .ignoreContentType(true)
                 .timeout(3000)
                 .execute()
@@ -246,8 +252,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         try {
             System.out.println("[ json ] extracting data...");
             JsonElement jsonElement = JsonParser.parseString(jsonWithinHtmlBody);
-            String titleElement = linkerProperties.getProperty("tmdb_movietitle");
-            String yearElement = linkerProperties.getProperty("tmdb_movieyear");
+            String titleElement = networkProperties.getProperty("tmdb_movietitle");
+            String yearElement = networkProperties.getProperty("tmdb_movieyear");
             if (jsonElement.isJsonObject()) {
                 JsonObject asJsonObject = jsonElement.getAsJsonObject();
                 if (asJsonObject.has(titleElement) && asJsonObject.has(yearElement)) {
@@ -295,7 +301,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     /*
      * Replaces all illegal characters within provided string with underscores
      * */
-    private String characterPrison(String title) {
+    private String replaceIllegalCharacters(String title) {
         String illegalNames = "[#%&{}\\<>*?/$!\"+:@`|=]+";
         Pattern p = Pattern.compile(illegalNames);
         return p.matcher(title).replaceAll("_");
@@ -304,15 +310,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     /*
      * Loads properties object from configuration file.
      * */
-    private void loadConnectionProperties() {
-        String configPath = "src/main/resources/network.properties";
-        try (InputStream is = new FileInputStream(configPath)) {
-            linkerProperties = new Properties();
-            linkerProperties.load(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void loadConnectionProperties() {
+//        try (InputStream is = new FileInputStream(NETWORK_PROPERTIES_FILE)) {
+//            networkProperties = new Properties();
+//            networkProperties.load(is);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static void main(String[] args) {
         MediaTrackerDao mediaTrackerDao = new MediaTrackerDaoImpl();

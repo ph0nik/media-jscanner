@@ -9,9 +9,12 @@ import java.util.Properties;
 public class SymLinkProperties {
 
     private static final String configPath = "src/main/resources/mediafolders.properties";
+    private static final String MEDIA_FOLDERS_PROPERTIES_FILE = "mediafolders.properties";
+    private static final String NETWORK_PROPERTIES_FILE = "network.properties";
     private static Path movieFolder;
     private static Path showsFolder;
 
+    // TODO cleanup
     public static void loadSymLinkProperties() {
         try (
                 InputStream is = new FileInputStream(configPath)) {
@@ -23,6 +26,37 @@ public class SymLinkProperties {
                 IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Properties getSymLinkProperties() {
+        Properties props = new Properties();
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(MEDIA_FOLDERS_PROPERTIES_FILE);
+        if (inputStream == null) {
+            throw new IllegalStateException("[ properties ] File not found! " + MEDIA_FOLDERS_PROPERTIES_FILE);
+        } else {
+            try {
+                props.load(inputStream);
+            } catch (IOException e) {
+                System.out.println("[ properties ] " + e.getMessage());
+            }
+        }
+        return props;
+    }
+    public Properties getNetworkProperties() {
+            Properties props = new Properties();
+            ClassLoader classLoader = getClass().getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream(NETWORK_PROPERTIES_FILE);
+            if (inputStream == null) {
+                throw new IllegalStateException("[ properties ] File not found! " + NETWORK_PROPERTIES_FILE);
+            } else {
+                try {
+                    props.load(inputStream);
+                } catch (IOException e) {
+                    System.out.println("[ properties ] " + e.getMessage());
+                }
+            }
+            return props;
     }
 
     public static Path getMovieFolder() {
