@@ -189,9 +189,10 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         Path sourcePath = linkRootFolder
                 .resolve(movieFolder.toString());
         Path sourceFile = Path.of(movieName.toString());
-        // set medialink object
+        // Create MediaLink object
         MediaLink mediaLink = new MediaLink();
         mediaLink.setTargetPath(targetPath.toString());
+        mediaLink.setParentPath(targetPath.getParent().toString());
         mediaLink.setLinkPath(sourcePath.resolve(sourceFile).toString());
         mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
         boolean success = false;
@@ -236,7 +237,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                 .append(networkProperties.getProperty("tmdb_request_lang"))
                 .toString();
         String document = Jsoup.connect(apiRequest)
-                .userAgent(networkProperties.getProperty("User-Agent"))
+                .userAgent(networkProperties.getProperty("user_agent"))
                 .header("Authorization", "Bearer " + networkProperties.getProperty("api_key_v4"))
                 .ignoreContentType(true)
                 .timeout(3000)

@@ -8,11 +8,16 @@ public interface CleanerService {
     * If none of such elements are found, folder is considered as empty
     * and method returns true.
     * */
-    public boolean isFolderEmpty(String linkPath);
+    public boolean containsMediaFiles(String linkPath);
 
     /*
     * Delete folder with given path
     * */
-    public void deleteFolder(String linkPath);
+    public void deleteElement(String linkPath);
+
+    /*
+    * Delete all elements that don't match user criteria.
+    * */
+    public void deleteNonMediaFiles(String path);
 
 }

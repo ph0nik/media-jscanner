@@ -14,7 +14,7 @@ public class CleanerServiceImpl implements CleanerService {
     // TODO cleaning folders with invalid links
 
 
-    public boolean isFolderEmpty(String targetPath) {
+    public boolean containsMediaFiles(String targetPath) {
         File directoryPath = new File(targetPath);
         String[] contents = directoryPath.list();
         if (contents != null) {
@@ -26,12 +26,23 @@ public class CleanerServiceImpl implements CleanerService {
     }
 
     @Override
-    public void deleteFolder(String linkPath) {
+    public void deleteElement(String linkPath) {
         Path path = Path.of(linkPath);
         try {
             Files.delete(path);
         } catch (IOException e) {
-            System.out.println("[ cleaner ] : " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("[ cleaner ] " + e.getMessage());
+        }
+    }
+
+    public void deleteNonMediaFiles(String path) {
+        File directory = new File(path);
+        String[] contents = directory.list();
+        if (contents != null) {
+            for (String s : contents) {
+                deleteElement(directory.toPath().resolve(s).toString());
+            }
         }
     }
 }

@@ -8,7 +8,6 @@ public class MediaEntityManager {
     private static final String PERSISTENCE_UNIT_NAME = "jscanner-sqlite";
     private static EntityManagerFactory factory;
 
-    // TODO do I close EMF every time?
     public static EntityManagerFactory getEntityManagerFactory() {
         if (factory == null) {
             factory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
