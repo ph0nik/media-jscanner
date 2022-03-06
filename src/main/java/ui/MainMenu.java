@@ -7,18 +7,21 @@ import service.MediaLinksService;
 
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainMenu {
 
     private MediaLinksService mediaLinksService;
-    private final Pattern p = Pattern.compile("^\\d+$");
+    //    private final Pattern p = Pattern.compile("^\\d+$");
+    private List<QueryResult> queryResults;
 
     public MainMenu(MediaLinksService mls) {
         this.mediaLinksService = mls;
+        queryResults = List.of();
     }
 
+    /*
+    * Show main menu and prompt user
+    * */
     public void getMainMenu() {
         System.out.println(":: Main Menu ::");
         System.out.println("( 1 ) Show Query");
@@ -27,62 +30,68 @@ public class MainMenu {
         System.out.print("Select option: ");
 
         Scanner sc = new Scanner(System.in);
-        String s = sc.nextLine();
-        Matcher m = p.matcher(s);
-        if (m.find()) {
-            int selection = Integer.parseInt(s);
-            if (selection == 1) getQueryMenu();
-            if (selection == 2) getExistingLinks();
-            if (selection == 3) return;
+        if (sc.hasNextInt()) {
+            int s = Integer.parseInt(sc.nextLine());
+            if (s == 1) getQueryMenu();
+            if (s == 2) getExistingLinks();
+            if (s == 3) return;
         } else {
             System.out.println("Wrong number or illegal character");
+            getMainMenu();
         }
         return;
-
     }
 
+    /*
+    * Show elements awaiting in the queue and let user select
+    * file to process
+    * */
     public void getQueryMenu() {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
-        int index = 1;
-
         System.out.println(":: Media Query List ::");
         if (allMediaQueries.isEmpty()) {
             System.out.println("No queries found");
             getMainMenu();
         }
+
+        int index = 1;
         for (MediaQuery mq : allMediaQueries) {
             System.out.println("( " + index + " ) " + mq.getFilePath());
             index++;
         }
         System.out.println("( " + index + " ) <- Return to main menu");
         System.out.println("Input media query number: ");
-        boolean selectionStatus = true;
-        while (selectionStatus) {
-            Scanner sc = new Scanner(System.in);
-            String s = sc.nextLine();
-            Matcher m = p.matcher(s);
-            if (m.find()) {
-                int selection = Integer.parseInt(s) - 1;
-                int max = allMediaQueries.size();
-                if (selection >= 0 && selection < max) {
-                    selectionStatus = false;
-                    getResultsMenu(allMediaQueries.get(selection));
-                }
-                if (selection == max)
-                    selectionStatus = false;
+
+        int max = allMediaQueries.size();
+        Scanner sc = new Scanner(System.in);
+        if (sc.hasNextInt()) {
+            int s = Integer.parseInt(sc.nextLine()) - 1;
+            if (s >= 0 && s < max) {
+                getResultsMenu(allMediaQueries.get(s));
+            } else if (s == max) {
+                getMainMenu();
             } else {
                 System.out.println("Wrong number or illegal character");
+                getQueryMenu();
             }
+        } else {
+            System.out.println("Wrong number or illegal character");
+            getQueryMenu();
         }
-        getMainMenu();
-
     }
 
+    /*
+    * For selected file perform online search for matching titles.
+    * Present returned results and prompt user to select which title
+    * will be used to create symlink.
+    * */
     public void getResultsMenu(MediaQuery mediaQuery) {
-        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", mediaQuery);
+        if (queryResults.isEmpty()) {
+            queryResults = mediaLinksService.executeMediaQuery("", mediaQuery);
+        }
         int index = 1;
         System.out.println(":: Query Results Menu ::");
-        System.out.println("Search Results for file [" + mediaQuery.getFilePath() + "]:");
+        System.out.println("Search Results for file [ " + mediaQuery.getFilePath() + " ]:");
         for (QueryResult qr : queryResults) {
             System.out.println("( " + index + " ) " + qr);
             index++;
@@ -90,38 +99,43 @@ public class MainMenu {
         System.out.println("( " + index + " ) Use custom query");
         index++;
         System.out.println("( " + index + " ) Go back to query list");
-        boolean selectionStatus = true;
-        while (selectionStatus) {
-            System.out.print("Select matching element or option: ");
-            Scanner sc = new Scanner(System.in);
-            String s = sc.nextLine();
-            Matcher m = p.matcher(s);
-            if (m.find()) {
-                int selection = Integer.parseInt(s) - 1;
-                int max = queryResults.size() + 1;
-                if (selection >= 0 && selection < max - 2) {
-                    mediaLinksService.createSymLink(queryResults.get(selection));
-                    selectionStatus = false;
-                    getExistingLinks();
-                }
-                if (selection == max - 1) {
-                    System.out.println("Input custom query for this file:");
-                    selectionStatus = false;
-                    s = sc.nextLine();
-                    getCustomSearchMenu(s, mediaQuery);
-                }
-                if (selection == max) {
-                    selectionStatus = false;
-                }
+
+        int max = queryResults.size() + 1;
+        System.out.print("Select matching element or option: ");
+        Scanner sc = new Scanner(System.in);
+        if (sc.hasNextInt()) {
+            int s = Integer.parseInt(sc.nextLine()) - 1;
+            if (s >= 0 && s < max - 2) {
+                mediaLinksService.createSymLink(queryResults.get(s));
+                queryResults = List.of();
+                getExistingLinks();
+            } else if (s == max - 1) {
+                System.out.println("Input custom query for this file: ");
+                String custom = sc.nextLine();
+                queryResults = List.of();
+                getCustomSearchMenu(custom, mediaQuery);
+            } else if (s == max) {
+                queryResults = List.of();
+                getQueryMenu();
             } else {
                 System.out.println("Wrong number or illegal character");
+                getResultsMenu(mediaQuery);
             }
+        } else {
+            System.out.println("Wrong number or illegal character");
+            getResultsMenu(mediaQuery);
         }
-        getQueryMenu();
     }
 
+    /*
+    * Perform online search with provided custom query and present user
+    * with results.
+    * Prompt user to select title which will be used to create symlink.
+    * */
     public void getCustomSearchMenu(String customPhrase, MediaQuery mediaQuery) {
-        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(customPhrase, mediaQuery);
+        if (queryResults.isEmpty()) {
+            queryResults = mediaLinksService.executeMediaQuery(customPhrase, mediaQuery);
+        }
         int index = 1;
         System.out.println(":: Custom Query Menu ::");
         System.out.println("Search results:");
@@ -130,36 +144,42 @@ public class MainMenu {
             index++;
         }
         System.out.println("( " + index + " ) Go back to query list");
-        boolean selectionStatus = true;
-        while (selectionStatus) {
-            System.out.print("Select matching element: ");
-            Scanner sc = new Scanner(System.in);
-            String s = sc.nextLine();
-            Matcher m = p.matcher(s);
-            if (m.find()) {
-                int selection = Integer.parseInt(s) - 1;
-                int max = queryResults.size();
-                if (selection > 0 && selection <= max) {
-                    mediaLinksService.createSymLink(queryResults.get(selection));
-                    selectionStatus = false;
-                    getExistingLinks();
-                }
-                if (selection == max) {
-                    selectionStatus = false;
-                }
+
+        int max = queryResults.size();
+        System.out.print("Select matching element or option: ");
+        Scanner sc = new Scanner(System.in);
+        if (sc.hasNextInt()) {
+            int s = Integer.parseInt(sc.nextLine()) - 1;
+            if (s >= 0 && s < max) {
+                mediaLinksService.createSymLink(queryResults.get(s));
+                queryResults = List.of();
+                getExistingLinks();
+            } else if (s == max) {
+                queryResults = List.of();
+                getQueryMenu();
             } else {
                 System.out.println("Wrong number or illegal character");
+                getCustomSearchMenu(customPhrase, mediaQuery);
             }
+        } else {
+            System.out.println("Wrong number or illegal character");
+            getCustomSearchMenu(customPhrase, mediaQuery);
         }
-        getQueryMenu();
     }
 
+    /*
+    * Show all existing symlinks.
+    *
+    * */
     public void getExistingLinks() {
         List<MediaLink> mediaLinks = mediaLinksService.getMediaLinks();
         System.out.println(":: Existing Links ::");
-        if (mediaLinks.isEmpty()) System.out.println("No links found");
-        for (MediaLink ml : mediaLinks) {
-            System.out.println(ml);
+        if (mediaLinks.isEmpty()) {
+            System.out.println("No links found");
+        } else {
+            for (MediaLink ml : mediaLinks) {
+                System.out.println(ml);
+            }
         }
         getMainMenu();
     }

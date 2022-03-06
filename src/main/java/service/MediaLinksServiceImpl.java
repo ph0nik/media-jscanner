@@ -65,24 +65,25 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return parseReturn(document, Path.of(mediaQuery.getFilePath()));
     }
 
-    // TODO get different details from search results - regular webpage
     private String searchEngineRequest(String query) throws IOException {
         String queryFormatted = new StringBuilder()
-                .append(networkProperties.getProperty("preQuery"))
+                .append(networkProperties.getProperty("pre_query"))
                 .append(" ")
                 .append(query)
+                .append(" ")
+                .append(networkProperties.getProperty("post_query"))
                 .toString();
         System.out.println("[ search ]: " + queryFormatted);
         // POST connection - redirect fails
-//        Connection.Response post = Jsoup.connect(linkerProperties.getProperty("searchUrlPost"))
+//        Connection.Response post = Jsoup.connect(linkerProperties.getProperty("search_url_post"))
 //                .data("query", queryFormatted)
 //                .userAgent(linkerProperties.getProperty("User-Agent"))
 //                .followRedirects(false)
 //                .timeout(3000)
 //                .execute();
         // GET connection
-        Connection.Response response = Jsoup.connect(networkProperties.getProperty("searchUrlGet") + queryFormatted)
-                .userAgent(networkProperties.getProperty("User-Agent"))
+        Connection.Response response = Jsoup.connect(networkProperties.getProperty("search_url_get") + queryFormatted)
+                .userAgent(networkProperties.getProperty("user_agent"))
                 .timeout(3000)
                 .execute();
         System.out.println("[ response ]: " + response.statusCode());

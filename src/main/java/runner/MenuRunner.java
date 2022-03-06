@@ -8,20 +8,15 @@ import ui.MainMenu;
 
 public class MenuRunner implements Runnable {
 
-    private Thread trackerThread;
-
-    public MenuRunner(Thread other) {
-        trackerThread = other;
-    }
-
     @Override
     public void run() {
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
         MediaLinksService mls = new MediaLinksServiceImpl(dao);
         MainMenu menu = new MainMenu(mls);
         menu.getMainMenu();
-        trackerThread.interrupt();
 
+
+//        trackerThread.interrupt();
     }
 
 }

@@ -31,8 +31,7 @@ public class TrackerRunner implements Runnable {
         CleanerService cs = new CleanerServiceImpl();
         MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
         List<Path> mediaFolder = rootFolder;
-        WatchService watchService = null;
-
+        WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();
             mediaTrackerService.watch(watchService, mediaFolder);

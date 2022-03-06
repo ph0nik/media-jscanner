@@ -1,7 +1,6 @@
 import runner.MenuRunner;
+import runner.RunnerService;
 import runner.TrackerRunner;
-
-import java.util.concurrent.TimeUnit;
 
 public class Main {
 
@@ -27,16 +26,20 @@ public class Main {
 //            for (String s : args) {
 //                System.out.println(s);
 //            }
-            Thread tracker = new Thread(new TrackerRunner(args));
-            Thread menu = new Thread(new MenuRunner(tracker));
-            tracker.start();
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                e.printStackTrace();
-            }
-            menu.start();
+//            Thread tracker = new Thread(new TrackerRunner(args));
+//            Thread menu = new Thread(new MenuRunner());
+            TrackerRunner trackerRunner = new TrackerRunner(args);
+            MenuRunner menuRunner = new MenuRunner();
+            RunnerService runnerService = new RunnerService(menuRunner, trackerRunner);
+            runnerService.execute();
+//            tracker.start();
+//            try {
+//                TimeUnit.SECONDS.sleep(3);
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                e.printStackTrace();
+//            }
+//            menu.start();
         }
     }
 
