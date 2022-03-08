@@ -17,14 +17,10 @@ public class MediaQuery {
     @Column(name = "file_path")
     private String filePath;
 
-    @Column(name = "parent_path")
-    private String parentPath;
-
     public MediaQuery() {}
 
-    public MediaQuery(String filePath, String parent) {
+    public MediaQuery(String filePath) {
         this.filePath = filePath;
-        this.parentPath = parent;
     }
 
     public long getQueryId() {
@@ -50,14 +46,6 @@ public class MediaQuery {
         this.filePath = filePath;
     }
 
-    public String getParentPath() {
-        return parentPath;
-    }
-
-    public void setParentPath(String parentPath) {
-        this.parentPath = parentPath;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -76,7 +64,7 @@ public class MediaQuery {
         return "MediaQuery{" +
                 "queryId=" + queryId +
                 ", filePath='" + filePath + '\'' +
-                ", parentPath='" + parentPath + '\'' +
+//                ", parentPath='" + parentPath + '\'' +
                 '}';
     }
 }

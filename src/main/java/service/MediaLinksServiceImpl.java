@@ -192,7 +192,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         // Create MediaLink object
         MediaLink mediaLink = new MediaLink();
         mediaLink.setTargetPath(targetPath.toString());
-        mediaLink.setParentPath(targetPath.getParent().toString());
+//        mediaLink.setParentPath(targetPath.getParent().toString());
         mediaLink.setLinkPath(sourcePath.resolve(sourceFile).toString());
         mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
         boolean success = false;

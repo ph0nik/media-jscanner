@@ -56,7 +56,7 @@ public class MainMenu {
 
         int index = 1;
         for (MediaQuery mq : allMediaQueries) {
-            System.out.println("( " + index + " ) " + mq.getFilePath());
+            System.out.println("( " + index + " ) " + mq);
             index++;
         }
         System.out.println("( " + index + " ) <- Return to main menu");

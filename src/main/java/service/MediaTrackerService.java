@@ -22,6 +22,7 @@ public class MediaTrackerService {
     // pairing keys with paths
     private final Map<WatchKey, Path> watchKeyToPathMap = new HashMap<>();
     private final Map<Path, WatchKey> pathToWatchKeyMap = new HashMap<>();
+
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
 
@@ -31,8 +32,8 @@ public class MediaTrackerService {
     }
 
     /*
-    * Recursively add subdirectories of root directory to watch service.
-    * */
+     * Recursively add subdirectories of root directory to watch service.
+     * */
     private void registerTree(WatchService watchService, Path root) throws IOException {
         Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
 
@@ -41,6 +42,7 @@ public class MediaTrackerService {
                 WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
                 watchKeyToPathMap.put(key, dir);
                 pathToWatchKeyMap.put(dir, key);
+
                 File[] files = dir.toFile().listFiles();
                 /*
                  * Scan every newly added folder for files with matching extensions
@@ -69,34 +71,55 @@ public class MediaTrackerService {
             for (WatchEvent<?> event : watchKey.pollEvents()) {
                 WatchEvent.Kind<?> kind = event.kind();
                 Path eventPath = (Path) event.context(); // event type
+                /*
+                 * Based on event watch key obtain path of directory in which
+                 * event was observed.
+                 * */
                 Path parentDir = watchKeyToPathMap.get(watchKey);// get parentDir for specified event key
+                /*
+                 * Create full path for element that triggered event
+                 * */
                 Path child = parentDir.resolve(eventPath);
-                WatchKey eventPathKey = pathToWatchKeyMap.get(child); // get key for event element
 
                 boolean validExtension = validateExtension(eventPath.toString());
 //                String filePath = Path.of(parentDir.toString(), eventPath.toString()).toString();
                 String filePath = parentDir.resolve(eventPath).toString();
 
-                // if newly created object is parentDir add it to watchlist
+                /*
+                 * If newly created element is directory add it
+                 * and all of its children to watchlist.
+                 * */
                 if (kind == ENTRY_CREATE && Files.isDirectory(child)) {
                     registerTree(watchService, child);
                 }
 
                 // if source file is deleted check if there's matching
-                // symlink, remove it with db element
+                // symlink, remove it with db element.
                 if (kind == ENTRY_DELETE) {
                     System.out.println("[ tracker ] " + kind + " | " + child);
-                    // check if deleted element is file with matching extension
+                    /*
+                     * If deleted element is a file with valid extension proceed
+                     * to remove all the data pointing to it from database.
+                     * */
                     if (validExtension) {
                         removeQueryByFilePath(filePath);
                         removeLinkByFilePath(filePath);
                     } else {
+                        /*
+                         * Get the event key for the element that triggered event.
+                         * */
+                        WatchKey eventPathKey = pathToWatchKeyMap.get(child); // get key for event element
+                        /*
+                         * If deleted element is directory, check if it contains any elements
+                         * and if those elements match definition of media files.
+                         * If so, proceed to remove all the data pointing to them from database.
+                         * */
                         removeQueryByParentPath(child);
                         removeLinkByParentPath(child);
                         /*
-                        * Check if deleted element has been watched and remove it from watchlist.
-                        * Only folders will return non-null value.
-                        * */
+                         * Check if deleted element has been watched and remove it from watchlist.
+                         * Only folders will return non-null value.
+                         * */
                         if (eventPathKey != null) {
                             watchKeyToPathMap.remove(eventPathKey);
                             pathToWatchKeyMap.remove(child);
@@ -121,7 +144,7 @@ public class MediaTrackerService {
     }
 
     private void validateAndAdd(String filePath) {
-        if (validateExtension(filePath)) {
+//        if (validateExtension(filePath)) {
             // check if file name already exists in db
             MediaLink mediaLinkByFilePath = mediaTrackerDao.findMediaLinkByFilePath(filePath);
             boolean matchingLink = mediaLinkByFilePath != null;
@@ -133,15 +156,15 @@ public class MediaTrackerService {
             } else if (matchingLink && !matchingQuery) {
                 System.out.println("[ init ] existing link: ");
             }
-        }
+//        }
     }
 
     /*
      * Adds new query to queue
      * */
     private void addNewQuery(String filePath) {
-        String parentPath = Path.of(filePath).getParent().toString();
-        MediaQuery query = new MediaQuery(filePath, parentPath);
+//        String parentPath = Path.of(filePath).getParent().toString();
+        MediaQuery query = new MediaQuery(filePath);
         mediaTrackerDao.addQueryToQueue(query);
         System.out.println("[ new_query ] added to db with filepath: " + filePath);
     }
@@ -170,7 +193,8 @@ public class MediaTrackerService {
     }
 
     private void removeLinkByParentPath(Path child) {
-        List<MediaLink> mediaLinkByFilePath = mediaTrackerDao.findMediaLinkByParentPath(child.toString());
+        String phrase = child.getName(child.getNameCount() - 1).toString();
+        List<MediaLink> mediaLinkByFilePath = mediaTrackerDao.findInFilePathLink(phrase);
         for (MediaLink ml : mediaLinkByFilePath) {
             removeLink(ml);
             System.out.println("[ remove_link ] removed link: " + ml.getLinkPath());
@@ -178,7 +202,8 @@ public class MediaTrackerService {
     }
 
     private void removeQueryByParentPath(Path child) {
-        List<MediaQuery> queryByParentPath = mediaTrackerDao.findQueryByParentPath(child.toString());
+        String phrase = child.getName(child.getNameCount() - 1).toString();
+        List<MediaQuery> queryByParentPath = mediaTrackerDao.findInFilePathQuery(phrase);
         for (MediaQuery mq : queryByParentPath) {
             mediaTrackerDao.removeQueryFromQueue(mq);
             System.out.println("[ remove_query ] removed queue entry: " + mq.getFilePath());

@@ -18,9 +18,6 @@ public class MediaLink {
     @Column(name = "target_path")
     private String targetPath;
 
-    @Column(name = "parent_path")
-    private String parentPath;
-
     @Column(name = "the_movie_db_id")
     private int theMovieDbId;
 
@@ -56,21 +53,12 @@ public class MediaLink {
         this.theMovieDbId = theMovieDbId;
     }
 
-    public String getParentPath() {
-        return parentPath;
-    }
-
-    public void setParentPath(String parentPath) {
-        this.parentPath = parentPath;
-    }
-
     @Override
     public String toString() {
         return "MediaLink{" +
                 "mediaId=" + mediaId +
                 ", linkPath='" + linkPath + '\'' +
                 ", targetPath='" + targetPath + '\'' +
-                ", parentPath='" + parentPath + '\'' +
                 ", theMovieDbId=" + theMovieDbId +
                 '}';
     }

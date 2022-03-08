@@ -16,13 +16,9 @@ import java.util.List;
 public class TrackerRunner implements Runnable {
 
     private static List<Path> rootFolder;
-//    private static MediaTrackerService mediaTrackerService;
-
-//    private CleanerService cleanerService;
 
     public TrackerRunner(String[] rootFoldersList) {
         getRootFolders(rootFoldersList);
-//        mediaTrackerService = new MediaTrackerService();
     }
 
     @Override
@@ -42,19 +38,6 @@ public class TrackerRunner implements Runnable {
     }
 
     private void getRootFolders(String[] folders) {
-//        String rootFoldersFilename = "src/main/resources/root.properties";
-//        try {
-//            FileReader reader = new FileReader(rootFoldersFilename);
-//            Properties properties = new Properties();
-//            properties.load(reader);
-//            String[] watched = properties.getProperty("watched").split(",");
-//            rootFolder = getFoldersList(watched);
-//        } catch (FileNotFoundException e) {
-//            System.out.println("[ root_folder_config ] File not found: " + rootFoldersFilename);
-//            e.printStackTrace();
-//        } catch (IOException ioException) {
-//            ioException.printStackTrace();
-//        }
         rootFolder = getFoldersList(folders);
     }
 
