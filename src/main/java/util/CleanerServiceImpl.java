@@ -2,8 +2,11 @@ package util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class CleanerServiceImpl implements CleanerService {
 
@@ -13,9 +16,33 @@ public class CleanerServiceImpl implements CleanerService {
 //    theMovieDbId='31512', sourceParentPath='null'}
     // TODO cleaning folders with invalid links
 
+    public void cleanUpLinkFolder(Path root) {
+        try {
+            Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                        throws IOException {
 
-    public boolean containsMediaFiles(String targetPath) {
-        File directoryPath = new File(targetPath);
+                    if (containsNoMediaFiles(dir)) {
+                        File[] files = dir.toFile().listFiles();
+                        if (files != null) {
+                            for (File f : files) {
+                                deleteElement(f.toPath());
+                            }
+                        }
+                        deleteElement(dir);
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            // TODO catch
+            e.printStackTrace();
+        }
+    }
+
+    public boolean containsNoMediaFiles(Path targetPath) {
+        File directoryPath = targetPath.toFile();
         String[] contents = directoryPath.list();
         if (contents != null) {
             for (String s : contents) {
@@ -26,22 +53,21 @@ public class CleanerServiceImpl implements CleanerService {
     }
 
     @Override
-    public void deleteElement(String linkPath) {
-        Path path = Path.of(linkPath);
+    public void deleteElement(Path linkPath) {
         try {
-            Files.delete(path);
+            Files.delete(linkPath);
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("[ cleaner ] " + e.getMessage());
         }
     }
 
-    public void deleteNonMediaFiles(String path) {
-        File directory = new File(path);
+    public void deleteNonMediaFiles(Path path) {
+        File directory = path.toFile();
         String[] contents = directory.list();
         if (contents != null) {
             for (String s : contents) {
-                deleteElement(directory.toPath().resolve(s).toString());
+                deleteElement(directory.toPath().resolve(s));
             }
         }
     }

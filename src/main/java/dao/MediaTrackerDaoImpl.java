@@ -2,8 +2,12 @@ package dao;
 
 import model.MediaLink;
 import model.MediaQuery;
+import org.hibernate.exception.ConstraintViolationException;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -28,8 +32,15 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             entityManager.persist(query);
             transaction.commit();
         } catch (Exception e) {
+            Throwable cause = e.getCause();
+            while ((cause != null) && !(cause instanceof ConstraintViolationException)) {
+                cause = cause.getCause();
+            }
+            if (cause != null) {
+                System.out.println("[ dao ] " + cause.getMessage());
+            }
             if (transaction != null) transaction.rollback();
-            e.printStackTrace();
+            System.out.println("[ dao ] " + e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -43,7 +54,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             transaction = entityManager.getTransaction();
             transaction.begin();
             MediaQuery find = entityManager.find(MediaQuery.class, mediaQuery.getQueryId());
-            entityManager.remove(find);
+            if (find != null) entityManager.remove(find);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();

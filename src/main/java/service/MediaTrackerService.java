@@ -175,10 +175,10 @@ public class MediaTrackerService {
     private void removeLink(MediaLink mediaLink) {
         mediaTrackerDao.removeLink(mediaLink);
         System.out.println("[ remove_link ] link deleted");
-        cleanerService.deleteElement(mediaLink.getLinkPath());
+        cleanerService.deleteElement(Path.of(mediaLink.getLinkPath()));
         System.out.println("[ remove_link ] file deleted");
-        String linkParentPath = Path.of(mediaLink.getLinkPath()).getParent().toString();
-        if (cleanerService.containsMediaFiles(linkParentPath)) {
+        Path linkParentPath = Path.of(mediaLink.getLinkPath()).getParent();
+        if (cleanerService.containsNoMediaFiles(linkParentPath)) {
             cleanerService.deleteNonMediaFiles(linkParentPath);
             cleanerService.deleteElement(linkParentPath);
         }

@@ -3,6 +3,7 @@ package runner;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import service.MediaTrackerService;
+import service.SymLinkProperties;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class TrackerRunner implements Runnable {
 
-    private static List<Path> rootFolder;
+    private List<Path> rootFolder;
 
     public TrackerRunner(String[] rootFoldersList) {
         getRootFolders(rootFoldersList);
@@ -25,12 +26,15 @@ public class TrackerRunner implements Runnable {
     public void run() {
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
         CleanerService cs = new CleanerServiceImpl();
+        SymLinkProperties props = new SymLinkProperties();
+        String targetFolderMovie = props.getSymLinkProperties().getProperty("targetFolderMovie");
+        List<Path> targetFolderList = List.of(Path.of(targetFolderMovie));
         MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
         List<Path> mediaFolder = rootFolder;
         WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();
-            mediaTrackerService.watch(watchService, mediaFolder);
+            mediaTrackerService.watch(watchService, targetFolderList);
         } catch (IOException | InterruptedException e) {
             System.out.println("[ tracker ] closing...");
 //            e.printStackTrace();

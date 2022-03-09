@@ -14,7 +14,7 @@ public class MediaQuery {
     @Column(name = "id")
     private long queryId;
 
-    @Column(name = "file_path")
+    @Column(name = "file_path", unique = true)
     private String filePath;
 
     public MediaQuery() {}
@@ -64,7 +64,6 @@ public class MediaQuery {
         return "MediaQuery{" +
                 "queryId=" + queryId +
                 ", filePath='" + filePath + '\'' +
-//                ", parentPath='" + parentPath + '\'' +
                 '}';
     }
 }

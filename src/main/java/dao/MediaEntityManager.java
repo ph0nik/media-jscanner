@@ -9,9 +9,10 @@ public class MediaEntityManager {
     private static EntityManagerFactory factory;
 
     public static EntityManagerFactory getEntityManagerFactory() {
-        if (factory == null) {
+        if (factory == null || !factory.isOpen()) {
             factory = Persistence.createEntityManagerFactory(PERSISTENCE_UNIT_NAME);
         }
+
         return factory;
     }
 
