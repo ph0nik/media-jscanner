@@ -22,7 +22,7 @@ class MediaFilterTest {
         Path path = Path.of("info.txt");
         Assertions.assertFalse(MediaFilter.validateExtension(path.toString()));
     }
-    
+
     public void checkForDir() throws IOException {
         File file = new File("./test-folder/2");
 //        System.out.println(file.getCanonicalPath());

@@ -18,6 +18,23 @@
         <!--            <artifactId>hsqldb</artifactId>-->
         <!--            <version>2.6.0</version>-->
         <!--        </dependency>-->
+        <!-- Spring boot + tomcat embedded + jsp -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-web</artifactId>-->
+<!--            <version>2.6.4</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.tomcat.embed</groupId>-->
+<!--            <artifactId>tomcat-embed-jasper</artifactId>-->
+<!--            <version>10.0.17</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>javax.servlet</groupId>-->
+<!--            <artifactId>jstl</artifactId>-->
+<!--            <version>1.2</version>-->
+<!--        </dependency>-->
+        <!---->
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>

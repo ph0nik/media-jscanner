@@ -18,7 +18,6 @@
 <!--            <property name="javax.persistence.schema-generation.scripts.drop-target" value="sampledrop.ddl"/>-->
 
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
-<!--            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/jscanner" />-->
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:test;DB_CLOSE_DELAY=-1" />
 <!--            jdbc:h2:file:./jscanner;DB_CLOSE_ON_EXIT=FALSE-->
             <property name="javax.persistence.jdbc.user" value="sa" />
