@@ -19,7 +19,12 @@ public class TrackerRunner implements Runnable {
     private List<Path> rootFolder;
 
     public TrackerRunner(String[] rootFoldersList) {
-        getRootFolders(rootFoldersList);
+//        if (rootFoldersList.length == 0)
+//            System.out.println("You need to provide at least one path");
+//        else {
+//            getRootFolders(rootFoldersList);
+//        }
+
     }
 
     @Override
@@ -27,10 +32,15 @@ public class TrackerRunner implements Runnable {
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
         CleanerService cs = new CleanerServiceImpl();
         SymLinkProperties props = new SymLinkProperties();
+
+        /*
+         * Getting file path from properties file
+         * */
         String targetFolderMovie = props.getSymLinkProperties().getProperty("targetFolderMovie");
         List<Path> targetFolderList = List.of(Path.of(targetFolderMovie));
+
         MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
-        List<Path> mediaFolder = rootFolder;
+//        List<Path> mediaFolder = rootFolder;
         WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();

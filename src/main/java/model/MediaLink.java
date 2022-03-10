@@ -18,7 +18,7 @@ public class MediaLink {
     @Column(name = "target_path")
     private String targetPath;
 
-    @Column(name = "the_movie_db_id")
+    @Column(name = "the_movie_db_id", unique = true)
     private int theMovieDbId;
 
     public long getMediaId() {

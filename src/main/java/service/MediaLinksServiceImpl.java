@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import dao.MediaTrackerDao;
-import dao.MediaTrackerDaoImpl;
 import model.MediaData;
 import model.MediaLink;
 import model.MediaQuery;
@@ -34,13 +33,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private Properties networkProperties;
     private Properties mediaFoldersProperties;
 
-    public MediaLinksServiceImpl(MediaTrackerDao dao) {
-        SymLinkProperties props = new SymLinkProperties();
-        networkProperties = props.getNetworkProperties();
-        mediaFoldersProperties = props.getSymLinkProperties();
-//        loadConnectionProperties();
-//        SymLinkProperties.loadSymLinkProperties();
-        // TODO movie configuration into single class
+    public MediaLinksServiceImpl(MediaTrackerDao dao, SymLinkProperties symLinkProperties) {
+        networkProperties = symLinkProperties.getNetworkProperties();
+        mediaFoldersProperties = symLinkProperties.getSymLinkProperties();
         mediaTrackerDao = dao;
     }
 
@@ -309,57 +304,4 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return p.matcher(title).replaceAll("_");
     }
 
-    /*
-     * Loads properties object from configuration file.
-     * */
-//    private void loadConnectionProperties() {
-//        try (InputStream is = new FileInputStream(NETWORK_PROPERTIES_FILE)) {
-//            networkProperties = new Properties();
-//            networkProperties.load(is);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    public static void main(String[] args) {
-        MediaTrackerDao mediaTrackerDao = new MediaTrackerDaoImpl();
-        MediaLinksServiceImpl ml = new MediaLinksServiceImpl(mediaTrackerDao);
-        String searchExample = "Army.of.Darkness.1992.Director's.Cut.Hybrid.1080p.BluRay.DTS.x264-IDE.mkv";
-
-//        MediaQuery mq = new MediaQuery(searchExample, "folder");
-//        ml.executeQuery(mq);
-        Path htmlFilePath = Path.of("src/test/resources/army.html");
-        Path fileFolder = Path.of("G:\\Java\\media-jscanner\\test-folder\\3\\info.txt");
-        Path filePath = fileFolder.resolve(searchExample);
-        System.out.println(filePath);
-        String importedHtml = null;
-        try {
-            importedHtml = Files.readString(htmlFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // test parser
-        List<QueryResult> queryResults = ml.parseReturn(importedHtml, filePath);
-
-//        System.out.println(queryResults);
-
-        // test api query
-//        try {
-//
-//            String s = ml.tmdbApiRequest(queryResults.get(1));
-//            ml.parseJson(s);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
-        // test symlink
-        System.out.println(queryResults.get(1));
-        MediaLink symLink = ml.createSymLink(queryResults.get(1));
-        System.out.println(symLink);
-
-
-    }
 }

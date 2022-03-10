@@ -1,4 +1,4 @@
-#media-jscanner
+# media-jscanner
 
 This is tool designed to create extra layer between 
 local video files collection and media management solutions 
@@ -18,6 +18,8 @@ to ensure that those tools will get the right data for each media file.
 
 In case of original file being deleted media-jscanner will delete matching link and
 all extra data that might be stored in the same folder (such as subtitles, posters, etc.).
+
+Currently, both paths are defined inside *mediafolder.properties* file.
 
 Technologies used:
 - tbd;

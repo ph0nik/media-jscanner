@@ -19,14 +19,10 @@ public class Main {
 
 
     public static void main(String[] args) {
-        if (args.length == 0)
-            System.out.println("You need to provide at least one path");
-        else {
             TrackerRunner trackerRunner = new TrackerRunner(args);
             MenuRunner menuRunner = new MenuRunner();
             RunnerService runnerService = new RunnerService(menuRunner, trackerRunner);
             runnerService.execute();
-        }
     }
 
 }

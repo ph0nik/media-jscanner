@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 
 public class SymLinkProperties {
@@ -26,6 +27,23 @@ public class SymLinkProperties {
                 IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Properties getFoldersFromExternalFile(List<Path> folders) {
+        Properties props = new Properties();
+        ClassLoader classLoader = getClass().getClassLoader();
+        String s = folders.get(0).toString();
+        InputStream resourceAsStream = classLoader.getResourceAsStream(s);
+        if (resourceAsStream == null) {
+            throw new IllegalStateException("[ properties ] File not found! " + s);
+        } else {
+            try {
+                props.load(resourceAsStream);
+            } catch (IOException e) {
+                System.out.println("[ properties ] " + e.getMessage());
+            }
+        }
+        return props;
     }
 
     public Properties getSymLinkProperties() {
