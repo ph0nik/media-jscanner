@@ -3,6 +3,7 @@ package dao;
 import model.MediaLink;
 import model.MediaQuery;
 import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -14,6 +15,8 @@ import javax.persistence.criteria.Root;
 import java.nio.file.Path;
 import java.util.List;
 
+
+@Component
 public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
 //    private static EntityManager entityManager;
@@ -81,6 +84,24 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         }
 
        return singleResult;
+    }
+
+    @Override
+    public MediaQuery getQueryById(Long id) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        MediaQuery mediaQuery = entityManager.find(MediaQuery.class, id);
+//        MediaQuery singleResult = null;
+//        try {
+//            MediaQuery mediaQuery = entityManager.find(MediaQuery.class, id);
+//            TypedQuery<MediaQuery> typedQuery = entityManager.createQuery("SELECT q FROM MediaQuery q WHERE q.queryId=:id", MediaQuery.class);
+//            typedQuery.setParameter("id", id);
+//            singleResult = typedQuery.getSingleResult();
+//        } catch (NoResultException e) {
+//            System.out.println(e.getMessage());
+//        } finally {
+//            entityManager.close();
+//        }
+        return mediaQuery;
     }
 
 

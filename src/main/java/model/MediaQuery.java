@@ -2,6 +2,7 @@ package model;
 
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -15,6 +16,7 @@ public class MediaQuery {
     private long queryId;
 
     @Column(name = "file_path", unique = true)
+    @NotNull
     private String filePath;
 
     public MediaQuery() {}

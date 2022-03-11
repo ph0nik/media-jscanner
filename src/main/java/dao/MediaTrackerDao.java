@@ -19,6 +19,8 @@ public interface MediaTrackerDao {
 
     MediaQuery findQueryByFilePath(String filePath);
 
+    MediaQuery getQueryById(Long id);
+
     /*
     * Get all media queries stored in database
     * */

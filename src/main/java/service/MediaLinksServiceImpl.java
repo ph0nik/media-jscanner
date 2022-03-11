@@ -14,6 +14,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -24,7 +25,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+@Component
 public class MediaLinksServiceImpl implements MediaLinksService {
 
 //    private static final String NETWORK_PROPERTIES_FILE = "src/main/resources/network.properties";
@@ -32,8 +33,10 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private MediaTrackerDao mediaTrackerDao;
     private Properties networkProperties;
     private Properties mediaFoldersProperties;
+    private SymLinkProperties props;
 
     public MediaLinksServiceImpl(MediaTrackerDao dao, SymLinkProperties symLinkProperties) {
+        props = symLinkProperties;
         networkProperties = symLinkProperties.getNetworkProperties();
         mediaFoldersProperties = symLinkProperties.getSymLinkProperties();
         mediaTrackerDao = dao;
@@ -155,7 +158,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         }
         if (mediaData == null) throw new NoSuchElementException();
 //        Path linkRootFolder = SymLinkProperties.getMovieFolder();
-        Path linkRootFolder = Path.of(mediaFoldersProperties.getProperty("linkFolderMovie"));
+        Path linkRootFolder = props.getLinksFolder();
         Path targetPath = Path.of(queryResult.getFilePath());
         // check for number of parts
         int discNumber = checkForMultiDiscs(queryResult.getFilePath());

@@ -104,6 +104,13 @@ class MediaTrackerDaoImplTest {
     }
 
     @Test
+    void getQueryById() {
+        dao.addQueryToQueue(mediaQuery1);
+        dao.addQueryToQueue(mediaQuery2);
+        assertEquals(mediaQuery1, dao.getQueryById(1L));
+    }
+
+    @Test
     void findInFilePathQuery() {
         dao.addQueryToQueue(mediaQuery1);
         Path testPath2 = Path.of(filePath2);

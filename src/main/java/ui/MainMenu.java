@@ -23,7 +23,7 @@ public class MainMenu {
     * Show main menu and prompt user
     * */
     public void getMainMenu() {
-        System.out.println(":: Main Menu ::");
+        System.out.println(":: app.Main Menu ::");
         System.out.println("( 1 ) Show Query");
         System.out.println("( 2 ) Show Existing Links");
         System.out.println("( 3 ) Exit program");

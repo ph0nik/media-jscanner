@@ -1,0 +1,65 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<head>
+    <title>media-jscanner | query select</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<nav>
+    <a href="/query">new files</a>
+    <a href="/links">links</a>
+    <a href="/config">config</a>
+</nav>
+<h1>select matching title or enter custom</h1>
+<h2><span th:text="${query.filePath}"></span></h2>
+<table>
+    <tr>
+        <th>id</th>
+        <th>title</th>
+        <th>setTheMovieDbId</th>
+        <th>setDescription</th>
+    </tr>
+    <tr th:each="result : ${resultslist}">
+        <td>
+            <form action="#"
+                  th:action="@{/newlink/{id}(id=${query.queryId})}"
+                  th:object="${selection}"
+                  method="post">
+                <input type="hidden" th:value="${result.id}" name="id">
+                <input type="hidden" th:value="${result.title}" name="title">
+                <input type="hidden" th:value="${result.filePath}" name="filePath">
+                <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
+                <input type="hidden" th:value="${result.description}" name="description">
+                <input type="hidden" th:value="${result.url}" name="url">
+                <button type="submit" th:text="${result}"></button>
+            </form>
+
+        </td>
+<!--        <td th:text="${result.id}"></td>-->
+<!--        <td th:text="${result.title}">-->
+<!--            <a th:href="@{/newlink/{id}(id=${query.queryId})}">-->
+<!--                <div th:text="${result.filePath}"></div>-->
+<!--            </a>-->
+<!--        </td>-->
+<!--        <td th:text="${result.theMovieDbId}"></td>-->
+<!--        <td th:text="${result.description}"></td>-->
+    </tr>
+
+</table>
+<p>Input custom query</p>
+<form action="#"
+      th:action="@{/selectquery/{id}(id=${query.queryId})}"
+      method="post">
+    <label>custom query</label>
+    <input type="text" id="custom" name="custom">
+    <button type="submit">submit</button>
+
+</form>
+</body>
+</html>

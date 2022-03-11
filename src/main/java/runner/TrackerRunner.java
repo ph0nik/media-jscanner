@@ -36,8 +36,10 @@ public class TrackerRunner implements Runnable {
         /*
          * Getting file path from properties file
          * */
-        String targetFolderMovie = props.getSymLinkProperties().getProperty("targetFolderMovie");
-        List<Path> targetFolderList = List.of(Path.of(targetFolderMovie));
+//        String targetFolderMovie = props.getMediaFoldersProperties().getProperty("targetFolderMovie");
+        List<Path> targetFolderList = props.getTargetFolderList();
+
+//        List<Path> targetFolderList = List.of(Path.of(targetFolderMovie));
 
         MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
 //        List<Path> mediaFolder = rootFolder;
