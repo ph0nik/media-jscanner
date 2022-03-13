@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import service.MediaLinksService;
+import service.SymLinkProperties;
 
 import javax.validation.Valid;
+import java.nio.file.Path;
 import java.util.List;
 
 @Controller
@@ -30,6 +32,9 @@ public class SimpleController {
     @Autowired
     private MediaLinksService mediaLinksService;
 
+    @Autowired
+    private SymLinkProperties symLinkProperties;
+
     @GetMapping("/")
     public String homePage(Model model) {
         model.addAttribute("appName", appName);
@@ -42,8 +47,14 @@ public class SimpleController {
      * */
     @GetMapping("/query")
     public String queryList(Model model) {
-        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
-        model.addAttribute("queryList", mediaTrackerDao.getAllMediaQueries());
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+//        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+//        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
         model.addAttribute("passquery", new MediaQuery());
         return "query_list";
     }
@@ -55,12 +66,40 @@ public class SimpleController {
      * */
     @PostMapping("/selectquery/{id}")
     public String selectQuery(@PathVariable("id") long id, @RequestParam String custom, Model model) {
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
         // get query by id from db
         MediaQuery queryById = mediaTrackerDao.getQueryById(id);
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryById);
-        model.addAttribute("resultslist", queryResults);
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
+        model.addAttribute("result_list", queryResults);
         model.addAttribute("selection", new QueryResult());
         model.addAttribute("query", queryById);
+        return "result_selection";
+    }
+
+    /*
+    * Redirect as a protection measure in case user reloads page
+    * */
+    @GetMapping(value = {"/selectquery", "/selectquery/{id}"})
+    public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
+        List<QueryResult> latestMediaQuery = mediaLinksService.getLatestMediaQuery();
+        if (latestMediaQuery == null) return "redirect:/query";
+        String filePath = latestMediaQuery.get(0).getFilePath();
+        MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(filePath);
+//        MediaQuery queryById = mediaTrackerDao.getQueryById(id);
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
+        model.addAttribute("result_list", latestMediaQuery);
+        model.addAttribute("selection", new QueryResult());
+        model.addAttribute("query", queryByFilePath);
         return "result_selection";
     }
 
@@ -70,11 +109,24 @@ public class SimpleController {
     @PostMapping("/newlink/{id}")
     public String newLink(@PathVariable("id") long id, @Valid QueryResult queryResult,
                           BindingResult bindingResult, Model model) {
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
         System.out.println("create link with: " + queryResult);
 //        mediaLinksService.createSymLink()
-        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
-        model.addAttribute("links", allMediaLinks);
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
+
         return "links";
+    }
+
+    /*
+     * Redirect as a protection measure in case user reloads page
+     * */
+    @GetMapping(value = {"/newlink", "/newlink/{id}"})
+    public String newLinkGet(@PathVariable(value = "id", required = false) Long id) {
+        return "redirect:/links";
     }
 
     /*
@@ -83,17 +135,56 @@ public class SimpleController {
      * */
     @GetMapping("/links")
     public String links(Model model) {
-        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
-        model.addAttribute("links", allMediaLinks);
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
         return "links";
     }
 
-    /*
-     * Perform online search with provided custom query and present user
-     * with results.
-     * Prompt user to select title which will be used to create symlink.
-     * */
+    @GetMapping("/config")
+    public String configuration(Model model) {
+        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        boolean userLinksPath = symLinkProperties.isUserLinksPath();
+        boolean userTargetPath = symLinkProperties.isUserTargetPath();
+        Path linksFolder = symLinkProperties.getLinksFolder();
+        List<Path> targetFolderList = symLinkProperties.getTargetFolderList();
 
+        model.addAttribute("query_list", allMediaQueries);
+        model.addAttribute("link_list", allMediaLinks);
+        model.addAttribute("user_paths", userPathsProvided);
+        model.addAttribute("chk_user_target", userTargetPath);
+        model.addAttribute("chk_user_links", userLinksPath);
+        model.addAttribute("links_folder", linksFolder);
+        model.addAttribute("target_folder_list", targetFolderList);
+        return "config";
+    }
 
+    @PostMapping("/deletepath")
+    public String deletePath(@RequestParam String path, Model model) {
+        symLinkProperties.removeTargetPath(Path.of(path));
+        System.out.println("delete " + path);
+        return "redirect:/config";
+    }
+
+    //TODO report of falls back on default paths
+    @PostMapping("/addpath")
+    public String addPath(@RequestParam String path, Model model) {
+        symLinkProperties.setTargetPath(Path.of(path));
+        System.out.println("add " + path);
+        return "redirect:/config";
+    }
+
+    @GetMapping("/tracker")
+    public String getTrackerStatus(Model model) {
+
+//        model.addAttribute();
+        return "tracker";
+    }
 
 }

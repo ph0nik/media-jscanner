@@ -5,61 +5,122 @@
       lang="en">
 
 <head>
-    <title>media-jscanner | query select</title>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <title>media-jscanner | web search results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body>
+<body class="container-xl">
 
-<nav>
-    <a href="/query">new files</a>
-    <a href="/links">links</a>
-    <a href="/config">config</a>
-</nav>
-<h1>select matching title or enter custom</h1>
-<h2><span th:text="${query.filePath}"></span></h2>
-<table>
-    <tr>
-        <th>id</th>
-        <th>title</th>
-        <th>setTheMovieDbId</th>
-        <th>setDescription</th>
-    </tr>
-    <tr th:each="result : ${resultslist}">
-        <td>
-            <form action="#"
-                  th:action="@{/newlink/{id}(id=${query.queryId})}"
-                  th:object="${selection}"
-                  method="post">
-                <input type="hidden" th:value="${result.id}" name="id">
-                <input type="hidden" th:value="${result.title}" name="title">
-                <input type="hidden" th:value="${result.filePath}" name="filePath">
-                <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
-                <input type="hidden" th:value="${result.description}" name="description">
-                <input type="hidden" th:value="${result.url}" name="url">
-                <button type="submit" th:text="${result}"></button>
-            </form>
+<div class="row">
+    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
+        <div class="container-fluid pt-1">
+            <span class="navbar-brand fs-6">media-jscanner</span>
+            <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+<!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+<!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+<!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${link_list.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+<!--                         for no links -->
+                        <span th:case="${false}" th:text="${link_list.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config">config</a>
+                </li>
+<!--                 shows warning if file paths are not provided -->
+                <span th:case="${false}" class="navbar-text text-danger">
+                    User paths not found!
+                </span>
+            </ul>
+        </div>
+    </nav>
+</div>
+<!-- info with file path -->
+<div class="row">
+    <div class="col">
+        <p class="text-center">Displaying search results for file:</p>
+        <p th:text="${query.filePath}" class="fs-6 fw-bold font-monospace text-center text-success"></p>
+    </div>
+</div>
+<!-- navbar with search input -->
+<div class="row justify-content-center">
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="col navbar-text text-center">
+                    <span>If no matching elements found, try searching with custom phrase:</span>
+            </div>
+            <div class="col">
+                <form class="d-flex"
+                      action="#"
+                      th:action="@{/selectquery/{id}(id=${query.queryId})}"
+                      method="post">
+                    <input class="form-control me-2" type="search" placeholder="Search" name="custom" id="custom"
+                           aria-label="Search">
+                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>
 
-        </td>
-<!--        <td th:text="${result.id}"></td>-->
-<!--        <td th:text="${result.title}">-->
-<!--            <a th:href="@{/newlink/{id}(id=${query.queryId})}">-->
-<!--                <div th:text="${result.filePath}"></div>-->
-<!--            </a>-->
-<!--        </td>-->
-<!--        <td th:text="${result.theMovieDbId}"></td>-->
-<!--        <td th:text="${result.description}"></td>-->
-    </tr>
+<!-- result table -->
+<div class="row">
+    <table class="table table-striped">
+<!--        table head-->
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>tmdb</th>
+            <th></th>
+        </tr>
+        </thead>
+<!--        table body-->
+        <tbody>
+        <tr th:each="result : ${result_list}">
+            <td th:text="${result.id}"></td>
+            <td>
+                <span th:text="${result.title}" class="fs-6 fw-bold font-monospace"></span>
+                <p th:text="${result.description}" class="fs-7 fw-normal font-monospace"></p>
+            </td>
+            <td>
+                <span th:text="${result.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+            </td>
+            <td>
+                <form action="#"
+                      th:action="@{/newlink/{id}(id=${query.queryId})}"
+                      th:object="${selection}"
+                      method="post">
+                    <input type="hidden" th:value="${result.id}" name="id">
+                    <input type="hidden" th:value="${result.title}" name="title">
+                    <input type="hidden" th:value="${result.filePath}" name="filePath">
+                    <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
+                    <input type="hidden" th:value="${result.description}" name="description">
+                    <input type="hidden" th:value="${result.url}" name="url">
+                    <!--                    <button type="submit" th:text="${result}"></button>-->
+                    <button class="btn btn-outline-primary btn-sm" type="submit">select</button>
+                </form>
 
-</table>
-<p>Input custom query</p>
-<form action="#"
-      th:action="@{/selectquery/{id}(id=${query.queryId})}"
-      method="post">
-    <label>custom query</label>
-    <input type="text" id="custom" name="custom">
-    <button type="submit">submit</button>
-
-</form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
 </body>
 </html>

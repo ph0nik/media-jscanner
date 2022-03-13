@@ -34,12 +34,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private Properties networkProperties;
     private Properties mediaFoldersProperties;
     private SymLinkProperties props;
+    private List<QueryResult> lastRequest;
 
     public MediaLinksServiceImpl(MediaTrackerDao dao, SymLinkProperties symLinkProperties) {
         props = symLinkProperties;
         networkProperties = symLinkProperties.getNetworkProperties();
-        mediaFoldersProperties = symLinkProperties.getSymLinkProperties();
+        mediaFoldersProperties = symLinkProperties.getMediaFoldersProperties();
         mediaTrackerDao = dao;
+        lastRequest = null;
     }
 
     @Override
@@ -60,7 +62,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return parseReturn(document, Path.of(mediaQuery.getFilePath()));
+        List<QueryResult> queryResults = parseReturn(document, Path.of(mediaQuery.getFilePath()));
+        lastRequest = queryResults;
+        return queryResults;
+    }
+
+    @Override
+    public List<QueryResult> getLatestMediaQuery() {
+        return lastRequest;
     }
 
     private String searchEngineRequest(String query) throws IOException {

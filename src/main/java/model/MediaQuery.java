@@ -25,6 +25,16 @@ public class MediaQuery {
         this.filePath = filePath;
     }
 
+    public String getFileName() {
+        Path of = Path.of(filePath);
+        return of.getName(of.getNameCount() - 1).toString();
+    }
+
+    public String getParentPath() {
+        Path of = Path.of(filePath);
+        return of.getParent().toString();
+    }
+
     public long getQueryId() {
         return queryId;
     }

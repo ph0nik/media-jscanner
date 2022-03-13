@@ -26,6 +26,8 @@ public class MediaTrackerService {
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
 
+    // TODO tracker fails when path is incorrect
+    // check if folder exists
     public MediaTrackerService(MediaTrackerDao dao, CleanerService cs) {
         mediaTrackerDao = dao;
         cleanerService = cs;
@@ -63,7 +65,8 @@ public class MediaTrackerService {
 
     public void watch(WatchService watchService, List<Path> paths) throws IOException, InterruptedException {
         for (Path path : paths) {
-            registerTree(watchService, path);
+            // check if provided path exist and ignore invalid path
+            if (pathValidator(path)) registerTree(watchService, path);
         }
         while (true) {
             WatchKey watchKey = watchService.take();
@@ -141,6 +144,10 @@ public class MediaTrackerService {
                 }
             }
         }
+    }
+
+    private boolean pathValidator(Path path) {
+        return path.toFile().exists();
     }
 
     private void validateAndAdd(String filePath) {

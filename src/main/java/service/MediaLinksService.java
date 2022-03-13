@@ -22,6 +22,11 @@ public interface MediaLinksService {
     List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery);
 
     /*
+    * Returns results of latest request
+    * */
+    List<QueryResult> getLatestMediaQuery();
+
+    /*
      * Create symlink with specified query result and link properties
      * */
     MediaLink createSymLink(QueryResult queryResult);

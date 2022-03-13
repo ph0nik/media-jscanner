@@ -39,4 +39,10 @@ class SymLinkPropertiesTest {
         Path linksFolder = symLinkProperties.getLinksFolder();
         assertEquals(Path.of(userPath), linksFolder);
     }
+
+    @Test
+    void checkFoldersStatus() {
+        assertFalse(symLinkProperties.checkUserPaths());
+    }
+
 }

@@ -16,9 +16,9 @@
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
-<!--                new files-->
+                <!--                new files-->
                 <li class="nav-item">
-                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+                    <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -27,7 +27,7 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                links-->
+                <!--                links-->
                 <li class="nav-item">
                     <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
@@ -38,9 +38,9 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                config-->
+                <!--                config-->
                 <li class="nav-item">
-                    <a class="nav-link" href="/config">config</a>
+                    <a class="nav-link active" href="/config">config</a>
                 </li>
                 <span th:case="${false}" class="navbar-text text-danger">
                     User paths not found!
@@ -49,33 +49,55 @@
         </div>
     </nav>
 </div>
+<!--links path-->
 <div class="row">
+    <p>current links folder:</p>
+    <p th:text="${links_folder}"></p>
+    <form>add new folder</form>
+</div>
+<!--target paths list-->
+<div class="row">
+    <p>current target paths:</p>
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>id</th>
-            <th>filepath</th>
+            <th>user provided folders</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="query : ${query_list}">
-            <td th:text="${query.queryId}"></td>
+        <tr th:each="path : ${target_folder_list}">
             <td>
-                <span th:text="${query.getFileName()}" class="fs-6 fw-bold font-monospace"></span>
-                <p th:text="${query.getParentPath()}" class="fs-7 fw-normal font-monospace"></p>
+                <p class="fw-normal font-monospace" th:text="${path}"></p>
             </td>
-            <td>
+            <td class="align-middle col-2">
                 <form action="#"
-                      th:action="@{/selectquery/{id}(id=${query.queryId})}"
+                      th:action="@{/deletepath}"
                       method="post">
-                    <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">select</button>
+                    <input type="hidden" th:value="${path}" name="path">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
                 </form>
             </td>
         </tr>
+        <tr>
+        <tr>
+            <form class="d-flex"
+                  action="#"
+                  th:action="@{/addpath}"
+                  method="post">
+                <td>
+                    <input class="form-control  me-2" type="search" placeholder="path..." name="path" id="path"
+                           aria-label="Search">
+                </td>
+                <td class="col-2 align-middle">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
+                </td>
+            </form>
+        </tr>
         </tbody>
     </table>
+    <p>current links folder:</p>
+    <p th:text="${links_folder}"></p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
