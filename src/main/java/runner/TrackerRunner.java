@@ -27,6 +27,7 @@ public class TrackerRunner implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("[ tracker ] starting...");
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
         CleanerService cs = new CleanerServiceImpl();
         SymLinkProperties props = new SymLinkProperties();
@@ -39,12 +40,12 @@ public class TrackerRunner implements Runnable {
             watchService = FileSystems.getDefault().newWatchService();
             mediaTrackerService.watch(watchService, targetFolderList);
         } catch (IOException | InterruptedException e) {
-            System.out.println("[ tracker ] closing...");
-//            e.printStackTrace();
+            if (e instanceof  InterruptedException) {
+                System.out.println("[ tracker ] closing...");
+            } else {
+            e.printStackTrace();
+            }
         }
     }
 
-//    private void getRootFolders(String[] folders) {
-//        rootFolder = getFoldersList(folders);
-//    }
 }

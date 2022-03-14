@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import runner.TrackerExecutor;
 import service.MediaLinksService;
 import service.SymLinkProperties;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import java.nio.file.Path;
 import java.util.List;
@@ -35,10 +37,36 @@ public class SimpleController {
     @Autowired
     private SymLinkProperties symLinkProperties;
 
+    @Autowired
+    private TrackerExecutor trackerExecutor;
+
     @GetMapping("/")
     public String homePage(Model model) {
         model.addAttribute("appName", appName);
         return "home";
+    }
+
+    @PostConstruct
+    private void initTracker() {
+        trackerExecutor.startTracker();
+    }
+
+    @GetMapping("/tracker_start")
+    public String startTrackerManually() {
+        if (!trackerExecutor.trackerStatus()) trackerExecutor.startTracker();
+        return "temp";
+    }
+
+    @GetMapping("/tracker_stop")
+    public String stopTrackerManually() {
+        if (trackerExecutor.trackerStatus()) trackerExecutor.stopTracker();
+        return "temp";
+    }
+
+    @GetMapping("/tracker_status")
+    public String checkTracker() {
+        System.out.println(trackerExecutor.trackerStatus());
+        return "temp";
     }
 
     /*
@@ -182,7 +210,7 @@ public class SimpleController {
 
     @GetMapping("/tracker")
     public String getTrackerStatus(Model model) {
-
+        trackerExecutor.startTracker();
 //        model.addAttribute();
         return "tracker";
     }

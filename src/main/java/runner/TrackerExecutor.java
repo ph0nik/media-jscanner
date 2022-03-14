@@ -6,5 +6,6 @@ public interface TrackerExecutor {
 
     void stopTracker();
 
+    boolean trackerStatus();
 
 }
