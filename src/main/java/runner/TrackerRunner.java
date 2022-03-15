@@ -2,6 +2,8 @@ package runner;
 
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import service.MediaTrackerService;
 import service.SymLinkProperties;
 import util.CleanerService;
@@ -15,6 +17,8 @@ import java.util.List;
 
 public class TrackerRunner implements Runnable {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TrackerRunner.class);
+
     public TrackerRunner(){}
 
     public TrackerRunner(String[] rootFoldersList) {
@@ -27,7 +31,7 @@ public class TrackerRunner implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("[ tracker ] starting...");
+        LOG.info("[ tracker ] starting...");
         MediaTrackerDao dao = new MediaTrackerDaoImpl();
         CleanerService cs = new CleanerServiceImpl();
         SymLinkProperties props = new SymLinkProperties();
@@ -41,9 +45,9 @@ public class TrackerRunner implements Runnable {
             mediaTrackerService.watch(watchService, targetFolderList);
         } catch (IOException | InterruptedException e) {
             if (e instanceof  InterruptedException) {
-                System.out.println("[ tracker ] closing...");
+                LOG.info("[ tracker ] closing...");
             } else {
-            e.printStackTrace();
+                LOG.error(((IOException) e).getMessage());
             }
         }
     }

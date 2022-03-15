@@ -40,28 +40,41 @@ public class SimpleController {
     @Autowired
     private TrackerExecutor trackerExecutor;
 
+    /*
+    * Testing starting page
+    * */
     @GetMapping("/")
     public String homePage(Model model) {
         model.addAttribute("appName", appName);
         return "home";
     }
 
+    /*
+    * Initialize file watcher at startup
+    * */
     @PostConstruct
     private void initTracker() {
         trackerExecutor.startTracker();
     }
 
+    /*
+    * Start file watcher manually
+    * */
     @GetMapping("/tracker_start")
     public String startTrackerManually() {
         if (!trackerExecutor.trackerStatus()) trackerExecutor.startTracker();
         return "temp";
     }
 
+    /*
+    * Stop file watcher manually
+    * */
     @GetMapping("/tracker_stop")
     public String stopTrackerManually() {
         if (trackerExecutor.trackerStatus()) trackerExecutor.stopTracker();
         return "temp";
     }
+
 
     @GetMapping("/tracker_status")
     public String checkTracker() {

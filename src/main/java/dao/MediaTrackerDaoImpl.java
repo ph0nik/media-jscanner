@@ -3,6 +3,8 @@ package dao;
 import model.MediaLink;
 import model.MediaQuery;
 import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -18,6 +20,8 @@ import java.util.List;
 
 @Component
 public class MediaTrackerDaoImpl implements MediaTrackerDao {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
 
 //    private static EntityManager entityManager;
 //
@@ -40,10 +44,10 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
                 cause = cause.getCause();
             }
             if (cause != null) {
-                System.out.println("[ dao ] " + cause.getMessage());
+                LOG.error("[ dao ] " + cause.getMessage());
             }
             if (transaction != null) transaction.rollback();
-            System.out.println("[ dao ] " + e.getMessage());
+            LOG.error("[ dao ] " + e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -61,7 +65,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -78,29 +82,17 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             typedQuery.setParameter("filepath", filePath);
             singleResult = typedQuery.getSingleResult();
         } catch (NoResultException e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
-
-       return singleResult;
+        return singleResult;
     }
 
     @Override
     public MediaQuery getQueryById(Long id) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
         MediaQuery mediaQuery = entityManager.find(MediaQuery.class, id);
-//        MediaQuery singleResult = null;
-//        try {
-//            MediaQuery mediaQuery = entityManager.find(MediaQuery.class, id);
-//            TypedQuery<MediaQuery> typedQuery = entityManager.createQuery("SELECT q FROM MediaQuery q WHERE q.queryId=:id", MediaQuery.class);
-//            typedQuery.setParameter("id", id);
-//            singleResult = typedQuery.getSingleResult();
-//        } catch (NoResultException e) {
-//            System.out.println(e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
         return mediaQuery;
     }
 
@@ -118,7 +110,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             TypedQuery<MediaQuery> allQuery = entityManager.createQuery(all, MediaQuery.class);
             resultList = allQuery.getResultList();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -138,9 +130,8 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
             TypedQuery<MediaQuery> mq = entityManager.createQuery(cr);
             mediaQuery = mq.getResultList();
-
         } catch (NoResultException e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -159,7 +150,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -177,7 +168,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
-            e.printStackTrace();
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -192,7 +183,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             TypedQuery<MediaLink> allQuery = entityManager.createQuery(all, MediaLink.class);
             resultList = allQuery.getResultList();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -214,7 +205,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             mediaQuery = mq.getResultList();
 
         } catch (NoResultException e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
@@ -230,7 +221,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             typedQuery.setParameter("filepath", filePath);
             singleResult = typedQuery.getSingleResult();
         } catch (NoResultException e) {
-            System.out.println(e.getMessage());
+            LOG.error(e.getMessage());
         } finally {
             entityManager.close();
         }
