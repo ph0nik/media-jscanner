@@ -17,7 +17,7 @@
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
 <!--                new files-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
@@ -28,7 +28,7 @@
                     </a>
                 </li>
 <!--                links-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
@@ -39,7 +39,7 @@
                     </a>
                 </li>
 <!--                config-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
                 <span th:case="${false}" class="navbar-text text-danger">
@@ -50,7 +50,7 @@
     </nav>
 </div>
 <div class="row">
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
         <thead>
         <tr>
             <th>id</th>

@@ -21,6 +21,17 @@ public class MediaLink {
     @Column(name = "the_movie_db_id", unique = true)
     private int theMovieDbId;
 
+    @Column(name = "imdb_id", unique = true)
+    private String imdbId;
+
+    public String getImdbId() {
+        return imdbId;
+    }
+
+    public void setImdbId(String imdbId) {
+        this.imdbId = imdbId;
+    }
+
     public long getMediaId() {
         return mediaId;
     }
@@ -60,6 +71,7 @@ public class MediaLink {
                 ", linkPath='" + linkPath + '\'' +
                 ", targetPath='" + targetPath + '\'' +
                 ", theMovieDbId=" + theMovieDbId +
+                ", imdbId='" + imdbId + '\'' +
                 '}';
     }
 }

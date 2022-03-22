@@ -14,7 +14,6 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.nio.file.Path;
 import java.util.List;
 
 
@@ -138,6 +137,13 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         return mediaQuery;
     }
 
+    @Override
+    public MediaLink getLinkById(Long id) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        MediaLink mediaLink = entityManager.find(MediaLink.class, id);
+        return mediaLink;
+    }
+
 
     @Override
     public void addNewLink(MediaLink mediaLInk) {
@@ -190,11 +196,14 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         return resultList;
     }
 
+    /*
+    * Method finds all elements that have given phrase within their target path.
+    * */
     @Override
-    public List<MediaLink> findInFilePathLink(String phrase) {
+    public List<MediaLink> findInTargetFilePathLink(String phrase) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
         List<MediaLink> mediaQuery = null;
-        String query = "%" + phrase + "%";
+        String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
         try {
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<MediaLink> cr = cb.createQuery(MediaLink.class);
@@ -213,6 +222,31 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     @Override
+    public List<MediaLink> findInLinkFilePathLink(String phrase) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        List<MediaLink> mediaQuery = null;
+        String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<MediaLink> cr = cb.createQuery(MediaLink.class);
+            Root<MediaLink> root = cr.from(MediaLink.class);
+            cr.select(root).where(cb.like(root.get("linkPath"), query));
+
+            TypedQuery<MediaLink> mq = entityManager.createQuery(cr);
+            mediaQuery = mq.getResultList();
+
+        } catch (NoResultException e) {
+            LOG.error(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return mediaQuery;
+    }
+
+    /*
+    * Find media link element by exact target path string.
+    * */
+    @Override
     public MediaLink findMediaLinkByFilePath(String filePath) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
         MediaLink singleResult = null;
@@ -226,33 +260,6 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             entityManager.close();
         }
         return singleResult;
-    }
-
-    public static void main(String[] args) {
-        String file = "movies-incoming\\Max.von.Sydow.collection\\Here.Is.Your.Life.1966.720p.BluRay.x264-x0r\\Here.Is.Your.Life.1966.720p.BluRay.x264-x0r.mkv";
-        Path testPath = Path.of(file).getParent();
-
-        MediaTrackerDao dao = new MediaTrackerDaoImpl();
-        MediaQuery mq = new MediaQuery();
-        mq.setFilePath(file);
-
-        dao.addQueryToQueue(mq);
-
-        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
-        for (MediaQuery mq1 : allMediaQueries) {
-            System.out.println(mq1);
-        }
-
-//        MediaQuery findQuery = dao.findQueryByFilePath(file);
-//        System.out.println(findQuery);
-//
-//        dao.removeQueryFromQueue(findQuery);
-//        allMediaQueries = dao.getAllMediaQueries();
-//        for (MediaQuery mq : allMediaQueries) {
-//            System.out.println(mq);
-//        }
-
-
     }
 
 }

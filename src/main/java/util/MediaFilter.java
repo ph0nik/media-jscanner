@@ -1,6 +1,7 @@
 package util;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 public class MediaFilter {
@@ -18,6 +19,10 @@ public class MediaFilter {
             if (name.endsWith(s)) return true;
         }
         return false;
+    }
+
+    public static boolean validateExtension(Path path) {
+        return extensions.stream().anyMatch(path.toString()::endsWith);
     }
 
     /*
@@ -42,4 +47,5 @@ public class MediaFilter {
     public static String getFileName(String file) {
         return file.substring(0, file.lastIndexOf("."));
     }
+
 }

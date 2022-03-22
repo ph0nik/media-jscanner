@@ -5,7 +5,7 @@ import dao.MediaTrackerDaoImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import service.MediaTrackerService;
-import service.SymLinkProperties;
+import service.PropertiesServiceImpl;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 
@@ -19,35 +19,44 @@ public class TrackerRunner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(TrackerRunner.class);
 
-    public TrackerRunner(){}
+    private final List<Path> targetFolderList;
+    private final MediaTrackerDao mediaTrackerDao;
+    private final CleanerService cleanerService;
 
-    public TrackerRunner(String[] rootFoldersList) {
-//        if (rootFoldersList.length == 0)
-//            System.out.println("You need to provide at least one path");
-//        else {
-//            getRootFolders(rootFoldersList);
-//        }
+    public TrackerRunner(){
+        PropertiesServiceImpl props = new PropertiesServiceImpl();
+        targetFolderList = props.getTargetFolderList();
+        mediaTrackerDao = new MediaTrackerDaoImpl();
+        cleanerService = new CleanerServiceImpl();
+    }
+
+    public List<Path> getTargetFolderList() {
+        return targetFolderList;
     }
 
     @Override
     public void run() {
         LOG.info("[ tracker ] starting...");
-        MediaTrackerDao dao = new MediaTrackerDaoImpl();
-        CleanerService cs = new CleanerServiceImpl();
-        SymLinkProperties props = new SymLinkProperties();
-
-        List<Path> targetFolderList = props.getTargetFolderList();
-
-        MediaTrackerService mediaTrackerService = new MediaTrackerService(dao, cs);
+        MediaTrackerService mediaTrackerService = new MediaTrackerService(mediaTrackerDao, cleanerService);
         WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();
             mediaTrackerService.watch(watchService, targetFolderList);
+            /*
+            * If provided with malformed paths in properties file watch service will automatically close.
+            * */
+            LOG.info("[ tracker ] closing...");
         } catch (IOException | InterruptedException e) {
             if (e instanceof  InterruptedException) {
+                /*
+                * In case of thread interruption.
+                * */
                 LOG.info("[ tracker ] closing...");
             } else {
-                LOG.error(((IOException) e).getMessage());
+                /*
+                * In case of any other exception.
+                * */
+                LOG.error(e.getMessage(), e);
             }
         }
     }

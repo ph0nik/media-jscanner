@@ -1,5 +1,7 @@
 package util;
 
+import dao.MediaTrackerDao;
+
 import java.nio.file.Path;
 
 public interface CleanerService {
@@ -10,20 +12,21 @@ public interface CleanerService {
     * If none of such elements are found, folder is considered as empty
     * and method returns true.
     * */
-    public boolean containsNoMediaFiles(Path linkPath);
+    boolean containsNoMediaFiles(Path linkPath);
 
     /*
-    * Delete folder with given path
+    * Deletes folder and contained elements with given path.
     * */
     void deleteElement(Path linkPath);
 
     /*
-    * Delete all elements that don't match user criteria.
+    * Using file walk tree, searches for empty folders and deletes them.
     * */
-    public void deleteNonMediaFiles(Path path);
+    void deleteEmptyFolders(Path root);
 
-
-    public void cleanUpLinkFolder(Path root);
-
+    /*
+    * Using links data from database, deletes all unregistered symlinks.
+    * */
+    void deleteInvalidLinks(Path root, MediaTrackerDao dao);
 
 }

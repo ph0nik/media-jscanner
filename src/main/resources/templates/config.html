@@ -17,7 +17,7 @@
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!--                new files-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
@@ -28,7 +28,7 @@
                     </a>
                 </li>
                 <!--                links-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
@@ -39,7 +39,7 @@
                     </a>
                 </li>
                 <!--                config-->
-                <li class="nav-item">
+                <li class="nav-item px-2">
                     <a class="nav-link active" href="/config">config</a>
                 </li>
                 <span th:case="${false}" class="navbar-text text-danger">
@@ -49,19 +49,74 @@
         </div>
     </nav>
 </div>
+<!-- tracker status-->
 <div class="row">
-
+    <div class="col">
+        <div class="row m-3 bg-light">
+            <div class="col-2 my-1">
+                Tracker status:
+            </div>
+            <!-- not working condition-->
+            <div th:switch="${tracker_status}" class="col-3 my-1">
+                <span th:case="${true}" class="text-success">Running...</span>
+                <span th:case="${false}" class="text-danger">Stopped.</span>
+            </div>
+            <!-- // TODO space buttons -->
+            <div class="col-1 my-1">
+                <form th:action="@{/reload}">
+                    <button type="submit" class="btn btn-sm btn-primary">Reload</button>
+                </form>
+            </div>
+            <div th:switch="${server_updated}" class="col my-1 align-middle">
+                <span th:case="${true}">Configuration is up to date.</span>
+                <span th:case="${false}"
+                      class="text-danger">You need to reload tracker for new paths to be applied.</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!--links path-->
-<div class="row">
-    <p>current links folder:</p>
-    <p th:text="${links_folder}"></p>
-    <form>add new folder</form>
+<div class="row m-3">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th colspan="2">Links folder path</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="col-1">
+                <span>current:</span>
+            </td>
+            <td colspan="2" class="align-middle col-10">
+                <span class="fw-normal font-monospace" th:text="${links_folder}"></span>
+            </td>
+        </tr>
+        <tr>
+        <tr>
+            <td>
+                <span>new:</span>
+            </td>
+            <form class="d-flex"
+                  action="#"
+                  th:action="@{/addlink}"
+                  method="post">
+                <td class="align-middle">
+                    <input class="form-control me-2" type="search" placeholder="path..." name="linkpath" id="linkpath"
+                           aria-label="Search">
+                </td>
+                <td class="col-2">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
+                </td>
+            </form>
+        </tr>
+        </tbody>
+    </table>
 </div>
+
 <!--target paths list-->
-<div class="row">
-    <p>current target paths:</p>
+<div class="row m-3">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -70,12 +125,14 @@
         </tr>
         </thead>
         <tbody>
+        <!--        path in table -->
         <tr th:each="path : ${target_folder_list}">
             <td>
                 <p class="fw-normal font-monospace" th:text="${path}"></p>
             </td>
-            <td class="align-middle col-2">
-                <form action="#"
+            <td th:switch="${chk_user_target}" class="align-middle col-2">
+                <form th:case="${true}"
+                      action="#"
                       th:action="@{/deletepath}"
                       method="post">
                     <input type="hidden" th:value="${path}" name="path">
@@ -84,10 +141,11 @@
             </td>
         </tr>
         <tr>
+            <!-- add new path-->
         <tr>
             <form class="d-flex"
                   action="#"
-                  th:action="@{/addpath}"
+                  th:action="@{/addtarget}"
                   method="post">
                 <td>
                     <input class="form-control  me-2" type="search" placeholder="path..." name="path" id="path"
@@ -100,8 +158,6 @@
         </tr>
         </tbody>
     </table>
-    <p>current links folder:</p>
-    <p th:text="${links_folder}"></p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"

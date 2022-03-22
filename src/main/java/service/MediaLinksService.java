@@ -32,6 +32,11 @@ public interface MediaLinksService {
     MediaLink createSymLink(QueryResult queryResult);
 
     /*
+    * Remove link and add target path back to the queue
+    * */
+    MediaQuery getBackToQueue(MediaLink mediaLink);
+
+    /*
     * Returns list of existing media links
     * */
     List<MediaLink> getMediaLinks();

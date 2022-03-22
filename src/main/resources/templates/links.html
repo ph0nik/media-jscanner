@@ -17,8 +17,8 @@
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
-<!--                                new files-->
-                <li class="nav-item">
+                <!--                                new files-->
+                <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
@@ -28,8 +28,8 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                                links-->
-                <li class="nav-item">
+                <!--                                links-->
+                <li class="nav-item px-2">
                     <a th:switch="${link_list.size()>0}" class="nav-link active" href="/links">links
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
@@ -39,8 +39,8 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                                config-->
-                <li class="nav-item">
+                <!--                                config-->
+                <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
                 <span th:case="${false}" class="navbar-text text-danger">
@@ -57,8 +57,12 @@
         <thead>
         <tr>
             <th>id</th>
-            <th>target / link</th>
-            <th>tmdb</th>
+            <th>
+                <a href="/links?sort=target">target</a>
+                <span>|</span>
+                <a href="/links?sort=link">link</a>
+            </th>
+            <th colspan="2">tmdb</th>
         </tr>
         </thead>
         <!--        table body-->
@@ -71,6 +75,14 @@
             </td>
             <td>
                 <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+            </td>
+            <td>
+                <form action="#"
+                      th:action="@{/removelink/{id}(id=${link.mediaId})}"
+                      method="post">
+                    <input type="hidden" value="" name="custom">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">remove</button>
+                </form>
             </td>
         </tr>
         </tbody>

@@ -9,18 +9,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import runner.TrackerExecutor;
 import service.MediaLinksService;
-import service.SymLinkProperties;
+import service.PropertiesService;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @Controller
 public class SimpleController {
@@ -35,7 +35,7 @@ public class SimpleController {
     private MediaLinksService mediaLinksService;
 
     @Autowired
-    private SymLinkProperties symLinkProperties;
+    private PropertiesService propertiesService;
 
     @Autowired
     private TrackerExecutor trackerExecutor;
@@ -58,28 +58,13 @@ public class SimpleController {
     }
 
     /*
-    * Start file watcher manually
+    * Reload tracker manually
     * */
-    @GetMapping("/tracker_start")
-    public String startTrackerManually() {
-        if (!trackerExecutor.trackerStatus()) trackerExecutor.startTracker();
-        return "temp";
-    }
-
-    /*
-    * Stop file watcher manually
-    * */
-    @GetMapping("/tracker_stop")
-    public String stopTrackerManually() {
-        if (trackerExecutor.trackerStatus()) trackerExecutor.stopTracker();
-        return "temp";
-    }
-
-
-    @GetMapping("/tracker_status")
-    public String checkTracker() {
-        System.out.println(trackerExecutor.trackerStatus());
-        return "temp";
+    @GetMapping("/reload")
+    public String reloadTracker() {
+        trackerExecutor.stopTracker();
+        trackerExecutor.startTracker();
+        return "redirect:/config";
     }
 
     /*
@@ -92,7 +77,7 @@ public class SimpleController {
 //        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
 //        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        boolean userPathsProvided = propertiesService.checkUserPaths();
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
@@ -109,10 +94,11 @@ public class SimpleController {
     public String selectQuery(@PathVariable("id") long id, @RequestParam String custom, Model model) {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        boolean userPathsProvided = propertiesService.checkUserPaths();
         // get query by id from db
         MediaQuery queryById = mediaTrackerDao.getQueryById(id);
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryById);
+
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
@@ -123,7 +109,7 @@ public class SimpleController {
     }
 
     /*
-    * Redirect as a protection measure in case user reloads page
+    * GET mapping as a protection measure in case user reloads page
     * */
     @GetMapping(value = {"/selectquery", "/selectquery/{id}"})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
@@ -134,7 +120,7 @@ public class SimpleController {
 //        MediaQuery queryById = mediaTrackerDao.getQueryById(id);
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+        boolean userPathsProvided = propertiesService.checkUserPaths();
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
@@ -150,20 +136,19 @@ public class SimpleController {
     @PostMapping("/newlink/{id}")
     public String newLink(@PathVariable("id") long id, @Valid QueryResult queryResult,
                           BindingResult bindingResult, Model model) {
+        boolean userPathsProvided = propertiesService.checkUserPaths();
+        System.out.println("create link with: " + queryResult);
+        mediaLinksService.createSymLink(queryResult);
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
-        System.out.println("create link with: " + queryResult);
-//        mediaLinksService.createSymLink()
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
-
-        return "links";
+        return "redirect:/query";
     }
 
     /*
-     * Redirect as a protection measure in case user reloads page
+     * GET mapping as a protection measure in case user reloads page
      * */
     @GetMapping(value = {"/newlink", "/newlink/{id}"})
     public String newLinkGet(@PathVariable(value = "id", required = false) Long id) {
@@ -172,13 +157,27 @@ public class SimpleController {
 
     /*
      * Show all existing symlinks.
-     *
      * */
-    @GetMapping("/links")
-    public String links(Model model) {
+    @RequestMapping(value = "/links", method = GET)
+    public String linksSorted(@RequestParam(value = "sort", required = false) String sort, Model model) {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
+
+        /*
+        * Optional request parameter is being evaluated and list is sorted
+        * accordingly. If no argument is given sorting falls back to default.
+        * */
+        if (sort == null || sort.isEmpty()) sort = "target";
+        if (sort.equals("target")) {
+            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getTargetPath);
+            allMediaLinks.sort(comparator);
+        }
+        if (sort.equals("link")) {
+            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getLinkPath);
+            allMediaLinks.sort(comparator);
+        }
+
+        boolean userPathsProvided = propertiesService.checkUserPaths();
 
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
@@ -186,16 +185,38 @@ public class SimpleController {
         return "links";
     }
 
+    @PostMapping("/removelink/{id}")
+    public String newLink(@PathVariable("id") long id, Model model) {
+        MediaLink linkById = mediaTrackerDao.getLinkById(id);
+        MediaQuery backToQueue = mediaLinksService.getBackToQueue(linkById);
+        mediaTrackerDao.addQueryToQueue(backToQueue);
+        return "redirect:/query";
+    }
+
+    //TODO if links path changes ask user if want to delete current folder, move files to new location or abort
     @GetMapping("/config")
     public String configuration(Model model) {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        boolean userPathsProvided = symLinkProperties.checkUserPaths();
-        boolean userLinksPath = symLinkProperties.isUserLinksPath();
-        boolean userTargetPath = symLinkProperties.isUserTargetPath();
-        Path linksFolder = symLinkProperties.getLinksFolder();
-        List<Path> targetFolderList = symLinkProperties.getTargetFolderList();
 
+        /*
+        * Compares actual paths from properties file with paths injected into file watcher.
+        * If they differ watcher needs to be restarted
+        * */
+        boolean trackerPaths = trackerExecutor.compareTargetList(propertiesService.getTargetFolderList());
+        /*
+        * Returns true if file watcher is running
+        * */
+        boolean trackerStatus = trackerExecutor.trackerStatus();
+
+        Path linksFolder = propertiesService.getLinksFolder();
+        List<Path> targetFolderList = propertiesService.getTargetFolderList();
+        boolean userPathsProvided = propertiesService.checkUserPaths();
+        boolean userLinksPath = propertiesService.isUserLinksPath();
+        boolean userTargetPath = propertiesService.isUserTargetPath();
+
+        model.addAttribute("tracker_status", trackerStatus);
+        model.addAttribute("server_updated", trackerPaths);
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
@@ -206,26 +227,29 @@ public class SimpleController {
         return "config";
     }
 
+    /*
+    * Delete target path from list
+    * */
     @PostMapping("/deletepath")
     public String deletePath(@RequestParam String path, Model model) {
-        symLinkProperties.removeTargetPath(Path.of(path));
+        propertiesService.removeTargetPath(Path.of(path));
         System.out.println("delete " + path);
         return "redirect:/config";
     }
 
     //TODO report of falls back on default paths
-    @PostMapping("/addpath")
+    @PostMapping("/addtarget")
     public String addPath(@RequestParam String path, Model model) {
-        symLinkProperties.setTargetPath(Path.of(path));
-        System.out.println("add " + path);
+        propertiesService.setTargetPath(Path.of(path));
+        System.out.println("add target " + path);
         return "redirect:/config";
     }
 
-    @GetMapping("/tracker")
-    public String getTrackerStatus(Model model) {
-        trackerExecutor.startTracker();
-//        model.addAttribute();
-        return "tracker";
+    @PostMapping("/addlink")
+    public String addLinksPath(@RequestParam String linkpath, Model model) {
+        propertiesService.setLinksPath(Path.of(linkpath));
+        System.out.println("add link" + linkpath);
+        return "redirect:/config";
     }
 
 }

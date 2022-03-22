@@ -1,5 +1,7 @@
 package runner;
 
+import java.util.concurrent.TimeUnit;
+
 public class RunnerService {
 
     private Thread menuRunner;
@@ -13,16 +15,15 @@ public class RunnerService {
     public void execute() {
         Thread tracker = new Thread(trackerRunner);
         Thread menu = new Thread(menuRunner);
-
-        // wait for service to initialize
-//        try {
-//            TimeUnit.SECONDS.sleep(3);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            e.printStackTrace();
-//        }
         // start tracker thread
         tracker.start();
+        // wait for service to initialize
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+        }
         // run UI on second thread
         menu.start();
 

@@ -1,5 +1,6 @@
 package dao;
 
+import model.MediaLink;
 import model.MediaQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,8 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MediaTrackerDaoImplTest {
 
@@ -123,23 +123,22 @@ class MediaTrackerDaoImplTest {
         assertEquals(1, inFilePathQuery.size());
     }
 
-//    @Test
-//    void addNewLink() {
-//    }
-//
-//    @Test
-//    void removeLink() {
-//    }
-//
-//    @Test
-//    void getAllMediaLinks() {
-//    }
-//
-//    @Test
-//    void findInFilePathLink() {
-//    }
-//
-//    @Test
-//    void findMediaLinkByFilePath() {
-//    }
+    @Test
+    void findOtherPath() {
+        MediaLink mediaLink = new MediaLink();
+        mediaLink.setTargetPath("E:\\Filmy SD\\About Faces  1941.avi");
+        mediaLink.setImdbId("tt0401151");
+        mediaLink.setTheMovieDbId(442942);
+        mediaLink.setLinkPath("G:\\Temp\\jscanner-test-folder\\About Faces (1941) [imdbid-tt0401151]\\About Faces.avi");
+
+
+        dao.addNewLink(mediaLink);
+
+        String query = "G:\\Temp\\jscanner-test-folder\\About Faces (1941) [imdbid-tt0401151]\\";
+
+        List<MediaLink> inFilePathLink = dao.findInLinkFilePathLink(query);
+        assertTrue(inFilePathLink.size() > 0);
+
+
+    }
 }

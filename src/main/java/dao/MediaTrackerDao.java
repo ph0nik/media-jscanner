@@ -32,6 +32,11 @@ public interface MediaTrackerDao {
     List<MediaQuery> findInFilePathQuery(String phrase);
 
     /*
+    * Get MediaLink element by id
+    * */
+    MediaLink getLinkById(Long id);
+
+    /*
     * Add new MediaLink element to database
     * */
     void addNewLink(MediaLink mediaLInk);
@@ -49,7 +54,9 @@ public interface MediaTrackerDao {
     /*
      * Return all MediaLink elements that have given phrase within their filepath
      * */
-    public List<MediaLink> findInFilePathLink(String phrase);
+    public List<MediaLink> findInTargetFilePathLink(String phrase);
+
+    public List<MediaLink> findInLinkFilePathLink(String phrase);
 
     /*
     * Return all MediaLink elements with given filepath

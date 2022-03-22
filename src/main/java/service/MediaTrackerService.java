@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import util.CleanerService;
 import util.MediaFilter;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -30,8 +29,6 @@ public class MediaTrackerService {
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
 
-    // TODO tracker fails when path is incorrect
-    // check if folder exists
     public MediaTrackerService(MediaTrackerDao dao, CleanerService cs) {
         mediaTrackerDao = dao;
         cleanerService = cs;
@@ -39,40 +36,51 @@ public class MediaTrackerService {
 
     /*
      * Recursively add subdirectories of root directory to watch service.
+     * If any file matching criteria is found while walking file tree,
+     * it's automatically added to media queue.
      * */
     private void registerTree(WatchService watchService, Path root) throws IOException {
+
         Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+
                 watchKeyToPathMap.put(key, dir);
                 pathToWatchKeyMap.put(dir, key);
 
-                File[] files = dir.toFile().listFiles();
-                /*
-                 * Scan every newly added folder for files with matching extensions
-                 * and add them to queue
-                 * */
-                if (files != null) {
-                    for (File f : files) {
-                        if (MediaFilter.validateExtension(f.toString())) {
-                            String s = f.toString();
-                            validateAndAdd(s);
-                        }
-                    }
-                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if (MediaFilter.validateExtension(file)) validateAndAdd(file.toString());
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
     public void watch(WatchService watchService, List<Path> paths) throws IOException, InterruptedException {
+        /*
+        * Get existing query list
+        * */
+        List<MediaQuery> beforeInitQueries = mediaTrackerDao.getAllMediaQueries();
+
+        /*
+        * Check against provided folders and delete entries that aren't child
+        * elements of given paths.
+        * */
+        beforeInitQueries.stream()
+                .filter(mq -> paths.stream().noneMatch(p -> Path.of(mq.getFilePath()).startsWith(p)))
+                .forEach(this::removeQuery);
+
         for (Path path : paths) {
             // check if provided path exist and ignore invalid path
             if (pathValidator(path)) registerTree(watchService, path);
         }
-        while (true) {
+
+        while (!watchKeyToPathMap.isEmpty()) {
             WatchKey watchKey = watchService.take();
 
             for (WatchEvent<?> event : watchKey.pollEvents()) {
@@ -151,25 +159,29 @@ public class MediaTrackerService {
         }
     }
 
+    /*
+    * Check if provided path exists
+    * */
     private boolean pathValidator(Path path) {
         return path.toFile().exists();
     }
 
+    /*
+    * Check if given path already exists either as link or as media query in database.
+    * Otherwise, add it to query queue.
+    * */
     private void validateAndAdd(String filePath) {
-//        if (validateExtension(filePath)) {
-            // check if file name already exists in db
-            MediaLink mediaLinkByFilePath = mediaTrackerDao.findMediaLinkByFilePath(filePath);
-            boolean matchingLink = mediaLinkByFilePath != null;
-            MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(filePath);
-            boolean matchingQuery = queryByFilePath != null;
-            if (!matchingLink && !matchingQuery) {
-                LOG.info("[ init ] found new file: {}", filePath);
-                addNewQuery(filePath);
-            } else if (matchingLink && !matchingQuery) {
-                LOG.info("[ init ] existing link: ");
-
-            }
-//        }
+        MediaLink mediaLinkByFilePath = mediaTrackerDao.findMediaLinkByFilePath(filePath);
+        boolean matchingLink = mediaLinkByFilePath != null;
+        MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(filePath);
+        boolean matchingQuery = queryByFilePath != null;
+        if (!matchingLink && !matchingQuery) {
+            LOG.info("[ init ] found new file: {}", filePath);
+            addNewQuery(filePath);
+        } else if (matchingLink) {
+            LOG.info("[ init ] existing link: {}", mediaLinkByFilePath);
+        }
+        LOG.info("[ init ] already in queue: {}", filePath);
     }
 
     /*
@@ -179,21 +191,20 @@ public class MediaTrackerService {
 //        String parentPath = Path.of(filePath).getParent().toString();
         MediaQuery query = new MediaQuery(filePath);
         mediaTrackerDao.addQueryToQueue(query);
-        LOG.info("[ new_query ] added to db with filepath: {}", filePath);
+        LOG.info("[ new_query ] added to the queue with filepath: {}", filePath);
 
     }
 
     /*
-     *  Removes existing link
+     * Removes existing link from database, deletes symlink and containing folder.
      * */
     private void removeLink(MediaLink mediaLink) {
         mediaTrackerDao.removeLink(mediaLink);
-        LOG.info("[ remove_link ] link deleted");
+        LOG.info("[ remove_link ] removed link: {}", mediaLink);
         cleanerService.deleteElement(Path.of(mediaLink.getLinkPath()));
-        LOG.info("[ remove_link ] file deleted");
+        LOG.info("[ remove_link ] file deleted: {}", mediaLink.getLinkPath());
         Path linkParentPath = Path.of(mediaLink.getLinkPath()).getParent();
         if (cleanerService.containsNoMediaFiles(linkParentPath)) {
-            cleanerService.deleteNonMediaFiles(linkParentPath);
             cleanerService.deleteElement(linkParentPath);
         }
     }
@@ -203,12 +214,12 @@ public class MediaTrackerService {
      * */
     private void removeQuery(MediaQuery mediaQuery) {
         mediaTrackerDao.removeQueryFromQueue(mediaQuery);
-        LOG.info("[ remove_query ] query deleted");
+        LOG.info("[ remove_query ] query deleted: {}", mediaQuery);
     }
 
     private void removeLinkByParentPath(Path child) {
         String phrase = child.getName(child.getNameCount() - 1).toString();
-        List<MediaLink> mediaLinkByFilePath = mediaTrackerDao.findInFilePathLink(phrase);
+        List<MediaLink> mediaLinkByFilePath = mediaTrackerDao.findInTargetFilePathLink(phrase);
         for (MediaLink ml : mediaLinkByFilePath) {
             removeLink(ml);
             LOG.info("[ remove_link ] removed link: {}", ml.getLinkPath());
