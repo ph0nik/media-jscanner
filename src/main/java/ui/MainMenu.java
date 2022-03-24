@@ -4,6 +4,7 @@ import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
 import service.MediaLinksService;
+import util.MediaIdentity;
 
 import java.util.List;
 import java.util.Scanner;
@@ -87,7 +88,7 @@ public class MainMenu {
     * */
     public void getResultsMenu(MediaQuery mediaQuery) {
         if (queryResults.isEmpty()) {
-            queryResults = mediaLinksService.executeMediaQuery("", mediaQuery);
+            queryResults = mediaLinksService.executeMediaQuery("", mediaQuery, MediaIdentity.TMDB);
         }
         int index = 1;
         System.out.println(":: Query Results Menu ::");
@@ -106,7 +107,7 @@ public class MainMenu {
         if (sc.hasNextInt()) {
             int s = Integer.parseInt(sc.nextLine()) - 1;
             if (s >= 0 && s < max - 2) {
-                mediaLinksService.createSymLink(queryResults.get(s));
+                mediaLinksService.createSymLink(queryResults.get(s), MediaIdentity.TMDB);
                 queryResults = List.of();
                 getExistingLinks();
             } else if (s == max - 1) {
@@ -134,7 +135,7 @@ public class MainMenu {
     * */
     public void getCustomSearchMenu(String customPhrase, MediaQuery mediaQuery) {
         if (queryResults.isEmpty()) {
-            queryResults = mediaLinksService.executeMediaQuery(customPhrase, mediaQuery);
+            queryResults = mediaLinksService.executeMediaQuery(customPhrase, mediaQuery, MediaIdentity.TMDB);
         }
         int index = 1;
         System.out.println(":: Custom Query Menu ::");
@@ -151,7 +152,7 @@ public class MainMenu {
         if (sc.hasNextInt()) {
             int s = Integer.parseInt(sc.nextLine()) - 1;
             if (s >= 0 && s < max) {
-                mediaLinksService.createSymLink(queryResults.get(s));
+                mediaLinksService.createSymLink(queryResults.get(s), MediaIdentity.TMDB);
                 queryResults = List.of();
                 getExistingLinks();
             } else if (s == max) {

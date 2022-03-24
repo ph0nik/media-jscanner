@@ -5,6 +5,15 @@ public class MediaData {
     private String title;
     private int year;
     private String imdbId;
+    private int tmdbId;
+
+    public int getTmdbId() {
+        return tmdbId;
+    }
+
+    public void setTmdbId(int tmdbId) {
+        this.tmdbId = tmdbId;
+    }
 
     public String getImdbId() {
         return imdbId;
@@ -36,6 +45,7 @@ public class MediaData {
                 "title='" + title + '\'' +
                 ", year=" + year +
                 ", imdbId='" + imdbId + '\'' +
+                ", tmdbId=" + tmdbId +
                 '}';
     }
 }

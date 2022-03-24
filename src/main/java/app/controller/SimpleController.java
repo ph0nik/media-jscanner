@@ -11,14 +11,17 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import runner.TrackerExecutor;
+import service.AutoMatcherService;
 import service.MediaLinksService;
 import service.PropertiesService;
+import util.MediaIdentity;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -39,6 +42,11 @@ public class SimpleController {
 
     @Autowired
     private TrackerExecutor trackerExecutor;
+
+    @Autowired
+    private AutoMatcherService autoMatcherService;
+
+    private Future<Boolean> future;
 
     /*
     * Testing starting page
@@ -74,14 +82,14 @@ public class SimpleController {
     @GetMapping("/query")
     public String queryList(Model model) {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
-//        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-//        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
         boolean userPathsProvided = propertiesService.checkUserPaths();
+        boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
         model.addAttribute("passquery", new MediaQuery());
+        model.addAttribute("future", autoMatcherStatus);
         return "query_list";
     }
 
@@ -97,7 +105,7 @@ public class SimpleController {
         boolean userPathsProvided = propertiesService.checkUserPaths();
         // get query by id from db
         MediaQuery queryById = mediaTrackerDao.getQueryById(id);
-        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryById);
+        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryById, MediaIdentity.IMDB);
 
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
@@ -138,7 +146,7 @@ public class SimpleController {
                           BindingResult bindingResult, Model model) {
         boolean userPathsProvided = propertiesService.checkUserPaths();
         System.out.println("create link with: " + queryResult);
-        mediaLinksService.createSymLink(queryResult);
+        mediaLinksService.createSymLink(queryResult, MediaIdentity.IMDB);
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
         model.addAttribute("query_list", allMediaQueries);
@@ -153,6 +161,12 @@ public class SimpleController {
     @GetMapping(value = {"/newlink", "/newlink/{id}"})
     public String newLinkGet(@PathVariable(value = "id", required = false) Long id) {
         return "redirect:/links";
+    }
+
+    @GetMapping("/auto")
+    public String autoMatch() {
+        future = autoMatcherService.autoMatchFilesWithFuture();
+        return "redirect:/query";
     }
 
     /*
@@ -188,7 +202,7 @@ public class SimpleController {
     @PostMapping("/removelink/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
         MediaLink linkById = mediaTrackerDao.getLinkById(id);
-        MediaQuery backToQueue = mediaLinksService.getBackToQueue(linkById);
+        MediaQuery backToQueue = mediaLinksService.moveBackToQueue(linkById);
         mediaTrackerDao.addQueryToQueue(backToQueue);
         return "redirect:/query";
     }

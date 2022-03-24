@@ -7,9 +7,18 @@ public class QueryResult implements Comparable<QueryResult> {
     private long id;
     private String url;
     private int theMovieDbId;
+    private String imdbId;
     private String title;
     private String description;
     private String filePath;
+
+    public String getImdbId() {
+        return imdbId;
+    }
+
+    public void setImdbId(String imdbId) {
+        this.imdbId = imdbId;
+    }
 
     public String getFilePath() {
         return filePath;
@@ -65,6 +74,7 @@ public class QueryResult implements Comparable<QueryResult> {
                 "id=" + id +
                 ", url='" + url + '\'' +
                 ", theMovieDbId=" + theMovieDbId +
+                ", imdbId='" + imdbId + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", filePath='" + filePath + '\'' +
@@ -76,16 +86,20 @@ public class QueryResult implements Comparable<QueryResult> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         QueryResult that = (QueryResult) o;
-        return theMovieDbId == that.theMovieDbId;
+        return theMovieDbId == that.theMovieDbId && url.equals(that.url) && imdbId.equals(that.imdbId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(theMovieDbId);
+        return Objects.hash(url, theMovieDbId, imdbId);
     }
 
     @Override
     public int compareTo(QueryResult o) {
-        return this.getTheMovieDbId() - o.getTheMovieDbId();
+        int i = this.getTheMovieDbId() - o.getTheMovieDbId();
+        if (i != 0) return i;
+        int j = this.getImdbId().compareTo(o.getImdbId());
+        if (j != 0) return j;
+        return this.getUrl().compareTo(o.getUrl());
     }
 }

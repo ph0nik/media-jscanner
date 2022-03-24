@@ -85,6 +85,7 @@
             <th>id</th>
             <th>title</th>
             <th>tmdb</th>
+            <th>imdb</th>
             <th></th>
         </tr>
         </thead>
@@ -100,8 +101,13 @@
                 <span th:text="${result.title}" class="fs-6 fw-bold font-monospace"></span>
                 <p th:text="${result.description}" class="fs-7 fw-normal font-monospace"></p>
             </td>
-            <td>
-                <span th:text="${result.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+            <td th:switch="${result.theMovieDbId == 0}">
+                <span th:case="${false}" th:text="${result.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+                <span th:case="${true}" th:text="'-'" class="fs-6 fw-bold font-monospace"></span>
+            </td>
+            <td th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
+                <span th:case="${false}" th:text="${result.imdbId}" class="fs-6 fw-bold font-monospace"></span>
+                <span th:case="${true}" th:text="'-'" class="fs-6 fw-bold font-monospace"></span>
             </td>
             <td>
                 <form action="#"
@@ -112,6 +118,7 @@
                     <input type="hidden" th:value="${result.title}" name="title">
                     <input type="hidden" th:value="${result.filePath}" name="filePath">
                     <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
+                    <input type="hidden" th:value="${result.imdbId}" name="imdbId">
                     <input type="hidden" th:value="${result.description}" name="description">
                     <input type="hidden" th:value="${result.url}" name="url">
                     <!--                    <button type="submit" th:text="${result}"></button>-->

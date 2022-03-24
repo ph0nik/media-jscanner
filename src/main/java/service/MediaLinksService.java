@@ -3,6 +3,7 @@ package service;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
+import util.MediaIdentity;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface MediaLinksService {
      * otherwise query from MediaQuery object is being used.
      * Returns List of QueryResult or null in case of exception.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery);
+    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
 
     /*
     * Returns results of latest request
@@ -29,17 +30,25 @@ public interface MediaLinksService {
     /*
      * Create symlink with specified query result and link properties
      * */
-    MediaLink createSymLink(QueryResult queryResult);
+    MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity);
 
     /*
     * Remove link and add target path back to the queue
     * */
-    MediaQuery getBackToQueue(MediaLink mediaLink);
+    MediaQuery moveBackToQueue(MediaLink mediaLink);
 
     /*
     * Returns list of existing media links
     * */
     List<MediaLink> getMediaLinks();
+
+    /*
+    * Scan current links folder and delete all links that
+    * are not found in database.
+    * Method removes symbolic links, all the non-media files within the same folder
+    * and parent folder.
+    * */
+    public void deleteInvalidLinks();
 
 
 }

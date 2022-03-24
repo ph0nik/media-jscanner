@@ -16,7 +16,7 @@
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
-<!--                new files-->
+                <!--                new files-->
                 <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
                         <!-- show if any new files are in the queue -->
@@ -27,7 +27,7 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                links-->
+                <!--                links-->
                 <li class="nav-item px-2">
                     <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
@@ -38,7 +38,7 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                config-->
+                <!--                config-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
@@ -50,12 +50,37 @@
     </nav>
 </div>
 <div class="row">
+    <div class="col">
+        <div class="row m-3 bg-light">
+            <div th:switch="${future}" class="col">
+                <p th:case="${false}">
+                    Adding and removing links is unavailable while AutoMatcher is at work.
+                    Wait and refresh in a while.
+                </p>
+                <p th:case="${true}">
+                    Let AutoMatcher try to match elements with correct movies.
+                </p>
+            </div>
+            <div th:switch="${future}" class="col">
+                <form action="#"
+                      th:action="@{/auto}"
+                      method="get">
+                    <input type="hidden">
+                    <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">Match</button>
+                    <button th:case="${false}" class="btn btn-outline-primary btn-sm" type="submit" disabled>Match</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="row">
     <table class="table table-striped table-hover">
         <thead>
         <tr>
             <th>id</th>
             <th>filepath</th>
-            <th></th>
+            <th th:text="${future}"></th>
         </tr>
         </thead>
         <tbody>
@@ -65,12 +90,13 @@
                 <span th:text="${query.getFileName()}" class="fs-6 fw-bold font-monospace"></span>
                 <p th:text="${query.getParentPath()}" class="fs-7 fw-normal font-monospace"></p>
             </td>
-            <td>
+            <td th:switch="${future}" >
                 <form action="#"
                       th:action="@{/selectquery/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">select</button>
+                    <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">select</button>
+                    <button th:case="${false}" class="btn btn-outline-primary btn-sm" type="submit" disabled>select</button>
                 </form>
             </td>
         </tr>
