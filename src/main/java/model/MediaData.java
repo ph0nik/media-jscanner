@@ -1,11 +1,22 @@
 package model;
 
+import util.MediaType;
+
 public class MediaData {
 
     private String title;
     private int year;
     private String imdbId;
     private int tmdbId;
+    private MediaType mediaType;
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
 
     public int getTmdbId() {
         return tmdbId;
@@ -46,6 +57,7 @@ public class MediaData {
                 ", year=" + year +
                 ", imdbId='" + imdbId + '\'' +
                 ", tmdbId=" + tmdbId +
+                ", mediaType=" + mediaType +
                 '}';
     }
 }

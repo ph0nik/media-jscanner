@@ -27,8 +27,12 @@ class ResponseParser {
 
     private final Properties networkProperties;
 
-    ResponseParser(Properties networkProperties) {
+    private ResponseParser(Properties networkProperties) {
         this.networkProperties = networkProperties;
+    }
+
+    static ResponseParser getResponseParser(Properties networkProperties) {
+        return new ResponseParser(networkProperties);
     }
 
     /*

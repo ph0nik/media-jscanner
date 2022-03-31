@@ -25,7 +25,6 @@ class MediaFilterTest {
 
     public void checkForDir() throws IOException {
         File file = new File("./test-folder/2");
-//        System.out.println(file.getCanonicalPath());
         Assertions.assertFalse(MediaFilter.checkForEmptyDirectory(file));
     }
 

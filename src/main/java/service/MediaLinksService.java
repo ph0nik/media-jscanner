@@ -4,10 +4,12 @@ import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
 import util.MediaIdentity;
+import util.MediaType;
 
+import java.nio.file.Path;
 import java.util.List;
 
-public interface MediaLinksService {
+public interface MediaLinksService extends Pagination {
 
     /*
      * Get list of all queries from db
@@ -20,7 +22,7 @@ public interface MediaLinksService {
      * otherwise query from MediaQuery object is being used.
      * Returns List of QueryResult or null in case of exception.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
+    List<QueryResult> executeMediaQuery(String customQuery, long mediaQueryId, MediaIdentity mediaIdentity);
 
     /*
     * Returns results of latest request
@@ -30,12 +32,12 @@ public interface MediaLinksService {
     /*
      * Create symlink with specified query result and link properties
      * */
-    MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity);
+    MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
 
     /*
     * Remove link and add target path back to the queue
     * */
-    MediaQuery moveBackToQueue(MediaLink mediaLink);
+    MediaQuery moveBackToQueue(long mediaLinkId);
 
     /*
     * Returns list of existing media links
@@ -48,7 +50,9 @@ public interface MediaLinksService {
     * Method removes symbolic links, all the non-media files within the same folder
     * and parent folder.
     * */
-    public void deleteInvalidLinks();
+    void deleteInvalidLinks();
+
+    boolean validatePath(Path path);
 
 
 }

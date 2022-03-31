@@ -89,8 +89,9 @@
             <td class="col-1">
                 <span>current:</span>
             </td>
-            <td colspan="2" class="align-middle col-10">
+            <td th:switch="${links_path_validated}" colspan="2" class="align-middle col-10">
                 <span class="fw-normal font-monospace" th:text="${links_folder}"></span>
+                <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
             </td>
         </tr>
         <tr>
@@ -120,15 +121,18 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>user provided folders</th>
+            <th>Target folder paths</th>
             <th></th>
         </tr>
         </thead>
         <tbody>
         <!--        path in table -->
         <tr th:each="path : ${target_folder_list}">
-            <td>
-                <p class="fw-normal font-monospace" th:text="${path}"></p>
+            <td th:switch="${target_path_validated.get(path)}">
+                <span class="fw-normal font-monospace" th:text="${path}">
+
+                </span>
+                <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
             </td>
             <td th:switch="${chk_user_target}" class="align-middle col-2">
                 <form th:case="${true}"

@@ -5,14 +5,18 @@ import model.MediaQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+//@SpringBootTest(classes = dao.MediaTrackerDaoImpl.class)
+//@RunWith(SpringRunner.class)
 class MediaTrackerDaoImplTest {
 
+    @Autowired
     MediaTrackerDao dao;
     MediaQuery mediaQuery1;
     MediaQuery mediaQuery2;
@@ -31,6 +35,7 @@ class MediaTrackerDaoImplTest {
         mediaQuery2 = new MediaQuery();
         mediaQuery2.setFilePath(filePath2);
     }
+
 
     @BeforeEach
     void openFactory() {
@@ -77,7 +82,6 @@ class MediaTrackerDaoImplTest {
     void removeNonExistentQueryFromQueue() {
         dao.addQueryToQueue(mediaQuery2);
         List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
-        allMediaQueries.forEach(System.out::println);
         assertEquals(1, allMediaQueries.size());
         dao.removeQueryFromQueue(mediaQuery1);
         allMediaQueries = dao.getAllMediaQueries();
@@ -87,11 +91,9 @@ class MediaTrackerDaoImplTest {
     @Test
     void findQueryByFilePath() {
         dao.addQueryToQueue(mediaQuery1);
-        System.out.println(filePath);
         MediaQuery queryByFilePath = dao.findQueryByFilePath(filePath2);
         assertNotEquals(mediaQuery1, queryByFilePath);
         queryByFilePath = dao.findQueryByFilePath(filePath);
-        System.out.println(queryByFilePath);
         assertEquals(mediaQuery1, queryByFilePath);
     }
 

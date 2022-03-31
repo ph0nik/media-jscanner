@@ -6,6 +6,7 @@ import java.net.URL;
 
 public class TrayMenu {
 
+//    TODO tray
     void createTray() {
         //Check the SystemTray is supported
         if (!SystemTray.isSupported()) {

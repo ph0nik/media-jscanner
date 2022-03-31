@@ -17,8 +17,12 @@ class RequestService {
 
     private final Properties networkProperties;
 
-    public RequestService(Properties networkProperties) {
+    private RequestService(Properties networkProperties) {
         this.networkProperties = networkProperties;
+    }
+
+    static RequestService getRequestService(Properties networkProperties) {
+        return new RequestService(networkProperties);
     }
 
     /*

@@ -86,13 +86,23 @@
             <th>title</th>
             <th>tmdb</th>
             <th>imdb</th>
-            <th></th>
+            <th class="col-2">
+                <select name="mediatype"
+                        id="mediatype"
+                        class="form-select form-select-sm"
+                        th:field="*{request_form.mediaType}"
+                        form="selectresult">
+                    <option th:each="media : ${T(util.MediaType).values()}"
+                            th:value="${media}" th:text="${media.displayValue}"
+                            th:selected="${media == 'MOVIE'}"></option>
+                </select>
+            </th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
-        <tr th:switch="${result.theMovieDbId < 0}" th:each="result : ${result_list}">
-            <td th:text="${result.id}"></td>
+        <tr th:switch="${result.theMovieDbId < 0}" th:each="result, iter : ${result_list}">
+            <td th:text="${iter.index} + 1"></td>
             <td th:case="${true}">
                 <span th:text="${result.title}" class="fs-6 fw-bold font-monospace text-danger"></span>
                 <p th:text="${result.description}" class="fs-7 fw-normal font-monospace text-danger"></p>
@@ -109,11 +119,12 @@
                 <span th:case="${false}" th:text="${result.imdbId}" class="fs-6 fw-bold font-monospace"></span>
                 <span th:case="${true}" th:text="'-'" class="fs-6 fw-bold font-monospace"></span>
             </td>
-            <td>
+            <td class="col-2">
                 <form action="#"
-                      th:action="@{/newlink/{id}(id=${query.queryId})}"
-                      th:object="${selection}"
-                      method="post">
+                      th:action="@{/newlink}"
+                      th:object="${request_form}"
+                      method="post"
+                      id="selectresult">
                     <input type="hidden" th:value="${result.id}" name="id">
                     <input type="hidden" th:value="${result.title}" name="title">
                     <input type="hidden" th:value="${result.filePath}" name="filePath">
@@ -121,10 +132,9 @@
                     <input type="hidden" th:value="${result.imdbId}" name="imdbId">
                     <input type="hidden" th:value="${result.description}" name="description">
                     <input type="hidden" th:value="${result.url}" name="url">
-                    <!--                    <button type="submit" th:text="${result}"></button>-->
-                    <button class="btn btn-outline-primary btn-sm" type="submit">select</button>
-                </form>
 
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Select</button>
+                </form>
             </td>
         </tr>
         </tbody>

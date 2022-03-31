@@ -49,54 +49,84 @@
         </div>
     </nav>
 </div>
-<div class="row">
-    <div class="col">
-        <div class="row m-3 bg-light">
-            <div th:switch="${future}" class="col">
-                <p th:case="${false}">
+<!-- Auto matcher-->
+<div class="row justify-items-center">
+    <div class="col-8 offset-md-2">
+        <div class="row m-3 p-2 bg-light border rounded">
+            <div th:switch="${future}" class="col-8 justify-items-center">
+<!--                Auto Matcher running-->
+                <span th:case="${false}">
                     Adding and removing links is unavailable while AutoMatcher is at work.
                     Wait and refresh in a while.
-                </p>
-                <p th:case="${true}">
+                </span>
+<!--                Auto Matcher waiting-->
+                <span th:case="${true}">
                     Let AutoMatcher try to match elements with correct movies.
-                </p>
+                </span>
             </div>
-            <div th:switch="${future}" class="col">
+            <div th:switch="${future}" class="col justify-items-center">
                 <form action="#"
                       th:action="@{/auto}"
                       method="get">
                     <input type="hidden">
                     <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">Match</button>
-                    <button th:case="${false}" class="btn btn-outline-primary btn-sm" type="submit" disabled>Match</button>
+                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>Match</button>
                 </form>
             </div>
         </div>
     </div>
 
 </div>
+<!--page selection-->
 <div class="row">
-    <table class="table table-striped table-hover">
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center pagination-sm">
+            <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}" >
+                <a th:if="${page.getNumber() > 0}"
+                   th:href="@{/query(size=${page.size}, page=${page.getNumber()})}"
+                   class="page-link">Previous</a>
+                <span th:if="${page.getNumber() <= 0}" class="page-link disabled">Previous</span>
+            </li>
+            <li class="page-item disabled" aria-current="page">
+                <span class="page-link" th:text="${page.getNumber() + 1 + ' of ' + page.getTotalPages()}"></span>
+            </li>
+            <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
+                <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
+                   th:href="@{/query(size=${page.size}, page=${page.getNumber() + 2})}"
+                   class="page-link">Next</a>
+                <span th:if="${page.getNumber() + 1 == page.getTotalPages()}" class="page-link disabled">Next</span>
+            </li>
+        </ul>
+    </nav>
+</div>
+<!-- Paginated Queue -->
+<div class="row">
+    <table class="table table-striped table-hover table-sm">
         <thead>
         <tr>
-            <th>id</th>
-            <th>filepath</th>
-            <th th:text="${future}"></th>
+            <th class="col-1 text-center">#</th>
+            <th class="col">filepath</th>
+            <th class="col-1"></th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="query : ${query_list}">
-            <td th:text="${query.queryId}"></td>
+        <tr class="align-middle" th:each="query, iter : ${page.getContent()}">
+<!--            id-->
+            <td class="text-center"
+                th:text="${page.getNumber() * page.getSize() + iter.index + 1}"></td>
+<!--            path + description-->
             <td>
-                <span th:text="${query.getFileName()}" class="fs-6 fw-bold font-monospace"></span>
-                <p th:text="${query.getParentPath()}" class="fs-7 fw-normal font-monospace"></p>
+                <span th:text="${query.getFileName()}" class="row fs-6 fw-bold font-monospace"></span>
+                <span th:text="${query.getParentPath()}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
+<!--            form + buttom -->
             <td th:switch="${future}" >
                 <form action="#"
                       th:action="@{/selectquery/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
                     <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">select</button>
-                    <button th:case="${false}" class="btn btn-outline-primary btn-sm" type="submit" disabled>select</button>
+                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>select</button>
                 </form>
             </td>
         </tr>

@@ -22,12 +22,6 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
 
-//    private static EntityManager entityManager;
-//
-//    public MediaTrackerDaoImpl() {
-//        entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
-//    }
-
     @Override
     public void addQueryToQueue(MediaQuery query) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();

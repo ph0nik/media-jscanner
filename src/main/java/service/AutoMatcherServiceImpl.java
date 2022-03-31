@@ -1,6 +1,5 @@
 package service;
 
-
 import model.DeductedQuery;
 import model.MediaQuery;
 import model.QueryResult;
@@ -10,11 +9,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import util.MediaIdentity;
+import util.MediaType;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -27,36 +26,13 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     private static final int REQUEST_WAIT = 1;
 
     private final RequestService requestService;
-    private final Properties networkProperties;
     private final ResponseParser responseParser;
     private final MediaLinksService mediaLinksService;
 
     public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
-        this.networkProperties = propertiesService.getNetworkProperties();
         this.mediaLinksService = mediaLinksService;
-        responseParser = new ResponseParser(networkProperties);
-        requestService = new RequestService(networkProperties);
-    }
-
-    @Async
-    public void autoMatchFiles() {
-        List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
-        int x = 5;
-        int i = 0;
-        for (MediaQuery mq : mediaQueryList) {
-            if (i == x) break;
-            DeductedQuery deductedQuery = extractTitleAndYear(mq.getFilePath());
-            if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
-                List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-                createLinksWithBestMatches(queryResults);
-                try {
-                    TimeUnit.SECONDS.sleep(REQUEST_WAIT);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
-            }
-        }
+        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
+        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
     @Async
@@ -78,7 +54,7 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
                 i++;
             }
         }
-        return new AsyncResult<Boolean>(true);
+        return new AsyncResult<>(true);
     }
     /*
     * Extract movie title and production year from given path.
@@ -106,7 +82,7 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     * Search for movie with given title and year.
     * Returns query result list.
     * */
-    public List<QueryResult> searchWithDeductedQuery(DeductedQuery deductedQuery) {
+    private List<QueryResult> searchWithDeductedQuery(DeductedQuery deductedQuery) {
         String response = null;
         try {
             response = requestService.tmdbApiTitleAndYear(deductedQuery);
@@ -121,9 +97,9 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     /*
     * If results list have only one element use it for creating symbolic link.
     * */
-    public void createLinksWithBestMatches(List<QueryResult> queryResults) {
+    private void createLinksWithBestMatches(List<QueryResult> queryResults) {
         if (queryResults.size() == 1) {
-            mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB);
+            mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, MediaType.MOVIE);
         }
     }
 

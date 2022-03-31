@@ -4,8 +4,11 @@ import dao.MediaTrackerDao;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
+import model.form.WebSearchResultForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,10 +20,8 @@ import service.PropertiesService;
 import util.MediaIdentity;
 
 import javax.annotation.PostConstruct;
-import javax.validation.Valid;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -57,6 +58,11 @@ public class SimpleController {
         return "home";
     }
 
+    @GetMapping("/jscanner")
+    public String startingPoint() {
+        return "redirect:/query";
+    }
+
     /*
     * Initialize file watcher at startup
     * */
@@ -72,23 +78,53 @@ public class SimpleController {
     public String reloadTracker() {
         trackerExecutor.stopTracker();
         trackerExecutor.startTracker();
+
         return "redirect:/config";
     }
 
     /*
      * Show elements awaiting in the queue and let user select
-     * file to process
+     * file to process or let auto matcher guess correct movies.
      * */
+//    @GetMapping("/query")
+//    public String queryList(Model model) {
+//        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+//        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+//
+//        boolean userPathsProvided = propertiesService.checkUserPaths();
+////        Get Auto Matcher status
+//        boolean autoMatcherStatus = future == null || future.isDone();
+//
+//        // TODO pagination
+//        model.addAttribute("query_list", allMediaQueries);
+//        model.addAttribute("link_list", allMediaLinks);
+//        model.addAttribute("user_paths", userPathsProvided);
+//        model.addAttribute("passquery", new MediaQuery());
+//        model.addAttribute("future", autoMatcherStatus);
+//        return "query_list";
+//    }
+
     @GetMapping("/query")
-    public String queryList(Model model) {
+    public String queryList(@RequestParam("page") Optional<Integer> page,
+                            @RequestParam("size") Optional<Integer> size,
+                            Model model) {
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(20);
+
+        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize));
+
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+
         boolean userPathsProvided = propertiesService.checkUserPaths();
+//        Get Auto Matcher status
         boolean autoMatcherStatus = future == null || future.isDone();
+
+        // TODO pagination
+        model.addAttribute("page", paginatedQueries);
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
-        model.addAttribute("passquery", new MediaQuery());
         model.addAttribute("future", autoMatcherStatus);
         return "query_list";
     }
@@ -105,14 +141,15 @@ public class SimpleController {
         boolean userPathsProvided = propertiesService.checkUserPaths();
         // get query by id from db
         MediaQuery queryById = mediaTrackerDao.getQueryById(id);
-        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryById, MediaIdentity.IMDB);
+        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, id, MediaIdentity.IMDB);
 
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("selection", new QueryResult());
+//        model.addAttribute("selection", new QueryResult());
         model.addAttribute("query", queryById);
+        model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";
     }
 
@@ -121,45 +158,52 @@ public class SimpleController {
     * */
     @GetMapping(value = {"/selectquery", "/selectquery/{id}"})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
+        // TODO add file path id to query result to avoid double call to db
         List<QueryResult> latestMediaQuery = mediaLinksService.getLatestMediaQuery();
         if (latestMediaQuery == null) return "redirect:/query";
         String filePath = latestMediaQuery.get(0).getFilePath();
+        // TODO remove dao reference
         MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(filePath);
-//        MediaQuery queryById = mediaTrackerDao.getQueryById(id);
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
         boolean userPathsProvided = propertiesService.checkUserPaths();
+
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
         model.addAttribute("user_paths", userPathsProvided);
         model.addAttribute("result_list", latestMediaQuery);
-        model.addAttribute("selection", new QueryResult());
+        model.addAttribute("request_form", new WebSearchResultForm());
+//        model.addAttribute("selection", new QueryResult());
         model.addAttribute("query", queryByFilePath);
+
         return "result_selection";
     }
 
     /*
     * Create new link with query id and query result object.
     * */
-    @PostMapping("/newlink/{id}")
-    public String newLink(@PathVariable("id") long id, @Valid QueryResult queryResult,
-                          BindingResult bindingResult, Model model) {
+    @PostMapping("/newlink")
+    public String newLink(WebSearchResultForm webSearchResultForm,
+                          BindingResult bindingResult,
+                          Model model) {
         boolean userPathsProvided = propertiesService.checkUserPaths();
-        System.out.println("create link with: " + queryResult);
-        mediaLinksService.createSymLink(queryResult, MediaIdentity.IMDB);
-        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
-        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
-        model.addAttribute("query_list", allMediaQueries);
-        model.addAttribute("link_list", allMediaLinks);
-        model.addAttribute("user_paths", userPathsProvided);
+
+        QueryResult qr = new QueryResult();
+        qr.setId(webSearchResultForm.getId());
+        qr.setImdbId(webSearchResultForm.getImdbId());
+        qr.setDescription(webSearchResultForm.getDescription());
+        qr.setTitle(webSearchResultForm.getTitle());
+        qr.setTheMovieDbId(webSearchResultForm.getTheMovieDbId());
+        qr.setFilePath(webSearchResultForm.getFilePath());
+        qr.setUrl(webSearchResultForm.getUrl());
+        System.out.println("create link with: " + qr);
+
+        mediaLinksService.createSymLink(qr, MediaIdentity.IMDB, webSearchResultForm.getMediaType());
         return "redirect:/query";
     }
 
-    /*
-     * GET mapping as a protection measure in case user reloads page
-     * */
-    @GetMapping(value = {"/newlink", "/newlink/{id}"})
-    public String newLinkGet(@PathVariable(value = "id", required = false) Long id) {
+    @GetMapping("/newlink")
+    public String newLinkGet() {
         return "redirect:/links";
     }
 
@@ -201,9 +245,9 @@ public class SimpleController {
 
     @PostMapping("/removelink/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
-        MediaLink linkById = mediaTrackerDao.getLinkById(id);
-        MediaQuery backToQueue = mediaLinksService.moveBackToQueue(linkById);
-        mediaTrackerDao.addQueryToQueue(backToQueue);
+//        MediaLink linkById = mediaTrackerDao.getLinkById(id);
+        MediaQuery backToQueue = mediaLinksService.moveBackToQueue(id);
+//        mediaTrackerDao.addQueryToQueue(backToQueue);
         return "redirect:/query";
     }
 
@@ -224,7 +268,14 @@ public class SimpleController {
         boolean trackerStatus = trackerExecutor.trackerStatus();
 
         Path linksFolder = propertiesService.getLinksFolder();
+        boolean linksPathValid = mediaLinksService.validatePath(linksFolder);
+
         List<Path> targetFolderList = propertiesService.getTargetFolderList();
+        Map<Path, Boolean> pathsValidated = new HashMap<>();
+        for (Path p : targetFolderList) {
+            pathsValidated.put(p, mediaLinksService.validatePath(p));
+        }
+        System.out.println(pathsValidated.get(targetFolderList.get(0)));
         boolean userPathsProvided = propertiesService.checkUserPaths();
         boolean userLinksPath = propertiesService.isUserLinksPath();
         boolean userTargetPath = propertiesService.isUserTargetPath();
@@ -238,6 +289,8 @@ public class SimpleController {
         model.addAttribute("chk_user_links", userLinksPath);
         model.addAttribute("links_folder", linksFolder);
         model.addAttribute("target_folder_list", targetFolderList);
+        model.addAttribute("target_path_validated", pathsValidated);
+        model.addAttribute("links_path_validated", linksPathValid);
         return "config";
     }
 

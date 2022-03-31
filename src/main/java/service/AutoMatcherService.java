@@ -17,8 +17,6 @@ public interface AutoMatcherService {
     // 1917.2019.MULTi.2160p.UHD.BluRay.REMUX.HDR10+.HEVC.TrueHD.ATMOS.7.1
     DeductedQuery extractTitleAndYear(String path);
 
-    void autoMatchFiles();
-
     Future<Boolean> autoMatchFilesWithFuture();
 
 

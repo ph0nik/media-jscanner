@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import util.CleanerService;
 import util.MediaIdentity;
+import util.MediaType;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -25,7 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class MediaLinksServiceImpl implements MediaLinksService {
+public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaLinksServiceImpl.class);
 
@@ -41,13 +42,16 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 
     public MediaLinksServiceImpl(MediaTrackerDao dao, PropertiesService propertiesService,
                                  CleanerService cleanerService) {
+        super(dao);
         this.cleanerService = cleanerService;
         props = propertiesService;
         networkProperties = props.getNetworkProperties();
         mediaTrackerDao = dao;
         lastRequest = null;
-        responseParser = new ResponseParser(networkProperties);
-        requestService = new RequestService(networkProperties);
+//        responseParser = new ResponseParser(networkProperties);
+        responseParser = ResponseParser.getResponseParser(networkProperties);
+        requestService = RequestService.getRequestService(networkProperties);
+
     }
 
     @Override
@@ -61,7 +65,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      * On connection error it returns query result elements with error description.
      * */
     @Override
-    public List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity) {
+    public List<QueryResult> executeMediaQuery(String customQuery, long mediaQueryId, MediaIdentity mediaIdentity) {
+        MediaQuery mediaQuery = mediaTrackerDao.getQueryById(mediaQueryId);
         String query = (customQuery.isEmpty()) ? mediaQuery.getQuery() : customQuery;
         List<QueryResult> queryResults = new ArrayList<>();
         Path filePath = Path.of(mediaQuery.getFilePath());
@@ -156,7 +161,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity) {
+    public MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType) {
         // naming pattern -> Film (2018) [tmdbid-65567]
         // send request to themoviedb api with given query result
         MediaData mediaData = new MediaData();
@@ -179,6 +184,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             LOG.error("[ symlink ] Unable to create sym link, MediaData object is empty");
             return new MediaLink();
         }
+
+        mediaData.setMediaType(mediaType);
 
         Path targetPath = Path.of(queryResult.getFilePath());
 
@@ -237,14 +244,11 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         int discNumber = checkForMultiDiscs(queryResult.getFilePath());
         String part = (discNumber > 0) ? "-cd" + discNumber : "";
 
-        // check for illegal characters in title
         String title = replaceIllegalCharacters(mediaData.getTitle());
 
-        // get year
         int year = mediaData.getYear();
         String yearFormatted = " (" + year + ")";
 
-        // get imdb id
         String imdbId = mediaData.getImdbId();
         int tmdbId = queryResult.getTheMovieDbId();
         String idFormatted = "";
@@ -255,7 +259,6 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             idFormatted = " [imdbid-" + imdbId + "]";
         }
 
-        // get file extension
         String extension = getExtension(queryResult.getFilePath());
 
         // get special identifier for movie extras
@@ -269,12 +272,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public MediaQuery moveBackToQueue(MediaLink mediaLink) {
+    public MediaQuery moveBackToQueue(long mediaLinkId) {
+        MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
         Path linkPath = Path.of(mediaLink.getLinkPath());
         mediaTrackerDao.removeLink(mediaLink);
         cleanerService.deleteElement(linkPath.getParent());
         MediaQuery mediaQuery = new MediaQuery();
         mediaQuery.setFilePath(mediaLink.getTargetPath());
+        mediaTrackerDao.addQueryToQueue(mediaQuery);
         return mediaQuery;
     }
 
@@ -286,6 +291,14 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     @Override
     public void deleteInvalidLinks() {
         cleanerService.deleteInvalidLinks(props.getLinksFolder(), mediaTrackerDao);
+    }
+
+    /*
+    * Checks whether given path of file or directory exists
+    * */
+    @Override
+    public boolean validatePath(Path path) {
+        return path.toFile().exists();
     }
 
     /*
