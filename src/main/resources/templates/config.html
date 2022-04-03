@@ -52,12 +52,12 @@
 <!-- tracker status-->
 <div class="row">
     <div class="col">
-        <div class="row m-3 bg-light">
+        <div class="row m-3 bg-light align-items-center">
             <div class="col-2 my-1">
                 Tracker status:
             </div>
             <!-- not working condition-->
-            <div th:switch="${tracker_status}" class="col-3 my-1">
+            <div th:switch="${tracker_status}" class="col-1 my-1">
                 <span th:case="${true}" class="text-success">Running...</span>
                 <span th:case="${false}" class="text-danger">Stopped.</span>
             </div>

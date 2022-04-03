@@ -13,7 +13,7 @@ public class MenuRunner implements Runnable {
 
     @Override
     public void run() {
-        MediaTrackerDao dao = new MediaTrackerDaoImpl();
+        MediaTrackerDao dao = new MediaTrackerDaoImpl("jscanner-sqlite");
         PropertiesServiceImpl propertiesService = new PropertiesServiceImpl();
         CleanerService cs = new CleanerServiceImpl();
         MediaLinksService mls = new MediaLinksServiceImpl(dao, propertiesService, cs);

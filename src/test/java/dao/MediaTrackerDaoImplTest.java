@@ -5,7 +5,6 @@ import model.MediaQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -16,16 +15,17 @@ import static org.junit.jupiter.api.Assertions.*;
 //@RunWith(SpringRunner.class)
 class MediaTrackerDaoImplTest {
 
-    @Autowired
+//    @Autowired
     MediaTrackerDao dao;
     MediaQuery mediaQuery1;
     MediaQuery mediaQuery2;
     String filePath = "g:\\root\\observed\\movie_title1\\movie_file1.mkv";
     String filePath2 = "g:\\root\\observed\\movie_title2\\movie_file2.avi";
+    String testPersistenceUnit = "jscanner-sqlite-test";
 
     @BeforeEach
     void initDao() {
-        dao = new MediaTrackerDaoImpl();
+        dao = new MediaTrackerDaoImpl(testPersistenceUnit);
     }
 
     @BeforeEach
@@ -39,7 +39,7 @@ class MediaTrackerDaoImplTest {
 
     @BeforeEach
     void openFactory() {
-        MediaEntityManager.getEntityManagerFactory();
+        MediaEntityManager.getEntityManagerFactory(testPersistenceUnit);
     }
 
     @AfterEach

@@ -26,7 +26,7 @@ public class TrackerRunner implements Runnable {
     public TrackerRunner(){
         PropertiesServiceImpl props = new PropertiesServiceImpl();
         targetFolderList = props.getTargetFolderList();
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = new MediaTrackerDaoImpl("jscanner-sqlite");
         cleanerService = new CleanerServiceImpl();
     }
 

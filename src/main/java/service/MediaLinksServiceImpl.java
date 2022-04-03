@@ -30,7 +30,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaLinksServiceImpl.class);
 
-    // TODO cleanup of properties strings, create additional class for some methods
     private final PropertiesService props;
     private final MediaTrackerDao mediaTrackerDao;
     private final Properties networkProperties;

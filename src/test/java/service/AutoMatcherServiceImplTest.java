@@ -24,7 +24,7 @@ class AutoMatcherServiceImplTest {
 
     @BeforeEach
     void initAutoMatcher() {
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = new MediaTrackerDaoImpl("jscanner-sqlite-test");
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService);

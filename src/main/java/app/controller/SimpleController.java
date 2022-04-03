@@ -18,6 +18,7 @@ import service.AutoMatcherService;
 import service.MediaLinksService;
 import service.PropertiesService;
 import util.MediaIdentity;
+import util.TrayMenu;
 
 import javax.annotation.PostConstruct;
 import java.nio.file.Path;
@@ -47,6 +48,9 @@ public class SimpleController {
     @Autowired
     private AutoMatcherService autoMatcherService;
 
+    @Autowired
+    private TrayMenu trayMenu;
+
     private Future<Boolean> future;
 
     /*
@@ -69,6 +73,7 @@ public class SimpleController {
     @PostConstruct
     private void initTracker() {
         trackerExecutor.startTracker();
+        trayMenu.createTray();
     }
 
     /*
@@ -95,7 +100,6 @@ public class SimpleController {
 ////        Get Auto Matcher status
 //        boolean autoMatcherStatus = future == null || future.isDone();
 //
-//        // TODO pagination
 //        model.addAttribute("query_list", allMediaQueries);
 //        model.addAttribute("link_list", allMediaLinks);
 //        model.addAttribute("user_paths", userPathsProvided);
@@ -120,7 +124,6 @@ public class SimpleController {
 //        Get Auto Matcher status
         boolean autoMatcherStatus = future == null || future.isDone();
 
-        // TODO pagination
         model.addAttribute("page", paginatedQueries);
         model.addAttribute("query_list", allMediaQueries);
         model.addAttribute("link_list", allMediaLinks);
@@ -275,7 +278,7 @@ public class SimpleController {
         for (Path p : targetFolderList) {
             pathsValidated.put(p, mediaLinksService.validatePath(p));
         }
-        System.out.println(pathsValidated.get(targetFolderList.get(0)));
+//        System.out.println(pathsValidated.get(targetFolderList.get(0)));
         boolean userPathsProvided = propertiesService.checkUserPaths();
         boolean userLinksPath = propertiesService.isUserLinksPath();
         boolean userTargetPath = propertiesService.isUserTargetPath();
@@ -304,7 +307,7 @@ public class SimpleController {
         return "redirect:/config";
     }
 
-    //TODO report of falls back on default paths
+    //TODO notice user when default paths are in use
     @PostMapping("/addtarget")
     public String addPath(@RequestParam String path, Model model) {
         propertiesService.setTargetPath(Path.of(path));

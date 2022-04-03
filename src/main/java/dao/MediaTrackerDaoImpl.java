@@ -22,9 +22,19 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
 
+    private final String persistenceUnit;
+
+    public MediaTrackerDaoImpl() {
+        this.persistenceUnit = "jscanner-sqlite";
+    }
+
+    public MediaTrackerDaoImpl(String persistenceUnit) {
+        this.persistenceUnit = persistenceUnit;
+    }
+
     @Override
     public void addQueryToQueue(MediaQuery query) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
         try {
             transaction = entityManager.getTransaction();
@@ -48,7 +58,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public void removeQueryFromQueue(MediaQuery mediaQuery) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
         try {
             transaction = entityManager.getTransaction();
@@ -68,7 +78,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     @Override
     public MediaQuery findQueryByFilePath(String filePath) {
         // typed query throws exception if nothing is found
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         MediaQuery singleResult = null;
         try {
             TypedQuery<MediaQuery> typedQuery = entityManager.createQuery("SELECT q FROM MediaQuery q WHERE q.filePath=:filepath", MediaQuery.class);
@@ -84,7 +94,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public MediaQuery getQueryById(Long id) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         MediaQuery mediaQuery = entityManager.find(MediaQuery.class, id);
         return mediaQuery;
     }
@@ -92,7 +102,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public List<MediaQuery> getAllMediaQueries() {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
 //        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 //        CriteriaQuery<MediaQuery> cq = cb.createQuery(MediaQuery.class);
 //        Root<MediaQuery> rootEntry = cq.from(MediaQuery.class);
@@ -112,7 +122,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public List<MediaQuery> findInFilePathQuery(String phrase) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         List<MediaQuery> mediaQuery = null;
         String query = "%" + phrase + "%";
         try {
@@ -133,7 +143,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public MediaLink getLinkById(Long id) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         MediaLink mediaLink = entityManager.find(MediaLink.class, id);
         return mediaLink;
     }
@@ -141,7 +151,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public void addNewLink(MediaLink mediaLInk) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
         try {
             transaction = entityManager.getTransaction();
@@ -158,7 +168,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public void removeLink(MediaLink mediaLInk) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
         try {
             transaction = entityManager.getTransaction();
@@ -176,7 +186,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public List<MediaLink> getAllMediaLinks() {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         List<MediaLink> resultList = List.of();
         try {
             String all = "SELECT q FROM MediaLink q";
@@ -195,7 +205,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     * */
     @Override
     public List<MediaLink> findInTargetFilePathLink(String phrase) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         List<MediaLink> mediaQuery = null;
         String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
         try {
@@ -217,7 +227,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     @Override
     public List<MediaLink> findInLinkFilePathLink(String phrase) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         List<MediaLink> mediaQuery = null;
         String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
         try {
@@ -242,7 +252,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     * */
     @Override
     public MediaLink findMediaLinkByFilePath(String filePath) {
-        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory().createEntityManager();
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         MediaLink singleResult = null;
         try {
             TypedQuery<MediaLink> typedQuery = entityManager.createQuery("SELECT q FROM MediaLink q WHERE q.targetPath=:filepath", MediaLink.class);
