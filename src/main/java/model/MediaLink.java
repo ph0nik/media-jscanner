@@ -15,13 +15,13 @@ public class MediaLink {
     @Column(name = "link_path")
     private String linkPath;
 
-    @Column(name = "target_path")
+    @Column(name = "target_path", unique = true)
     private String targetPath;
 
-    @Column(name = "the_movie_db_id", unique = true)
+    @Column(name = "the_movie_db_id")
     private int theMovieDbId;
 
-    @Column(name = "imdb_id", unique = true)
+    @Column(name = "imdb_id")
     private String imdbId;
 
     public String getImdbId() {

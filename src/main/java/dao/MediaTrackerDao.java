@@ -39,7 +39,9 @@ public interface MediaTrackerDao {
     /*
     * Add new MediaLink element to database
     * */
-    void addNewLink(MediaLink mediaLInk);
+    boolean addNewLink(MediaLink mediaLInk);
+
+    boolean updateLink(MediaLink mediaLink);
 
     /*
     * Remove MediaLink element from database

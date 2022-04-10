@@ -150,7 +150,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
 
     @Override
-    public void addNewLink(MediaLink mediaLInk) {
+    public boolean addNewLink(MediaLink mediaLInk) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
         try {
@@ -161,10 +161,33 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             LOG.error(e.getMessage());
+            return false;
         } finally {
             entityManager.close();
         }
+        return true;
     }
+
+    @Override
+    public boolean updateLink(MediaLink mediaLink) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        EntityTransaction transaction = null;
+        try {
+            MediaLink ml = entityManager.find(MediaLink.class, mediaLink.getMediaId());
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+            ml.setLinkPath(mediaLink.getLinkPath());
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            LOG.error(e.getMessage());
+            return false;
+        } finally {
+            entityManager.close();
+        }
+        return true;
+    }
+
 
     @Override
     public void removeLink(MediaLink mediaLInk) {
@@ -201,8 +224,8 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     /*
-    * Method finds all elements that have given phrase within their target path.
-    * */
+     * Method finds all elements that have given phrase within their target path.
+     * */
     @Override
     public List<MediaLink> findInTargetFilePathLink(String phrase) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
@@ -248,15 +271,15 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
     }
 
     /*
-    * Find media link element by exact target path string.
-    * */
+     * Find media link element by exact target path string.
+     * */
     @Override
-    public MediaLink findMediaLinkByFilePath(String filePath) {
+    public MediaLink findMediaLinkByFilePath(String targetPath) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         MediaLink singleResult = null;
         try {
             TypedQuery<MediaLink> typedQuery = entityManager.createQuery("SELECT q FROM MediaLink q WHERE q.targetPath=:filepath", MediaLink.class);
-            typedQuery.setParameter("filepath", filePath);
+            typedQuery.setParameter("filepath", targetPath);
             singleResult = typedQuery.getSingleResult();
         } catch (NoResultException e) {
             LOG.error(e.getMessage());

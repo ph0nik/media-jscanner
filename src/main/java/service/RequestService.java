@@ -56,6 +56,8 @@ class RequestService {
      * Generate search query with given phrase and media identity.
      * */
     private String generateQuery(String phrase, MediaIdentity mediaIdentity) {
+        // TODO possibly other characters interfere with query formatting
+        phrase = phrase.replaceAll("-", " ");
         if (mediaIdentity.equals(MediaIdentity.TMDB)) {
             return networkProperties.getProperty("search_url_get") +
                     networkProperties.getProperty("pre_query") +

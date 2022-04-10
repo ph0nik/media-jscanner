@@ -54,5 +54,7 @@ public interface MediaLinksService extends Pagination {
 
     boolean validatePath(Path path);
 
+    void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
+
 
 }

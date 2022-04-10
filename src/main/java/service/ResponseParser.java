@@ -55,13 +55,12 @@ class ResponseParser {
             String url = result__title.select("a").attr("href");
             // get the id
             String theMovieDbId = getTheMovieDbId(url, mediaIdentity);
+            // check for valid imdb id, not greater than 9 characters
+            if (mediaIdentity == MediaIdentity.IMDB && theMovieDbId != null && theMovieDbId.length() > 9) theMovieDbId = null;
+            // create object and add to collection only if id has been found
             if (theMovieDbId != null) {
-                // create object and add to collection only if id has been found
-                // set id
                 qr.setId(id++);
-                // set url
                 qr.setUrl(url);
-                // set tmdb id
                 if (mediaIdentity.equals(MediaIdentity.TMDB))
                     qr.setTheMovieDbId(Integer.parseInt(theMovieDbId));
                 if (mediaIdentity.equals(MediaIdentity.IMDB))
@@ -122,8 +121,9 @@ class ResponseParser {
         if (m.find()) {
             String found = m.group();
             return found.substring(found.lastIndexOf('/') + 1);
+        } else {
+            return null;
         }
-        return null;
     }
 
     /*

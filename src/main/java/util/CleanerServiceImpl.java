@@ -53,8 +53,6 @@ public class CleanerServiceImpl implements CleanerService {
         if (files != null) {
             for (File f : files) {
                 List<MediaLink> inFilePathLink = dao.findInLinkFilePathLink(f.toString());
-                inFilePathLink.forEach(System.out::println);
-
                 if (inFilePathLink.isEmpty()) {
                     deleteElement(f.toPath());
                     LOG.info("[ cleaner ] invalid link deleted: {}", f);

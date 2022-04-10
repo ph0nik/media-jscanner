@@ -17,9 +17,14 @@ Naming and organization in **source** folder is based of Jellyfin/Emby documenta
 to ensure that those tools will get the right data for each media file.
 
 In case of original file being deleted media-jscanner will delete matching link and
-all extra data that might be stored in the same folder (such as subtitles, posters, etc.).
+all extra data that might be stored within the same folder (such as subtitles, posters, etc.).
 
-Currently, both paths are defined inside *mediafolder.properties* file.
+By default, both paths are defined inside *mediafolder.properties* file.
 
 Technologies used:
-- tbd;
+- Spring Boot,
+- Hibernate,
+- H2 Database Engine,
+- jsoup,
+- Thymeleaf,
+- Bootstrap.

@@ -8,7 +8,6 @@ public class MediaFilter {
 
     private static final List<String> extensions = List.of(".mkv", ".avi", ".rmvb", ".wmv", ".mpg",
             ".mpeg", ".mpv", ".ogm", ".m2v", ".qt", ".mov", ".asf", ".mp4", ".m4v");
-    //'avi', 'mkv', 'rmvb', 'wmv', 'mpg', 'mpeg', 'mpv', 'ogm', 'm2v', 'qt', 'mov', 'asf', 'mp4', 'm4v'
 
     /*
     * Checking if given element name ends with one of given extensions.

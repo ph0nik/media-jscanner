@@ -1,6 +1,7 @@
 package app.controller;
 
 import dao.MediaTrackerDao;
+import model.LinksPathForm;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
@@ -51,7 +52,7 @@ public class SimpleController {
     @Autowired
     private TrayMenu trayMenu;
 
-    private Future<Boolean> future;
+    private Future<List<MediaLink>> future;
 
     /*
     * Testing starting page
@@ -132,6 +133,8 @@ public class SimpleController {
         return "query_list";
     }
 
+    //TODO search internal db first!
+
     /*
      * For selected file perform online search for matching titles.
      * Present returned results and prompt user to select which title
@@ -199,9 +202,9 @@ public class SimpleController {
         qr.setTheMovieDbId(webSearchResultForm.getTheMovieDbId());
         qr.setFilePath(webSearchResultForm.getFilePath());
         qr.setUrl(webSearchResultForm.getUrl());
-        System.out.println("create link with: " + qr);
-
-        mediaLinksService.createSymLink(qr, MediaIdentity.IMDB, webSearchResultForm.getMediaType());
+        System.out.println(webSearchResultForm);
+        MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
+        mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
         return "redirect:/query";
     }
 
@@ -294,6 +297,7 @@ public class SimpleController {
         model.addAttribute("target_folder_list", targetFolderList);
         model.addAttribute("target_path_validated", pathsValidated);
         model.addAttribute("links_path_validated", linksPathValid);
+        model.addAttribute("links_path_form", new LinksPathForm());
         return "config";
     }
 
@@ -316,9 +320,13 @@ public class SimpleController {
     }
 
     @PostMapping("/addlink")
-    public String addLinksPath(@RequestParam String linkpath, Model model) {
-        propertiesService.setLinksPath(Path.of(linkpath));
-        System.out.println("add link" + linkpath);
+    public String addLinksPath(LinksPathForm linksPathForm, Model model) {
+        Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
+        if (linksPathForm.isMoveContent()) {
+            mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolder(), newLinksPath);
+        }
+        propertiesService.setLinksPath(newLinksPath);
+
         return "redirect:/config";
     }
 

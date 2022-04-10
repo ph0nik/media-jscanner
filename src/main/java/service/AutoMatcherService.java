@@ -1,7 +1,9 @@
 package service;
 
 import model.DeductedQuery;
+import model.MediaLink;
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 public interface AutoMatcherService {
@@ -17,7 +19,7 @@ public interface AutoMatcherService {
     // 1917.2019.MULTi.2160p.UHD.BluRay.REMUX.HDR10+.HEVC.TrueHD.ATMOS.7.1
     DeductedQuery extractTitleAndYear(String path);
 
-    Future<Boolean> autoMatchFilesWithFuture();
+    Future<List<MediaLink>> autoMatchFilesWithFuture();
 
 
         // regex - "\b^.+\d{4}\b"

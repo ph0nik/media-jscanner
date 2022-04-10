@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import util.CleanerService;
 import util.CleanerServiceImpl;
+import util.TrayMenu;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,14 +22,16 @@ class AutoMatcherServiceImplTest {
     private PropertiesService propertiesService;
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
+    private TrayMenu trayMenu;
 
     @BeforeEach
     void initAutoMatcher() {
         mediaTrackerDao = new MediaTrackerDaoImpl("jscanner-sqlite-test");
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
+        trayMenu = new TrayMenu();
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService);
-        autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
+        autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService, trayMenu);
     }
 
     @Test

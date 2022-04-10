@@ -61,7 +61,11 @@ public class TrayMenu {
         } catch (AWTException e) {
             LOG.error("TrayIcon could not be added.");
         }
-        trayIcon.displayMessage("costam", "costam", TrayIcon.MessageType.INFO);
+
+    }
+
+    public void showMessage(String message) {
+        trayIcon.displayMessage("message", message, TrayIcon.MessageType.NONE);
     }
 
     //Obtain the image URL

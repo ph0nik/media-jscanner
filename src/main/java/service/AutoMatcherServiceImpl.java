@@ -1,6 +1,7 @@
 package service;
 
 import model.DeductedQuery;
+import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
 import org.slf4j.Logger;
@@ -10,9 +11,11 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import util.MediaIdentity;
 import util.MediaType;
+import util.TrayMenu;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -28,16 +31,27 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     private final RequestService requestService;
     private final ResponseParser responseParser;
     private final MediaLinksService mediaLinksService;
+    private final TrayMenu trayMenu;
 
-    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
+//    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
+//        this.mediaLinksService = mediaLinksService;
+//        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
+//        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
+//    }
+
+    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService, TrayMenu trayMenu) {
         this.mediaLinksService = mediaLinksService;
+        this.trayMenu = trayMenu;
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
         requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
     @Async
-    public Future<Boolean> autoMatchFilesWithFuture() {
+    public Future<List<MediaLink>> autoMatchFilesWithFuture() {
+        trayMenu.showMessage("Starting auto matcher");
         List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
+        List<MediaLink> mediaLinks = new LinkedList<>();
+        // query limit
         int x = 5;
         int i = 0;
         for (MediaQuery mq : mediaQueryList) {
@@ -45,16 +59,16 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
             DeductedQuery deductedQuery = extractTitleAndYear(mq.getFilePath());
             if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
                 List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-                createLinksWithBestMatches(queryResults);
+                mediaLinks.add(createLinksWithBestMatches(queryResults));
                 try {
                     TimeUnit.SECONDS.sleep(REQUEST_WAIT);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
                 i++;
             }
         }
-        return new AsyncResult<>(true);
+        trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
+        return new AsyncResult<>(mediaLinks);
     }
     /*
     * Extract movie title and production year from given path.
@@ -97,10 +111,11 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     /*
     * If results list have only one element use it for creating symbolic link.
     * */
-    private void createLinksWithBestMatches(List<QueryResult> queryResults) {
+    private MediaLink createLinksWithBestMatches(List<QueryResult> queryResults) {
         if (queryResults.size() == 1) {
-            mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, MediaType.MOVIE);
+            return mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, MediaType.MOVIE);
         }
+        return null;
     }
 
     private String replaceIllegalCharacters(String title) {
