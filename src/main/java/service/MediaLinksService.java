@@ -1,8 +1,6 @@
 package service;
 
-import model.MediaLink;
-import model.MediaQuery;
-import model.QueryResult;
+import model.*;
 import util.MediaIdentity;
 import util.MediaType;
 
@@ -27,7 +25,7 @@ public interface MediaLinksService extends Pagination {
     /*
     * Returns results of latest request
     * */
-    List<QueryResult> getLatestMediaQuery();
+    LastRequest getLatestMediaQuery();
 
     /*
      * Create symlink with specified query result and link properties
@@ -35,9 +33,26 @@ public interface MediaLinksService extends Pagination {
     MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
 
     /*
+    * Flag media query element as ignored.
+    * This is intended for video files that user don't want to include in his collection,
+    * for example trailers or video samples.
+    * */
+    MediaIgnored ignoreMediaFile(long mediaQueryId);
+
+    /*
+    * Returns list of all ignored media paths.
+    * */
+    List<MediaIgnored> getMediaIgnoredList();
+
+    /*
     * Remove link and add target path back to the queue
     * */
     MediaQuery moveBackToQueue(long mediaLinkId);
+
+    /*
+    * Remove ignore flag and move back media file into the media queue.
+    * */
+    MediaQuery unIgnoreMedia(long mediaIgnoreId);
 
     /*
     * Returns list of existing media links

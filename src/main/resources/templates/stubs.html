@@ -30,7 +30,7 @@
                 </li>
                 <!--                                links-->
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link active" href="/links">links
+                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -39,22 +39,13 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-                <!--                stubs-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/stubs">stubs</a>
+                    <a class="nav-link active" href="/stubs">stubs</a>
                 </li>
-                <!--                                ignored-->
                 <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
-                        <!-- show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${media_ignored.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!-- for no links -->
-                        <span th:case="${false}" th:text="${media_ignored.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+                    <a class="nav-link" href="/ignored">ignored</a>
                 </li>
-<!--                config-->
+                <!--                                config-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
@@ -66,8 +57,7 @@
 <div class="row" th:switch="${user_paths}">
     <div th:case="${false}" class="col-8 offset-md-2">
         <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
-                tab</p>
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
         </div>
     </div>
 </div>

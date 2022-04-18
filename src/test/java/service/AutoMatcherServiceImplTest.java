@@ -10,8 +10,11 @@ import util.CleanerServiceImpl;
 import util.TrayMenu;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,5 +75,24 @@ class AutoMatcherServiceImplTest {
         DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
         assertNull(deductedQuery);
     }
+
+    @Test
+    void searchForExtrasElementsInPath() {
+        URL resourceAsStream = getClass().getClassLoader().getResource("max.txt");
+        File testList = new File(resourceAsStream.getPath());
+        try (
+                Scanner sc = new Scanner(testList)){
+            while (sc.hasNextLine()) {
+                String temp = sc.nextLine();
+                if (autoMatcherService.hasExtrasInName(temp)) {
+                    System.out.println(temp);
+                }
+            }
+        } catch (
+                FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

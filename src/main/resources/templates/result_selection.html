@@ -16,7 +16,7 @@
     <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
-            <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
                         <!--                         show if any new files are in the queue -->
@@ -38,15 +38,26 @@
                     </a>
                 </li>
                 <li class="nav-item px-2">
+                    <a class="nav-link" href="/stubs">stubs</a>
+                </li>
+                <li class="nav-item px-2">
+                    <a class="nav-link" href="/ignored">ignored</a>
+                </li>
+                <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
                 <!--                 shows warning if file paths are not provided -->
-                <span th:case="${false}" class="navbar-text text-danger">
-                    User paths not found!
-                </span>
             </ul>
         </div>
     </nav>
+</div>
+<!--error, no user paths found-->
+<div class="row" th:switch="${user_paths}">
+    <div th:case="${false}" class="col-8 offset-md-2">
+        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
+        </div>
+    </div>
 </div>
 <!-- info with file path -->
 <div class="row">

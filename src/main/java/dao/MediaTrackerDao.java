@@ -1,5 +1,6 @@
 package dao;
 
+import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 
@@ -46,7 +47,7 @@ public interface MediaTrackerDao {
     /*
     * Remove MediaLink element from database
     * */
-    void removeLink(MediaLink mediaLInk);
+    MediaLink removeLink(Long mediaLinkId);
 
     /*
     * Return all MediaLink elements from database
@@ -65,7 +66,15 @@ public interface MediaTrackerDao {
     * */
     MediaLink findMediaLinkByFilePath(String filePath);
 
+    boolean addMediaIgnored(MediaIgnored mediaIgnored);
 
+    MediaIgnored removeMediaIgnored(Long id);
+
+    MediaIgnored getMediaIgnoredById(Long id);
+
+    List<MediaIgnored> getAllMediaIgnored();
+
+    MediaIgnored findMediaIgnoredByFilePath(String filePath);
 
 
 }

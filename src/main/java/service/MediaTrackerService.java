@@ -1,6 +1,7 @@
 package service;
 
 import dao.MediaTrackerDao;
+import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import org.slf4j.Logger;
@@ -111,16 +112,16 @@ public class MediaTrackerService {
                 // if source file is deleted check if there's matching
                 // symlink, remove it with db element.
                 if (kind == ENTRY_DELETE) {
-//                    LOG.info("[ tracker ] " + kind + " | " + child);
-                    LOG.info("[ tracker ] {} | {}", kind, child);
                     /*
                      * If deleted element is a file with valid extension proceed
                      * to remove all the data pointing to it from database.
                      * */
                     if (validExtension) {
+                        LOG.info("[ tracker ] {} | {}", kind, child);
                         removeQueryByFilePath(filePath);
                         removeLinkByFilePath(filePath);
                     } else {
+                        LOG.info("[ tracker ] {} | {}", kind, child);
                         /*
                          * Get the event key for the element that triggered event.
                          * */
@@ -175,13 +176,18 @@ public class MediaTrackerService {
         boolean matchingLink = mediaLinkByFilePath != null;
         MediaQuery queryByFilePath = mediaTrackerDao.findQueryByFilePath(filePath);
         boolean matchingQuery = queryByFilePath != null;
-        if (!matchingLink && !matchingQuery) {
+        MediaIgnored mediaIgnored = mediaTrackerDao.findMediaIgnoredByFilePath(filePath);
+        boolean matchingIgnored = mediaIgnored != null;
+        if (!matchingLink && !matchingQuery && !matchingIgnored) {
             LOG.info("[ init ] found new file: {}", filePath);
             addNewQuery(filePath);
         } else if (matchingLink) {
-            LOG.info("[ init ] existing link: {}", mediaLinkByFilePath);
+            LOG.warn("[ init ] existing link: {}", mediaLinkByFilePath);
+        } else if (matchingIgnored) {
+            LOG.warn("[ init ] file already ignored: {}", filePath);
+        } else {
+            LOG.warn("[ init ] already in queue: {}", filePath);
         }
-        LOG.info("[ init ] already in queue: {}", filePath);
     }
 
     /*
@@ -199,7 +205,7 @@ public class MediaTrackerService {
      * Removes existing link from database, deletes symlink and containing folder.
      * */
     private void removeLink(MediaLink mediaLink) {
-        mediaTrackerDao.removeLink(mediaLink);
+        mediaTrackerDao.removeLink(mediaLink.getMediaId());
         LOG.info("[ remove_link ] removed link: {}", mediaLink);
         cleanerService.deleteElement(Path.of(mediaLink.getLinkPath()));
         LOG.info("[ remove_link ] file deleted: {}", mediaLink.getLinkPath());

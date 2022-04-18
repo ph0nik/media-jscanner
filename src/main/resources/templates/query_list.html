@@ -15,7 +15,7 @@
     <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
-            <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!--                new files-->
                 <li class="nav-item px-2">
                     <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
@@ -38,13 +38,25 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+<!--                stubs-->
+                <li class="nav-item px-2">
+                    <a class="nav-link" href="/stubs">stubs</a>
+                </li>
+<!--                ignored-->
+                <li class="nav-item px-2">
+                    <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
+                        <!-- show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!-- for no links -->
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
                 <!--                config-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
-                <span th:case="${false}" class="navbar-text text-danger">
-                    User paths not found!
-                </span>
             </ul>
         </div>
     </nav>
@@ -75,7 +87,14 @@
             </div>
         </div>
     </div>
-
+</div>
+<!--error, no user paths found-->
+<div class="row" th:switch="${user_paths}">
+    <div th:case="${false}" class="col-8 offset-md-2">
+        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
+        </div>
+    </div>
 </div>
 <!--page selection-->
 <div class="row">
@@ -119,14 +138,24 @@
                 <span th:text="${query.getFileName()}" class="row fs-6 fw-bold font-monospace"></span>
                 <span th:text="${query.getParentPath()}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
-<!--            form + buttom -->
-            <td th:switch="${future}" >
+<!--            search with this fila -->
+            <td class="col-1" th:switch="${future}">
                 <form action="#"
                       th:action="@{/selectquery/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
-                    <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">select</button>
-                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>select</button>
+                    <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">search</button>
+                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>search</button>
+                </form>
+            </td>
+<!--            ignore-->
+            <td class="col-1" th:switch="${future}">
+                <form action="#"
+                      th:action="@{/addignore/{id}(id=${query.queryId})}"
+                      method="post">
+                    <input type="hidden" value="" name="custom">
+                    <button th:case="${true}" class="btn btn-outline-primary btn-sm" type="submit">ignore</button>
+                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>ignore</button>
                 </form>
             </td>
         </tr>

@@ -1,5 +1,6 @@
 package dao;
 
+import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import org.junit.jupiter.api.AfterEach;
@@ -140,7 +141,24 @@ class MediaTrackerDaoImplTest {
 
         List<MediaLink> inFilePathLink = dao.findInLinkFilePathLink(query);
         assertTrue(inFilePathLink.size() > 0);
+    }
 
 
+    @Test
+    void addIgnoreElement() {
+        String path = "E:\\Filmy HD\\!_HD-UHD_Benchmark\\1080p24-hi41-4f-33mbps.mkv";
+        MediaIgnored mediaIgnored = new MediaIgnored();
+        mediaIgnored.setTargetPath(path);
+        dao.addMediaIgnored(mediaIgnored);
+
+        List<MediaIgnored> allMediaIgnored = dao.getAllMediaIgnored();
+        assertEquals(1, allMediaIgnored.size());
+
+        MediaIgnored mediaIgnoredByFilePath = dao.findMediaIgnoredByFilePath(path);
+        assertNotNull(mediaIgnoredByFilePath);
+
+        dao.removeMediaIgnored(mediaIgnoredByFilePath.getMediaId());
+        allMediaIgnored = dao.getAllMediaIgnored();
+        assertEquals(0, allMediaIgnored.size());
     }
 }

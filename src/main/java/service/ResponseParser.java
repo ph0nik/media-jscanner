@@ -130,9 +130,9 @@ class ResponseParser {
      * Returns Media Data object consisting of title and year elements if found, otherwise returns empty object.
      * Accepts json object as String.
      * */
-    MediaData parseDetailsRequestByTmdbId(String responseJson) {
+    MediaData parseDetailsRequestByTmdbId(String responseJson) throws JsonParseException {
         MediaData mediaData = new MediaData();
-        try {
+//        try {
             JsonElement jsonElement = JsonParser.parseString(responseJson);
             String titleElement = networkProperties.getProperty(TMDB_MOVIE_TITLE);
             String yearElement = networkProperties.getProperty(TMDB_MOVIE_YEAR);
@@ -149,9 +149,9 @@ class ResponseParser {
                     mediaData.setImdbId(imdb);
                 }
             }
-        } catch (JsonParseException e) {
-            LOG.error(e.getMessage(), e);
-        }
+//        } catch (JsonParseException e) {
+//            LOG.error(e.getMessage(), e);
+//        }
         return mediaData;
     }
 

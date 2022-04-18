@@ -19,7 +19,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!--                                new files-->
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
+                    <a th:switch="${query_list.size() > 0}" class="nav-link" href="/query">new files
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -30,7 +30,7 @@
                 </li>
                 <!--                                links-->
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link active" href="/links">links
+                    <a th:switch="${link_list.size() > 0}" class="nav-link" href="/links">links
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -39,13 +39,13 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-                <!--                stubs-->
+<!--                stubs-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/stubs">stubs</a>
                 </li>
-                <!--                                ignored-->
+<!--                ignored-->
                 <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
+                    <a th:switch="${media_ignored.size() > 0}" class="nav-link active" href="/ignored">ignored
                         <!-- show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${media_ignored.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -66,8 +66,7 @@
 <div class="row" th:switch="${user_paths}">
     <div th:case="${false}" class="col-8 offset-md-2">
         <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
-                tab</p>
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
         </div>
     </div>
 </div>
@@ -78,28 +77,19 @@
         <thead>
         <tr>
             <th>id</th>
-            <th>
-                <a href="/links?sort=target">target</a>
-                <span>|</span>
-                <a href="/links?sort=link">link</a>
-            </th>
-            <th colspan="2">tmdb</th>
+            <th>target</th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
-        <tr th:each="link : ${link_list}">
-            <td th:text="${link.mediaId}"></td>
+        <tr th:each="ignored : ${media_ignored}">
+            <td th:text="${ignored.mediaId}"></td>
             <td>
-                <span th:text="${link.targetPath}" class="fs-6 fw-bold font-monospace"></span>
-                <p th:text="${link.linkPath}" class="fs-7 fw-normal font-monospace"></p>
+                <span th:text="${ignored.targetPath}" class="fs-6 fw-bold font-monospace"></span>
             </td>
-            <td>
-                <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
-            </td>
-            <td>
+            <td class="col-2">
                 <form action="#"
-                      th:action="@{/removelink/{id}(id=${link.mediaId})}"
+                      th:action="@{/removeignore/{id}(id=${ignored.mediaId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
                     <button class="btn btn-outline-danger btn-sm" type="submit">remove</button>

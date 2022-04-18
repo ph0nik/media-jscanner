@@ -55,11 +55,11 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         int x = 5;
         int i = 0;
         for (MediaQuery mq : mediaQueryList) {
-            if (i == x) break;
+//            if (i == x) break;
             DeductedQuery deductedQuery = extractTitleAndYear(mq.getFilePath());
             if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
                 List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-                mediaLinks.add(createLinksWithBestMatches(queryResults));
+                mediaLinks.add(createLinksWithBestMatches(queryResults, deductedQuery));
                 try {
                     TimeUnit.SECONDS.sleep(REQUEST_WAIT);
                 } catch (InterruptedException e) {
@@ -70,14 +70,44 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
         return new AsyncResult<>(mediaLinks);
     }
+
+    public MediaLink autoMatchSingleFIle(Path path) {
+        DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
+        List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
+        MediaLink linksWithBestMatches = createLinksWithBestMatches(queryResults, deductedQuery);
+        try {
+            TimeUnit.SECONDS.sleep(REQUEST_WAIT);
+        } catch (InterruptedException e) {
+        }
+        return linksWithBestMatches;
+    }
+
+    // TODO automatically filter extras
+    boolean hasExtrasInName(String path) {
+        Path of = Path.of(path);
+        String regex = "(?i).+(interview|featurette|deleted)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(of.toString());
+        return matcher.find();
+    }
+
+    boolean isSampleOrTrailer(String path) {
+        Path of = Path.of(path);
+        String regex = "(?i).+(sample|trailer)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(of.toString());
+        return matcher.find();
+    }
+
     /*
-    * Extract movie title and production year from given path.
-    *
-    * */
+     * Extract movie title and production year from given path.
+     * Files containing keyword sample or trailer are being ignored.
+     * */
     @Override
     public DeductedQuery extractTitleAndYear(String path) {
         Path of = Path.of(path);
         Path fileName = of.getName(of.getNameCount() - 1);
+        if (isSampleOrTrailer(path)) return null;
         String regex = "\\b^.+?\\d{4}\\b";
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(fileName.toString());
@@ -93,9 +123,9 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     }
 
     /*
-    * Search for movie with given title and year.
-    * Returns query result list.
-    * */
+     * Search for movie with given title and year.
+     * Returns query result list.
+     * */
     private List<QueryResult> searchWithDeductedQuery(DeductedQuery deductedQuery) {
         String response = null;
         try {
@@ -109,11 +139,13 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     }
 
     /*
-    * If results list have only one element use it for creating symbolic link.
-    * */
-    private MediaLink createLinksWithBestMatches(List<QueryResult> queryResults) {
-        if (queryResults.size() == 1) {
-            return mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, MediaType.MOVIE);
+     * If results list have only one element use it for creating symbolic link.
+     * Any file containing special keywords is being marked as extra feature.
+     * */
+    private MediaLink createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
+        if (queryResults.size() == 1 && !isSampleOrTrailer(deductedQuery.getPath())) {
+            MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
+            return mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, type);
         }
         return null;
     }

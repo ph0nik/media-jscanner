@@ -1,5 +1,6 @@
 package dao;
 
+import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import org.hibernate.exception.ConstraintViolationException;
@@ -190,13 +191,14 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
 
     @Override
-    public void removeLink(MediaLink mediaLInk) {
+    public MediaLink removeLink(Long mediaLinkId) {
         EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
         EntityTransaction transaction = null;
+        MediaLink find = null;
         try {
             transaction = entityManager.getTransaction();
             transaction.begin();
-            MediaLink find = entityManager.find(MediaLink.class, mediaLInk.getMediaId());
+            find = entityManager.find(MediaLink.class, mediaLinkId);
             entityManager.remove(find);
             transaction.commit();
         } catch (Exception e) {
@@ -205,6 +207,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         } finally {
             entityManager.close();
         }
+        return find;
     }
 
     @Override
@@ -280,6 +283,83 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         try {
             TypedQuery<MediaLink> typedQuery = entityManager.createQuery("SELECT q FROM MediaLink q WHERE q.targetPath=:filepath", MediaLink.class);
             typedQuery.setParameter("filepath", targetPath);
+            singleResult = typedQuery.getSingleResult();
+        } catch (NoResultException e) {
+            LOG.error(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return singleResult;
+    }
+
+    @Override
+    public boolean addMediaIgnored(MediaIgnored mediaIgnored) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        EntityTransaction transaction = null;
+        try {
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+            entityManager.persist(mediaIgnored);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            LOG.error(e.getMessage());
+            return false;
+        } finally {
+            entityManager.close();
+        }
+        return true;
+    }
+
+    @Override
+    public MediaIgnored removeMediaIgnored(Long mediaIgnoredId) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        EntityTransaction transaction = null;
+        MediaIgnored find = null;
+        try {
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+            find = entityManager.find(MediaIgnored.class, mediaIgnoredId);
+            entityManager.remove(find);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            LOG.error(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return find;
+    }
+
+    @Override
+    public MediaIgnored getMediaIgnoredById(Long id) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        return entityManager.find(MediaIgnored.class, id);
+    }
+
+    @Override
+    public List<MediaIgnored> getAllMediaIgnored() {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        List<MediaIgnored> resultList = List.of();
+        try {
+            String all = "SELECT q FROM MediaIgnored q";
+            TypedQuery<MediaIgnored> allQuery = entityManager.createQuery(all, MediaIgnored.class);
+            resultList = allQuery.getResultList();
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        } finally {
+            entityManager.close();
+        }
+        return resultList;
+    }
+
+    @Override
+    public MediaIgnored findMediaIgnoredByFilePath(String filePath) {
+        EntityManager entityManager = MediaEntityManager.getEntityManagerFactory(persistenceUnit).createEntityManager();
+        MediaIgnored singleResult = null;
+        try {
+            TypedQuery<MediaIgnored> typedQuery = entityManager.createQuery("SELECT q FROM MediaIgnored q WHERE q.targetPath=:filepath", MediaIgnored.class);
+            typedQuery.setParameter("filepath", filePath);
             singleResult = typedQuery.getSingleResult();
         } catch (NoResultException e) {
             LOG.error(e.getMessage());

@@ -113,6 +113,7 @@ public class PropertiesServiceImpl implements PropertiesService {
         props.setProperty(USER_TARGET_PATH, sb.toString());
         try (final OutputStream outputStream = new FileOutputStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.store(outputStream, "File updated");
+            LOG.info("[ props ] Target path added: {}", targetPath);
         } catch (IOException e) {
             LOG.error("[ props ] Error saving target path: {}", MEDIA_FOLDERS_PROPERTIES_FILE);
         }
@@ -133,6 +134,7 @@ public class PropertiesServiceImpl implements PropertiesService {
         props.setProperty(USER_TARGET_PATH, sb.toString());
         try (final OutputStream outputStream = new FileOutputStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.store(outputStream, "File updated");
+            LOG.info("[ props ] Target path removed: {}", targetPath);
         } catch (IOException e) {
             LOG.error("[ props ] {}", e.getMessage());
         }
