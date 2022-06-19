@@ -1,22 +1,34 @@
 package dao;
 
+import dao.config.HibernateConfigDev;
 import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.transaction.BeforeTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.NoResultException;
 import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//@SpringBootTest(classes = dao.MediaTrackerDaoImpl.class)
-//@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {SpringHibernateBootstrapDao.class, HibernateConfigDev.class})
+@Transactional
+@RunWith(SpringRunner.class)
+@ActiveProfiles("dev")
 class MediaTrackerDaoImplTest {
 
-//    @Autowired
+    @Autowired
+    @Qualifier("spring")
     MediaTrackerDao dao;
     MediaQuery mediaQuery1;
     MediaQuery mediaQuery2;
@@ -24,12 +36,12 @@ class MediaTrackerDaoImplTest {
     String filePath2 = "g:\\root\\observed\\movie_title2\\movie_file2.avi";
     String testPersistenceUnit = "jscanner-sqlite-test";
 
-    @BeforeEach
-    void initDao() {
-        dao = new MediaTrackerDaoImpl(testPersistenceUnit);
-    }
+//    @BeforeEach
+//    void initDao() {
+//        dao = new MediaTrackerDaoImpl();
+//    }
 
-    @BeforeEach
+    @BeforeTransaction
     void setMediaQuery() {
         mediaQuery1 = new MediaQuery();
         mediaQuery1.setFilePath(filePath);
@@ -38,15 +50,15 @@ class MediaTrackerDaoImplTest {
     }
 
 
-    @BeforeEach
-    void openFactory() {
-        MediaEntityManager.getEntityManagerFactory(testPersistenceUnit);
-    }
-
-    @AfterEach
-    void closeFactory() {
-        MediaEntityManager.shutdown();
-    }
+//    @BeforeEach
+//    void openFactory() {
+//        MediaEntityManager.getEntityManagerFactory();
+//    }
+//
+//    @AfterEach
+//    void closeFactory() {
+//        MediaEntityManager.shutdown();
+//    }
 
     @Test
     void addQueryToQueue() {
@@ -64,9 +76,7 @@ class MediaTrackerDaoImplTest {
         dao.addQueryToQueue(mediaQuery1);
         MediaQuery mediaQuery = new MediaQuery();
         mediaQuery.setFilePath(filePath);
-        dao.addQueryToQueue(mediaQuery);
-        List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
-        assertEquals(1, allMediaQueries.size());
+        assertThrows(ConstraintViolationException.class, () -> dao.addQueryToQueue(mediaQuery));
     }
 
     @Test
@@ -84,17 +94,17 @@ class MediaTrackerDaoImplTest {
         dao.addQueryToQueue(mediaQuery2);
         List<MediaQuery> allMediaQueries = dao.getAllMediaQueries();
         assertEquals(1, allMediaQueries.size());
-        dao.removeQueryFromQueue(mediaQuery1);
-        allMediaQueries = dao.getAllMediaQueries();
-        assertEquals(1, allMediaQueries.size());
+        Exception illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> dao.removeQueryFromQueue(mediaQuery1));
+        assertEquals("attempt to create delete event with null entity", illegalArgumentException.getMessage());
+
     }
 
     @Test
     void findQueryByFilePath() {
         dao.addQueryToQueue(mediaQuery1);
-        MediaQuery queryByFilePath = dao.findQueryByFilePath(filePath2);
-        assertNotEquals(mediaQuery1, queryByFilePath);
-        queryByFilePath = dao.findQueryByFilePath(filePath);
+        Exception exception = assertThrows(NoResultException.class, () -> dao.findQueryByFilePath(filePath2));
+        assertEquals("No entity found for query", exception.getMessage());
+        MediaQuery queryByFilePath = dao.findQueryByFilePath(filePath);
         assertEquals(mediaQuery1, queryByFilePath);
     }
 
@@ -110,7 +120,7 @@ class MediaTrackerDaoImplTest {
     void getQueryById() {
         dao.addQueryToQueue(mediaQuery1);
         dao.addQueryToQueue(mediaQuery2);
-        assertEquals(mediaQuery1, dao.getQueryById(1L));
+        assertEquals(mediaQuery1, dao.getQueryById(mediaQuery1.getQueryId()));
     }
 
     @Test
@@ -121,8 +131,14 @@ class MediaTrackerDaoImplTest {
         List<MediaQuery> inFilePathQuery = dao.findInFilePathQuery(name2);
         assertEquals(0, inFilePathQuery.size());
         Path testPath1 = Path.of(filePath);
+        System.out.println(testPath1);
+
         String name1 = testPath1.getName(testPath1.getNameCount() - 1).toString();
-        inFilePathQuery = dao.findInFilePathQuery(name1);
+
+        inFilePathQuery = dao.findInFilePathQuery(testPath1.toString());
+        assertEquals(1, inFilePathQuery.size());
+
+        inFilePathQuery = dao.findInFilePathQuery("root\\observed\\movie_title1");
         assertEquals(1, inFilePathQuery.size());
     }
 
@@ -139,7 +155,7 @@ class MediaTrackerDaoImplTest {
 
         String query = "G:\\Temp\\jscanner-test-folder\\About Faces (1941) [imdbid-tt0401151]\\";
 
-        List<MediaLink> inFilePathLink = dao.findInLinkFilePathLink(query);
+        List<MediaLink> inFilePathLink = dao.findInLinkPathLink(query);
         assertTrue(inFilePathLink.size() > 0);
     }
 
@@ -154,7 +170,7 @@ class MediaTrackerDaoImplTest {
         List<MediaIgnored> allMediaIgnored = dao.getAllMediaIgnored();
         assertEquals(1, allMediaIgnored.size());
 
-        MediaIgnored mediaIgnoredByFilePath = dao.findMediaIgnoredByFilePath(path);
+        MediaIgnored mediaIgnoredByFilePath = dao.findMediaIgnoredByTargetPath(path);
         assertNotNull(mediaIgnoredByFilePath);
 
         dao.removeMediaIgnored(mediaIgnoredByFilePath.getMediaId());

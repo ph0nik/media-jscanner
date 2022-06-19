@@ -42,8 +42,16 @@
                 <li class="nav-item px-2">
                     <a class="nav-link active" href="/stubs">stubs</a>
                 </li>
+                <!--                ignored-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/ignored">ignored</a>
+                    <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
+                        <!-- show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!-- for no links -->
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
                 </li>
                 <!--                                config-->
                 <li class="nav-item px-2">

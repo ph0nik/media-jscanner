@@ -1,7 +1,9 @@
 package util;
 
 import dao.MediaTrackerDao;
+import model.MediaIgnored;
 import model.MediaLink;
+import model.MediaQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,39 @@ public class CleanerServiceImpl implements CleanerService {
         }
     }
 
+    @Override
+    public void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao) {
+        for (MediaQuery mq : queries) {
+            File file = new File(mq.getFilePath());
+            if (!file.exists()) {
+                dao.removeQueryFromQueue(mq);
+                LOG.info("[ cleaner ] Invalid queue element deleted: {}", mq);
+            }
+        }
+    }
+
+    @Override
+    public void deleteInvalidLink(List<MediaLink> links, MediaTrackerDao dao) {
+        for(MediaLink ml : links) {
+            File file = new File(ml.getTargetPath());
+            if (!file.exists()) {
+                dao.removeLink(ml.getMediaId());
+                LOG.info("[ cleaner ] Invalid link element deleted: {}", ml);
+            }
+        }
+    }
+
+    @Override
+    public void deleteInvalidIgnoredMedia(List<MediaIgnored> mediaIgnoredList, MediaTrackerDao dao) {
+        for (MediaIgnored mi : mediaIgnoredList) {
+            File file = new File(mi.getTargetPath());
+            if (!file.exists()) {
+                dao.removeMediaIgnored(mi.getMediaId());
+                LOG.info("[ cleaner ] Invalid ignored media deleted: {}", mi);
+            }
+        }
+    }
+
     /*
      * Get all media links from db, iterate through links folder and
      * check if all directories match links from db.
@@ -52,7 +87,7 @@ public class CleanerServiceImpl implements CleanerService {
         File[] files = root.toFile().listFiles();
         if (files != null) {
             for (File f : files) {
-                List<MediaLink> inFilePathLink = dao.findInLinkFilePathLink(f.toString());
+                List<MediaLink> inFilePathLink = dao.findInLinkPathLink(f.toString());
                 if (inFilePathLink.isEmpty()) {
                     deleteElement(f.toPath());
                     LOG.info("[ cleaner ] invalid link deleted: {}", f);
@@ -66,7 +101,7 @@ public class CleanerServiceImpl implements CleanerService {
             return Files.walk(targetPath)
                     .noneMatch(MediaFilter::validateExtension);
         } catch (IOException e) {
-            LOG.error("[ cleaner ] {}", e.getMessage(), e);
+            LOG.error("[ cleaner ] {}", e.getMessage());
         }
         return false;
     }
@@ -79,8 +114,21 @@ public class CleanerServiceImpl implements CleanerService {
                     .map(Path::toFile)
                     .forEach(File::delete);
         } catch (IOException e) {
-            LOG.error("[ cleaner ] {}", e.getMessage(), e);
+            LOG.error("[ cleaner ] {}", e.getMessage());
         }
+    }
+
+    @Override
+    public void clearParentFolder(Path path) {
+        if (!path.toFile().isDirectory()) {
+            Path parent = path.getParent();
+            if (containsNoMediaFiles(parent)) {
+                deleteElement(parent);
+            }
+        } else {
+            LOG.error("[ cleaner ] Given path is not a file: {}", path);
+        }
+
     }
 
 //    public void deleteNonMediaFiles(Path path) {

@@ -17,6 +17,7 @@ class MediaLinksServiceImplTest {
     private PropertiesService propertiesService;
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
+    private MediaQueryService mediaQueryService;
     private MediaLinksServiceImpl mediaLinksService;
 
     @BeforeEach
@@ -24,7 +25,8 @@ class MediaLinksServiceImplTest {
         propertiesService = new PropertiesServiceImpl();
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService);
+        mediaQueryService = new MediaQueryService(mediaTrackerDao, cleanerService);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
     }
 
     @Test

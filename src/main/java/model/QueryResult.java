@@ -10,7 +10,25 @@ public class QueryResult implements Comparable<QueryResult> {
     private String imdbId;
     private String title;
     private String description;
+    private String poster;
+    private String year;
     private String filePath;
+
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
+    }
+
+    public String getPoster() {
+        return poster;
+    }
+
+    public void setPoster(String poster) {
+        this.poster = poster;
+    }
 
     public String getImdbId() {
         return imdbId;
@@ -77,6 +95,8 @@ public class QueryResult implements Comparable<QueryResult> {
                 ", imdbId='" + imdbId + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", poster='" + poster + '\'' +
+                ", year='" + year + '\'' +
                 ", filePath='" + filePath + '\'' +
                 '}';
     }

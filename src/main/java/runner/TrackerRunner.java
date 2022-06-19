@@ -4,7 +4,7 @@ import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import service.MediaTrackerService;
+import service.MediaTrackerWatchService;
 import service.PropertiesServiceImpl;
 import util.CleanerService;
 import util.CleanerServiceImpl;
@@ -26,7 +26,7 @@ public class TrackerRunner implements Runnable {
     public TrackerRunner(){
         PropertiesServiceImpl props = new PropertiesServiceImpl();
         targetFolderList = props.getTargetFolderList();
-        mediaTrackerDao = new MediaTrackerDaoImpl("jscanner-sqlite");
+        mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
     }
 
@@ -37,11 +37,11 @@ public class TrackerRunner implements Runnable {
     @Override
     public void run() {
         LOG.info("[ tracker ] starting...");
-        MediaTrackerService mediaTrackerService = new MediaTrackerService(mediaTrackerDao, cleanerService);
+        MediaTrackerWatchService mediaTrackerService = new MediaTrackerWatchService(mediaTrackerDao, cleanerService);
         WatchService watchService;
         try {
             watchService = FileSystems.getDefault().newWatchService();
-            mediaTrackerService.watch(watchService, targetFolderList);
+            mediaTrackerService.watch(targetFolderList);
             /*
             * If provided with malformed paths in properties file watch service will automatically close.
             * */
@@ -56,7 +56,7 @@ public class TrackerRunner implements Runnable {
                 /*
                 * In case of any other exception.
                 * */
-                LOG.error(e.getMessage(), e);
+                LOG.error(e.getMessage());
             }
         }
     }

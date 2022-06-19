@@ -20,7 +20,9 @@ public interface MediaLinksService extends Pagination {
      * otherwise query from MediaQuery object is being used.
      * Returns List of QueryResult or null in case of exception.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, long mediaQueryId, MediaIdentity mediaIdentity);
+    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
+
+    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity, int year);
 
     /*
     * Returns results of latest request
@@ -30,14 +32,14 @@ public interface MediaLinksService extends Pagination {
     /*
      * Create symlink with specified query result and link properties
      * */
-    MediaLink createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
+    SymLinkCreationResult createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
 
     /*
     * Flag media query element as ignored.
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    MediaIgnored ignoreMediaFile(long mediaQueryId);
+    MediaIgnored ignoreMediaFile(MediaQuery mediaQuery);
 
     /*
     * Returns list of all ignored media paths.

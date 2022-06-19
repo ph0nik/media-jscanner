@@ -2,7 +2,7 @@ package model;
 
 import util.MediaType;
 
-public class MediaData {
+public class MediaTransferData {
 
     private String title;
     private int year;

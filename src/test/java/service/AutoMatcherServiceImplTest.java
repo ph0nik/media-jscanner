@@ -25,15 +25,17 @@ class AutoMatcherServiceImplTest {
     private PropertiesService propertiesService;
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
+    private MediaQueryService mediaQueryService;
     private TrayMenu trayMenu;
 
     @BeforeEach
     void initAutoMatcher() {
-        mediaTrackerDao = new MediaTrackerDaoImpl("jscanner-sqlite-test");
+        mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
+        mediaQueryService = new MediaQueryService(mediaTrackerDao, cleanerService);
         trayMenu = new TrayMenu();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
         autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService, trayMenu);
     }
 

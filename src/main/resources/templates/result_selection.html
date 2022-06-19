@@ -8,6 +8,8 @@
     <title>media-jscanner | web search results</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link th:href="@{/css/all.css}" rel="stylesheet" />
+    <link th:href="@{/style.css}" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-xl">
@@ -71,14 +73,38 @@
     <nav class="navbar navbar-light bg-light">
         <div class="container-fluid">
             <div class="col navbar-text text-center">
-                <span>If no matching elements found, try searching with custom phrase:</span>
+                <span>If no matching elements found, perform general search with custom phrase:</span>
             </div>
             <div class="col">
                 <form class="d-flex"
                       action="#"
                       th:action="@{/selectquery/{id}(id=${query.queryId})}"
                       method="post">
+                    <input type="hidden" th:value="${query.queryUuid}" name="uuid">
                     <input class="form-control me-2" type="search" placeholder="Search" name="custom" id="custom"
+                           aria-label="Search">
+                    <button class="btn btn-outline-primary" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>
+<div class="row justify-content-center">
+    <nav class="navbar navbar-light bg-light">
+        <div class="container-fluid">
+            <div class="col navbar-text text-center">
+                <span>Or perform tmdb search with title and year:</span>
+            </div>
+            <div class="col">
+                <form class="d-flex"
+                      action="#"
+                      th:action="@{/searchwithyear/{id}(id=${query.queryId})}"
+                      method="post">
+                    <input type="hidden" th:value="${query.queryUuid}" name="uuid">
+                    <input class="form-control me-2" type="text" placeholder="title" name="custom" id="custom_tmdb"
+                           aria-label="Search">
+                    <!-- setting default year value to 1000 -->
+                    <input class="form-control me-2" type="number" placeholder="year" name="year" id="year_tmdb"
                            aria-label="Search">
                     <button class="btn btn-outline-primary" type="submit">Search</button>
                 </form>
@@ -91,36 +117,36 @@
 <div class="row">
     <table class="table table-striped">
         <!--        table head-->
-        <thead>
+        <thead class="query-table-title">
         <tr>
             <th>id</th>
+            <th></th>
             <th>title</th>
             <th>tmdb</th>
             <th>imdb</th>
-            <th class="col-2">
-<!--                <select name="mediatype"-->
-<!--                        id="mediatype"-->
-<!--                        class="form-select form-select-sm"-->
-<!--                        th:object="${request_form}"-->
-<!--                        th:field="*{mediaType}">-->
-<!--                    <option th:each="media : ${T(util.MediaType).values()}"-->
-<!--                            th:value="${media}" th:text="${media.displayValue}"-->
-<!--                            th:selected="${media == 'MOVIE'}"></option>-->
-<!--                </select>-->
-            </th>
+            <th class="col"></th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
         <tr th:switch="${result.theMovieDbId < 0}" th:each="result, iter : ${result_list}">
             <td th:text="${iter.index} + 1"></td>
-            <td th:case="${true}">
-                <span th:text="${result.title}" class="fs-6 fw-bold font-monospace text-danger"></span>
-                <p th:text="${result.description}" class="fs-7 fw-normal font-monospace text-danger"></p>
+            <td th:switch="${result.poster == null || result.poster.isEmpty()}">
+
+               <img th:case="${false}" th:src="${result.poster}" alt="n/a">
+                <span th:case="${true}">n/a</span>
+                <!--                       th:if="${result.poster != null || !result.poster.isEmpty()}" -->
             </td>
-            <td th:case="${false}">
-                <span th:text="${result.title}" class="fs-6 fw-bold font-monospace"></span>
-                <p th:text="${result.description}" class="fs-7 fw-normal font-monospace"></p>
+            <td th:switch="${result.theMovieDbId < 0}">
+                <div th:case="${true}">
+                    <span th:text="${result.title}" class="fs-6 fw-bold font-monospace text-danger"></span>
+                    <p th:text="${result.description}" class="fs-7 fw-normal font-monospace text-danger"></p>
+                </div>
+                <div th:case="${false}">
+                    <span th:text="${result.title}" class="fs-6 fw-bold font-monospace"></span>
+                    <span th:if="${!result.year.isEmpty()}" th:text="${'(' + result.year + ')'}" class="fs-6 fw-bold font-monospace"></span>
+                    <p th:text="${result.description}" class="fs-7 fw-normal font-monospace"></p>
+                </div>
             </td>
             <td th:switch="${result.theMovieDbId == 0}">
                 <span th:case="${false}" th:text="${result.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
@@ -135,7 +161,8 @@
                       th:action="@{/newlink}"
                       th:object="${request_form}"
                       method="post"
-                      id="selectresult">
+                      id="selectresult"
+                      class="d-flex flex-row">
                     <input type="hidden" th:value="${result.id}" name="id">
                     <input type="hidden" th:value="${result.title}" name="title">
                     <input type="hidden" th:value="${result.filePath}" name="filePath">
@@ -147,7 +174,7 @@
                     <button class="btn btn-outline-primary btn-sm" type="submit">Select</button>
                     <select name="mediatype"
                             id="mediatype"
-                            class="form-select form-select-sm"
+                            class="form-select form-select-sm mx-2"
                             th:object="${request_form}"
                             th:field="*{mediaType}">
                         <option th:each="media : ${T(util.MediaType).values()}"
@@ -159,6 +186,16 @@
         </tr>
         </tbody>
     </table>
+</div>
+<div class="row">
+    <nav class="d-flex justify-content-end" aria-label="back">
+        <ul class="pagination pagination-sm">
+            <li class="page-item" aria-current="page">
+                <a href="#top">back to the top
+                    <i class="fa-solid fa-arrow-turn-up"></i></a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"

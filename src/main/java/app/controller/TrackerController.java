@@ -1,6 +1,5 @@
 package app.controller;
 
-import dao.MediaTrackerDao;
 import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
@@ -27,9 +26,6 @@ import java.util.Map;
 public class TrackerController {
 
     @Autowired
-    private MediaTrackerDao mediaTrackerDao;
-
-    @Autowired
     private MediaLinksService mediaLinksService;
 
     @Autowired
@@ -46,7 +42,8 @@ public class TrackerController {
      * */
     @PostConstruct
     private void initTracker() {
-        trackerExecutor.startTracker();
+        // Temporarily tracker turned off
+//        trackerExecutor.startTracker();
         trayMenu.createTray();
     }
 
@@ -62,7 +59,7 @@ public class TrackerController {
 
     @ModelAttribute("media_ignored")
     public List<MediaIgnored> getAllIgnoredMedia() {
-        return mediaTrackerDao.getAllMediaIgnored();
+        return mediaLinksService.getMediaIgnoredList();
     }
 
     @ModelAttribute("user_paths")
@@ -130,7 +127,6 @@ public class TrackerController {
     /*
     * Add new target path
     * */
-    //TODO notice user when default paths are in use
     @PostMapping("/addtarget")
     public String addPath(@RequestParam String path, Model model) {
         propertiesService.setTargetPath(Path.of(path));

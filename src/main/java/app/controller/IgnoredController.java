@@ -1,17 +1,14 @@
 package app.controller;
 
-import dao.MediaTrackerDao;
 import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import service.MediaLinksService;
+import service.MediaQueryService;
 import service.PropertiesService;
 
 import java.util.List;
@@ -20,13 +17,13 @@ import java.util.List;
 public class IgnoredController {
 
     @Autowired
-    private MediaTrackerDao mediaTrackerDao;
-
-    @Autowired
     private PropertiesService propertiesService;
 
     @Autowired
     private MediaLinksService mediaLinksService;
+
+    @Autowired
+    private MediaQueryService mediaQueryService;
 
     @ModelAttribute("query_list")
     public List<MediaQuery> getAllMediaQueries() {
@@ -40,7 +37,7 @@ public class IgnoredController {
 
     @ModelAttribute("media_ignored")
     public List<MediaIgnored> getAllIgnoredMedia() {
-        return mediaTrackerDao.getAllMediaIgnored();
+        return mediaLinksService.getMediaIgnoredList();
     }
 
     @ModelAttribute("user_paths")
@@ -54,8 +51,9 @@ public class IgnoredController {
     }
 
     @PostMapping("/addignore/{id}")
-    public String addToIgnoreList(@PathVariable("id") long id, Model model)  {
-        mediaLinksService.ignoreMediaFile(id);
+    public String addToIgnoreList(@PathVariable("id") long id, @RequestParam String uuid, Model model)  {
+        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
+        mediaLinksService.ignoreMediaFile(queryByUuid);
         return "redirect:/query";
     }
 

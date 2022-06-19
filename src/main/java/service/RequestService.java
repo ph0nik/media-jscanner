@@ -40,7 +40,7 @@ class RequestService {
     }
 
     String tmdbApiTitleAndYear(DeductedQuery deductedQuery) throws IOException {
-        LOG.info("[ request service ] ");
+        LOG.info("[ request service ] creating deducted query");
         String apiRequest =
                 networkProperties.getProperty("tmdb_api3") +
                         networkProperties.getProperty("tmdb_movie_search") +
@@ -55,29 +55,17 @@ class RequestService {
     /*
      * Generate search query with given phrase and media identity.
      * */
-    private String generateQuery(String phrase, MediaIdentity mediaIdentity) {
-        // TODO possibly other characters interfere with query formatting
+    private String generateQuery(String phrase) {
         phrase = phrase.replaceAll("-", " ");
-        if (mediaIdentity.equals(MediaIdentity.TMDB)) {
-            return networkProperties.getProperty("search_url_get") +
-                    networkProperties.getProperty("pre_query") +
-                    " " +
-                    phrase +
-                    " " +
-                    networkProperties.getProperty("post_query");
-        }
-        if (mediaIdentity.equals(MediaIdentity.IMDB)) {
             return networkProperties.getProperty("imdb_pre_query") +
                     phrase +
                     " " +
                     networkProperties.getProperty("imdb_post_query") +
                     networkProperties.getProperty("imdb_query_options");
-        }
-        return "";
     }
 
-    String searchEngineRequest(String query, MediaIdentity mediaIdentity) throws IOException {
-        String queryFormatted = generateQuery(query, mediaIdentity);
+    String webSearchRequest(String query) throws IOException {
+        String queryFormatted = generateQuery(query);
         LOG.info("[ request_service ] web search query: {}", queryFormatted);
         // POST connection - redirect fails
 //        Connection.Response post = Jsoup.connect(linkerProperties.getProperty("search_url_post"))
@@ -94,7 +82,7 @@ class RequestService {
                 .ignoreHttpErrors(true) // try with ignore
                 .timeout(3000)
                 .execute();
-        LOG.info("[ request_service ]: {}", response.statusCode());
+        LOG.info("[ request_service ] web search: {}", response.statusCode());
         return response.body();
     }
 

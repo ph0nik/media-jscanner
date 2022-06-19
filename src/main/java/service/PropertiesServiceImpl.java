@@ -61,7 +61,9 @@ public class PropertiesServiceImpl implements PropertiesService {
     * */
     private boolean isPropertyEmpty(String propertyValue) {
         String[] split = propertyValue.split(";");
-        return Arrays.stream(split).map(String::trim).allMatch(String::isEmpty);
+        return Arrays.stream(split)
+                    .map(String::trim)
+                    .allMatch(String::isEmpty);
     }
 
     public boolean checkUserPaths() {

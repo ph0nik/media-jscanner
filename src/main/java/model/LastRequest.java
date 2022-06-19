@@ -4,10 +4,10 @@ import java.util.List;
 
 public class LastRequest {
     private List<QueryResult> lastRequest;
-    private long lastId;
+    private MediaQuery lastMediaQuery;
 
-    public LastRequest(List<QueryResult> queryResults, long lastSelectedId) {
-        this.lastId = lastSelectedId;
+    public LastRequest(List<QueryResult> queryResults, MediaQuery lastSelectedId) {
+        this.lastMediaQuery = lastSelectedId;
         this.lastRequest = queryResults;
     }
 
@@ -19,11 +19,11 @@ public class LastRequest {
         this.lastRequest = lastRequest;
     }
 
-    public long getLastId() {
-        return lastId;
+    public MediaQuery getLastMediaQuery() {
+        return lastMediaQuery;
     }
 
-    public void setLastId(long lastId) {
-        this.lastId = lastId;
+    public void setLastMediaQuery(MediaQuery lastMediaQuery) {
+        this.lastMediaQuery = lastMediaQuery;
     }
 }

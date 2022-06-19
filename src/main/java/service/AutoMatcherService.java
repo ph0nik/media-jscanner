@@ -3,6 +3,7 @@ package service;
 import model.DeductedQuery;
 import model.MediaLink;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -20,6 +21,8 @@ public interface AutoMatcherService {
     DeductedQuery extractTitleAndYear(String path);
 
     Future<List<MediaLink>> autoMatchFilesWithFuture();
+
+    MediaLink autoMatchSingleFIle(Path path);
 
 
         // regex - "\b^.+\d{4}\b"

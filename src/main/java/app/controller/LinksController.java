@@ -1,6 +1,5 @@
 package app.controller;
 
-import dao.MediaTrackerDao;
 import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
@@ -29,12 +28,9 @@ public class LinksController {
     @Autowired
     private PropertiesService propertiesService;
 
-    @Autowired
-    private MediaTrackerDao mediaTrackerDao;
-
     @ModelAttribute("media_ignored")
     public List<MediaIgnored> getAllIgnoredMedia() {
-        return mediaTrackerDao.getAllMediaIgnored();
+        return mediaLinksService.getMediaIgnoredList();
     }
 
     @ModelAttribute("user_paths")
@@ -59,7 +55,6 @@ public class LinksController {
         qr.setTheMovieDbId(webSearchResultForm.getTheMovieDbId());
         qr.setFilePath(webSearchResultForm.getFilePath());
         qr.setUrl(webSearchResultForm.getUrl());
-        System.out.println(webSearchResultForm);
         MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
         mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
         return "redirect:/query";

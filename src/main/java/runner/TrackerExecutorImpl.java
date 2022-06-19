@@ -21,7 +21,7 @@ public class TrackerExecutorImpl implements TrackerExecutor {
     * last time.
     * */
     public boolean compareTargetList(List<Path> otherTargetList) {
-        return currentTargetFolderList.equals(otherTargetList);
+        return currentTargetFolderList != null && currentTargetFolderList.equals(otherTargetList);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class TrackerExecutorImpl implements TrackerExecutor {
 
     @Override
     public boolean trackerStatus() {
-        return !submit.isDone();
+        return submit != null && !submit.isDone();
     }
 
 }

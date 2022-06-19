@@ -83,7 +83,8 @@
                 <span>|</span>
                 <a href="/links?sort=link">link</a>
             </th>
-            <th colspan="2">tmdb</th>
+            <th>tmdb</th>
+            <th colspan="2">imdb</th>
         </tr>
         </thead>
         <!--        table body-->
@@ -91,11 +92,14 @@
         <tr th:each="link : ${link_list}">
             <td th:text="${link.mediaId}"></td>
             <td>
-                <span th:text="${link.targetPath}" class="fs-6 fw-bold font-monospace"></span>
-                <p th:text="${link.linkPath}" class="fs-7 fw-normal font-monospace"></p>
+                <span th:text="${link.targetPath}" class="row fs-6 fw-bold font-monospace"></span>
+                <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
             <td>
                 <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+            </td>
+            <td>
+                <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace"></span>
             </td>
             <td>
                 <form action="#"

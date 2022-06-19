@@ -1,9 +1,6 @@
 package service;
 
-import model.DeductedQuery;
-import model.MediaLink;
-import model.MediaQuery;
-import model.QueryResult;
+import model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -26,7 +23,7 @@ import java.util.regex.Pattern;
 public class AutoMatcherServiceImpl implements AutoMatcherService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutoMatcherServiceImpl.class);
-    private static final int REQUEST_WAIT = 1;
+    private static final int REQUEST_WAIT = 500;
 
     private final RequestService requestService;
     private final ResponseParser responseParser;
@@ -56,33 +53,32 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         int i = 0;
         for (MediaQuery mq : mediaQueryList) {
 //            if (i == x) break;
-            DeductedQuery deductedQuery = extractTitleAndYear(mq.getFilePath());
-            if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
-                List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-                mediaLinks.add(createLinksWithBestMatches(queryResults, deductedQuery));
-                try {
-                    TimeUnit.SECONDS.sleep(REQUEST_WAIT);
-                } catch (InterruptedException e) {
-                }
-                i++;
-            }
+            MediaLink mediaLink = autoMatchSingleFIle(Path.of(mq.getFilePath()));
+            mediaLinks.add(mediaLink);
+            i++;
         }
         trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
         return new AsyncResult<>(mediaLinks);
     }
 
     public MediaLink autoMatchSingleFIle(Path path) {
+        MediaLink linksWithBestMatches = null;
         DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
-        List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-        MediaLink linksWithBestMatches = createLinksWithBestMatches(queryResults, deductedQuery);
-        try {
-            TimeUnit.SECONDS.sleep(REQUEST_WAIT);
-        } catch (InterruptedException e) {
+        if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
+            List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
+            linksWithBestMatches = createLinksWithBestMatches(queryResults, deductedQuery);
+            try {
+                TimeUnit.MILLISECONDS.sleep(REQUEST_WAIT);
+            } catch (InterruptedException e) {
+                LOG.error("[ auto_matcher ]: {} - {}", path, e.getMessage());
+            }
         }
         return linksWithBestMatches;
     }
 
-    // TODO automatically filter extras
+    /*
+    * Checks if given path contains phrases that indicate bonus content
+    * */
     boolean hasExtrasInName(String path) {
         Path of = Path.of(path);
         String regex = "(?i).+(interview|featurette|deleted)";
@@ -91,6 +87,9 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         return matcher.find();
     }
 
+    /*
+    * Checks if given paths contains phrases "sample" or "trailer"
+    * */
     boolean isSampleOrTrailer(String path) {
         Path of = Path.of(path);
         String regex = "(?i).+(sample|trailer)";
@@ -145,7 +144,8 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     private MediaLink createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
         if (queryResults.size() == 1 && !isSampleOrTrailer(deductedQuery.getPath())) {
             MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
-            return mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, type);
+            SymLinkCreationResult symLink = mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, type);
+            return symLink.getMediaLink();
         }
         return null;
     }

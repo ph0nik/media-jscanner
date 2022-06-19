@@ -5,6 +5,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "media_query")
@@ -14,6 +15,9 @@ public class MediaQuery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private long queryId;
+
+    @Transient
+    private UUID queryUuid;
 
     @Column(name = "file_path", unique = true)
     @NotNull
@@ -33,6 +37,14 @@ public class MediaQuery {
     public String getParentPath() {
         Path of = Path.of(filePath);
         return of.getParent().toString();
+    }
+
+    public UUID getQueryUuid() {
+        return queryUuid;
+    }
+
+    public void setQueryUuid(UUID queryUuid) {
+        this.queryUuid = queryUuid;
     }
 
     public long getQueryId() {
@@ -75,6 +87,7 @@ public class MediaQuery {
     public String toString() {
         return "MediaQuery{" +
                 "queryId=" + queryId +
+                ", queryUuid=" + queryUuid +
                 ", filePath='" + filePath + '\'' +
                 '}';
     }

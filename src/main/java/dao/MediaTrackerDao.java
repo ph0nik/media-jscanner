@@ -40,9 +40,9 @@ public interface MediaTrackerDao {
     /*
     * Add new MediaLink element to database
     * */
-    boolean addNewLink(MediaLink mediaLInk);
+    void addNewLink(MediaLink mediaLInk);
 
-    boolean updateLink(MediaLink mediaLink);
+    MediaLink updateLink(MediaLink mediaLink);
 
     /*
     * Remove MediaLink element from database
@@ -57,14 +57,14 @@ public interface MediaTrackerDao {
     /*
      * Return all MediaLink elements that have given phrase within their filepath
      * */
-    public List<MediaLink> findInTargetFilePathLink(String phrase);
+    public List<MediaLink> findInTargetPathLink(String phrase);
 
-    public List<MediaLink> findInLinkFilePathLink(String phrase);
+    public List<MediaLink> findInLinkPathLink(String phrase);
 
     /*
     * Return all MediaLink elements with given filepath
     * */
-    MediaLink findMediaLinkByFilePath(String filePath);
+    MediaLink findMediaLinkByTargetPath(String filePath);
 
     boolean addMediaIgnored(MediaIgnored mediaIgnored);
 
@@ -74,7 +74,7 @@ public interface MediaTrackerDao {
 
     List<MediaIgnored> getAllMediaIgnored();
 
-    MediaIgnored findMediaIgnoredByFilePath(String filePath);
+    MediaIgnored findMediaIgnoredByTargetPath(String filePath);
 
 
 }

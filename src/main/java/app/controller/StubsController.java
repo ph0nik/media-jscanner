@@ -1,6 +1,5 @@
 package app.controller;
 
-import dao.MediaTrackerDao;
 import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
@@ -17,9 +16,6 @@ import java.util.List;
 
 @Controller
 public class StubsController {
-
-    @Autowired
-    private MediaTrackerDao mediaTrackerDao;
 
     @Autowired
     private MediaLinksService mediaLinksService;
@@ -42,7 +38,7 @@ public class StubsController {
 
     @ModelAttribute("media_ignored")
     public List<MediaIgnored> getAllIgnoredMedia() {
-        return mediaTrackerDao.getAllMediaIgnored();
+        return mediaLinksService.getMediaIgnoredList();
     }
 
     @ModelAttribute("user_paths")
