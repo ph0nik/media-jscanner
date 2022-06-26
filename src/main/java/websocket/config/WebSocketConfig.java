@@ -10,14 +10,21 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    // TODO
+    // register user when auto matcher starts
+    // send events while auto matcher works
+    // with its ending close session
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("broker").withSockJS();
+        registry.addEndpoint("/notifications")
+                .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/notification");
+        registry.setApplicationDestinationPrefixes("/swns");
     }
+
 }

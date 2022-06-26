@@ -22,7 +22,7 @@ public interface AutoMatcherService {
 
     Future<List<MediaLink>> autoMatchFilesWithFuture();
 
-    MediaLink autoMatchSingleFIle(Path path);
+    MediaLink autoMatchSingleFile(Path path);
 
 
         // regex - "\b^.+\d{4}\b"

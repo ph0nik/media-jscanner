@@ -3,12 +3,15 @@ package service;
 import model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import util.MediaIdentity;
 import util.MediaType;
 import util.TrayMenu;
+import websocket.NotificationSender;
+import websocket.config.NotificationDispatcher;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class AutoMatcherServiceImpl implements AutoMatcherService {
+public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus> implements AutoMatcherService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AutoMatcherServiceImpl.class);
     private static final int REQUEST_WAIT = 500;
@@ -30,13 +33,17 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
     private final MediaLinksService mediaLinksService;
     private final TrayMenu trayMenu;
 
+    @Autowired
+    private NotificationDispatcher dispatcher;
+
 //    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
 //        this.mediaLinksService = mediaLinksService;
 //        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
 //        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
 //    }
 
-    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService, TrayMenu trayMenu) {
+    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService,
+                                  TrayMenu trayMenu) {
         this.mediaLinksService = mediaLinksService;
         this.trayMenu = trayMenu;
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
@@ -48,20 +55,27 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         trayMenu.showMessage("Starting auto matcher");
         List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
         List<MediaLink> mediaLinks = new LinkedList<>();
-        // query limit
-        int x = 5;
-        int i = 0;
-        for (MediaQuery mq : mediaQueryList) {
-//            if (i == x) break;
-            MediaLink mediaLink = autoMatchSingleFIle(Path.of(mq.getFilePath()));
-            mediaLinks.add(mediaLink);
-            i++;
+        AutoMatcherStatus message;
+        int index = 0;
+        if (mediaQueryList.isEmpty()) {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {}
         }
+        for (MediaQuery mq : mediaQueryList) {
+            message = getMessage(mediaQueryList, mq, index);
+            sendNotification(message);
+            MediaLink mediaLink = autoMatchSingleFile(Path.of(mq.getFilePath()));
+            mediaLinks.add(mediaLink);
+            index++;
+        }
+        message = getFinalMessage(mediaQueryList, index);
+        sendNotification(message);
         trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
         return new AsyncResult<>(mediaLinks);
     }
 
-    public MediaLink autoMatchSingleFIle(Path path) {
+    public MediaLink autoMatchSingleFile(Path path) {
         MediaLink linksWithBestMatches = null;
         DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
         if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
@@ -74,6 +88,54 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
             }
         }
         return linksWithBestMatches;
+    }
+
+    AutoMatcherStatus getMessage(List<MediaQuery> mediaQueryList, MediaQuery currentQuery, int queryIndex) {
+        AutoMatcherStatus autoMatcherStatus = new AutoMatcherStatus();
+        int size = mediaQueryList.size();
+        String filePath = currentQuery.getFilePath();
+
+        autoMatcherStatus.setCurrentFile(filePath);
+        autoMatcherStatus.setEnabled(true);
+        autoMatcherStatus.setTotalElements(size);
+        autoMatcherStatus.setCurrentElementNumber(queryIndex);
+        return autoMatcherStatus;
+    }
+
+    AutoMatcherStatus getFinalMessage(List<MediaQuery> mediaQueryList, int queryIndex) {
+        AutoMatcherStatus status = new AutoMatcherStatus();
+        int size = mediaQueryList.size();
+        status.setCurrentFile("Finished!");
+        status.setTotalElements(size);
+        status.setCurrentElementNumber(queryIndex);
+        status.setEnabled(false);
+        return status;
+    }
+
+//    @Override
+//    public void registerDispatcher(NotificationDispatcher dispatcher) {
+//        this.dispatcher = dispatcher;
+//    }
+
+    @Override
+    public void sendNotification(AutoMatcherStatus notification) {
+        if (this.dispatcher != null) {
+            this.dispatcher.dispatch(notification);
+        }
+    }
+
+    /*
+    * Send info about current file
+    * */
+    void dispatchMessage(List<MediaQuery> mediaQueryList, MediaQuery currentQuery, int queryIndex) {
+        int size = mediaQueryList.size();
+        String filePath = currentQuery.getFilePath();
+        AutoMatcherStatus autoMatcherStatus = new AutoMatcherStatus();
+        autoMatcherStatus.setCurrentFile(filePath);
+        autoMatcherStatus.setEnabled(true);
+        autoMatcherStatus.setTotalElements(size);
+        autoMatcherStatus.setCurrentElementNumber(queryIndex);
+        dispatcher.dispatch(autoMatcherStatus);
     }
 
     /*
@@ -155,4 +217,5 @@ public class AutoMatcherServiceImpl implements AutoMatcherService {
         Pattern p = Pattern.compile(illegalNames);
         return p.matcher(title).replaceAll(" ");
     }
+
 }
