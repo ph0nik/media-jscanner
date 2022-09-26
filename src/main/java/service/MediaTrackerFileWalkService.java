@@ -23,12 +23,11 @@ public class MediaTrackerFileWalkService {
 
     public static final Logger LOG = LoggerFactory.getLogger(MediaTrackerFileWalkService.class);
 
-    private MediaTrackerDao mediaTrackerDao;
-    private CleanerService cleanerService;
+    private final MediaTrackerDao mediaTrackerDao;
+    private final CleanerService cleanerService;
     private List<MediaIgnored> allMediaIgnored;
     private List<MediaLink> allMediaLinks;
     private List<MediaQuery> allMediaQueries;
-    private LocalDateTime fileWalkServiceUpdateTime;
     private LinkedList<Path> candidateFilesList;
 
 
@@ -69,7 +68,7 @@ public class MediaTrackerFileWalkService {
         mediaQuery.setFilePath(path.toString());
         mediaTrackerDao.addQueryToQueue(mediaQuery);
         LOG.info("[ file_walk ] Added to queue: {}", mediaQuery);
-        fileWalkServiceUpdateTime = LocalDateTime.now();
+        LocalDateTime fileWalkServiceUpdateTime = LocalDateTime.now();
     }
 
     boolean containsPath(Path path) {

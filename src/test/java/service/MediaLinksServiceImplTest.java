@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Scanner;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class MediaLinksServiceImplTest {
 
     private PropertiesService propertiesService;
@@ -68,6 +70,7 @@ class MediaLinksServiceImplTest {
         String group = mediaLinksService.getGroupName(fileName);
         String specialWithGroup = (special + " " + group).trim();
         specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : " - [" + specialWithGroup + "]";
-        System.out.println(specialWithGroup);
+        assertEquals(" - [720p]", specialWithGroup);
+
     }
 }

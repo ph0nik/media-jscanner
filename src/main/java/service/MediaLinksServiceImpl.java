@@ -224,7 +224,11 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
             symLinkCreationResult = new SymLinkCreationResult(true, resultMessage, mediaLink);
             LOG.info("[ symlink ] {} => {}", mediaLink.getLinkPath(), mediaLink.getTargetPath());
         } catch (Exception ex) {
-            cleanerService.deleteInvalidLinks(parentPath, mediaTrackerDao);
+            try {
+                cleanerService.deleteInvalidLinks(parentPath, mediaTrackerDao);
+            } catch (IOException e) {
+                LOG.error("[ cleaner_service ] {}", e.getMessage());
+            }
             LOG.error("[ symlink ] Cannot add link to database, reason: {}", ex.getMessage());
         }
         return symLinkCreationResult;
@@ -363,7 +367,11 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
         Path linkPath = Path.of(mediaLink.getLinkPath());
         mediaTrackerDao.removeLink(mediaLink.getMediaId());
-        cleanerService.deleteElement(linkPath.getParent());
+        try {
+            cleanerService.deleteElement(linkPath.getParent());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         String targetPath = mediaLink.getTargetPath();
 //        MediaQuery mediaQuery = new MediaQuery();
 //        mediaQuery.setFilePath(mediaLink.getTargetPath());
@@ -390,13 +398,16 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
 
     @Override
     public List<MediaLink> getMediaLinks() {
-        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
-        return allMediaLinks;
+        return mediaTrackerDao.getAllMediaLinks();
     }
 
     @Override
     public void deleteInvalidLinks() {
-        cleanerService.deleteInvalidLinks(linksFolder, mediaTrackerDao);
+        try {
+            cleanerService.deleteInvalidLinks(linksFolder, mediaTrackerDao);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*

@@ -232,7 +232,7 @@ public class MediaTrackerWatchService implements MediaTrackerService {
     /*
      * Removes existing link from database, deletes symlink and containing folder.
      * */
-    private void removeLink(MediaLink mediaLink) {
+    private void removeLink(MediaLink mediaLink) throws IOException {
         mediaTrackerDao.removeLink(mediaLink.getMediaId());
         LOG.info("[ remove_link ] removed link: {}", mediaLink);
         cleanerService.deleteElement(Path.of(mediaLink.getLinkPath()));
@@ -243,7 +243,7 @@ public class MediaTrackerWatchService implements MediaTrackerService {
         }
     }
 
-    private void removeLinkByParentPath(Path child) {
+    private void removeLinkByParentPath(Path child) throws IOException {
         String phrase = child.getName(child.getNameCount() - 1).toString();
         List<MediaLink> mediaLinkByFilePath = mediaTrackerDao.findInTargetPathLink(phrase);
         for (MediaLink ml : mediaLinkByFilePath) {
@@ -252,7 +252,7 @@ public class MediaTrackerWatchService implements MediaTrackerService {
         }
     }
 
-    private void removeLinkByFilePath(String filePath) {
+    private void removeLinkByFilePath(String filePath) throws IOException {
         MediaLink mediaLinkByFilePath = mediaTrackerDao.findMediaLinkByTargetPath(filePath);
         if (mediaLinkByFilePath != null) {
             LOG.info("[ remove_link ] Found matching link");

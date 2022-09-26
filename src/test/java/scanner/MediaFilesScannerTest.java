@@ -28,13 +28,13 @@ class MediaFilesScannerTest {
     }
 
     void watch() {
-        String alucarda = "E:\\Filmy SD\\ALUCARDA.mkv";
+        String alucarda = "G:\\Java\\media-jscanner\\test-folder\\movies-incoming\\Arcana.1972.DVDRIP.DivX-CG.avi";
         MediaIgnored mi = new MediaIgnored();
         mi.setTargetPath(alucarda);
         mi.setMediaId(0);
         mediaTrackerDao.addMediaIgnored(mi);
 
-        Path path = Path.of("E:\\Filmy SD\\");
+        Path path = Path.of("G:\\Java\\media-jscanner\\test-folder\\movies-incoming\\");
         List<Path> paths = List.of(path);
         List<MediaQuery> mediaQueries = List.of(new MediaQuery(alucarda));
         try {

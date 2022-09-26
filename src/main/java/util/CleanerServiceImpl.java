@@ -78,12 +78,18 @@ public class CleanerServiceImpl implements CleanerService {
         }
     }
 
+    // TODO
+    // open link folder
+    // get all media files from folder
+    // if media file doesn't match the one in database delete it
+    // and every file with the same name but different extension
+
     /*
      * Get all media links from db, iterate through links folder and
      * check if all directories match links from db.
      * Delete any that are not present.
      * */
-    public void deleteInvalidLinks(Path root, MediaTrackerDao dao) {
+    public void deleteInvalidLinks(Path root, MediaTrackerDao dao) throws IOException {
         File[] files = root.toFile().listFiles();
         if (files != null) {
             for (File f : files) {
@@ -96,30 +102,22 @@ public class CleanerServiceImpl implements CleanerService {
         }
     }
 
-    public boolean containsNoMediaFiles(Path targetPath) {
-        try {
+    public boolean containsNoMediaFiles(Path targetPath) throws IOException {
             return Files.walk(targetPath)
                     .noneMatch(MediaFilter::validateExtension);
-        } catch (IOException e) {
-            LOG.error("[ cleaner ] {}", e.getMessage());
-        }
-        return false;
     }
 
     @Override
-    public void deleteElement(Path linkPath) {
-        try {
+    public void deleteElement(Path linkPath) throws IOException {
             Files.walk(linkPath)
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .forEach(File::delete);
-        } catch (IOException e) {
-            LOG.error("[ cleaner ] {}", e.getMessage());
-        }
+
     }
 
     @Override
-    public void clearParentFolder(Path path) {
+    public void clearParentFolder(Path path) throws IOException {
         if (!path.toFile().isDirectory()) {
             Path parent = path.getParent();
             if (containsNoMediaFiles(parent)) {

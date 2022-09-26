@@ -5,6 +5,7 @@ import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -16,18 +17,18 @@ public interface CleanerService {
     * If none of such elements are found, folder is considered as empty
     * and method returns true.
     * */
-    boolean containsNoMediaFiles(Path linkPath);
+    boolean containsNoMediaFiles(Path linkPath) throws IOException;
 
     /*
     * Deletes folder and contained elements with given path.
     * */
-    void deleteElement(Path linkPath);
+    void deleteElement(Path linkPath) throws IOException;
 
     /*
     * Checks if parent folder of given file contains any elements matching criteria.
     * If not, method removes all the content and parent folder.
     * */
-    void clearParentFolder(Path file);
+    void clearParentFolder(Path file) throws IOException;
 
     /*
     * Using file walk tree, searches for empty folders and deletes them.
@@ -50,6 +51,6 @@ public interface CleanerService {
     /*
     * Using links data from database, deletes all unregistered symlinks.
     * */
-    void deleteInvalidLinks(Path root, MediaTrackerDao dao);
+    void deleteInvalidLinks(Path root, MediaTrackerDao dao) throws IOException;
 
 }
