@@ -23,6 +23,7 @@ class MediaFilterTest {
         Assertions.assertFalse(MediaFilter.validateExtension(path.toString()));
     }
 
+
     public void checkForDir() throws IOException {
         File file = new File("./test-folder/2");
         Assertions.assertFalse(MediaFilter.checkForEmptyDirectory(file));

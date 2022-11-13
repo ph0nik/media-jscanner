@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import util.CleanerService;
 import util.CleanerServiceImpl;
+import util.TextExtractTools;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +28,7 @@ class MediaLinksServiceImplTest {
         propertiesService = new PropertiesServiceImpl();
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
-        mediaQueryService = new MediaQueryService(mediaTrackerDao, cleanerService);
+        mediaQueryService = new MediaQueryService();
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
     }
 
@@ -38,7 +39,7 @@ class MediaLinksServiceImplTest {
         try (Scanner sc = new Scanner(testList)){
             while (sc.hasNextLine()) {
                 String temp = sc.nextLine();
-                String groupName = mediaLinksService.getGroupName(temp);
+                String groupName = TextExtractTools.getGroupName(temp);
                 if (!groupName.isEmpty()) {
                     System.out.println(temp + " | " + groupName);
                 }
@@ -55,7 +56,7 @@ class MediaLinksServiceImplTest {
         try (Scanner sc = new Scanner(testList)){
             while (sc.hasNextLine()) {
                 String temp = sc.nextLine();
-                String s = mediaLinksService.checkForSpecialDescriptor(temp);
+                String s = TextExtractTools.checkForSpecialDescriptor(temp);
                 System.out.println(s);
             }
         } catch (FileNotFoundException e) {
@@ -66,8 +67,8 @@ class MediaLinksServiceImplTest {
     @Test
     void checkCorrectNumberOfSpaces() {
         String fileName = "E:\\Filmy HD\\The.Strange.Vice.of.Mrs.Wardh.1971.RERIP.720p.BluRay.x264\\The.Strange.Vice.of.Mrs.Wardh.1971.RERIP.720p.BluRay.x264.mkv";
-        String special = mediaLinksService.checkForSpecialDescriptor(fileName);
-        String group = mediaLinksService.getGroupName(fileName);
+        String special = TextExtractTools.checkForSpecialDescriptor(fileName);
+        String group = TextExtractTools.getGroupName(fileName);
         String specialWithGroup = (special + " " + group).trim();
         specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : " - [" + specialWithGroup + "]";
         assertEquals(" - [720p]", specialWithGroup);

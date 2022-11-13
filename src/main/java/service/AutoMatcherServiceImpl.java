@@ -31,7 +31,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     private final RequestService requestService;
     private final ResponseParser responseParser;
     private final MediaLinksService mediaLinksService;
-    private final TrayMenu trayMenu;
+//    private final TrayMenu trayMenu;
 
     @Autowired
     private NotificationDispatcher dispatcher;
@@ -42,17 +42,18 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
 //        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
 //    }
 
+    // TODO remove tray reference
     public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService,
                                   TrayMenu trayMenu) {
         this.mediaLinksService = mediaLinksService;
-        this.trayMenu = trayMenu;
+//        this.trayMenu = trayMenu;
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
         requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
     @Async
     public Future<List<MediaLink>> autoMatchFilesWithFuture() {
-        trayMenu.showMessage("Starting auto matcher");
+//        trayMenu.showMessage("Starting auto matcher");
         List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
         List<MediaLink> mediaLinks = new LinkedList<>();
         AutoMatcherStatus message;
@@ -71,7 +72,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         }
         message = getFinalMessage(mediaQueryList, index);
         sendNotification(message);
-        trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
+//        trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
         return new AsyncResult<>(mediaLinks);
     }
 
@@ -206,7 +207,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     private MediaLink createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
         if (queryResults.size() == 1 && !isSampleOrTrailer(deductedQuery.getPath())) {
             MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
-            SymLinkCreationResult symLink = mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, type);
+            LinkCreationResult symLink = mediaLinksService.createSymLink(queryResults.get(0), MediaIdentity.TMDB, type);
             return symLink.getMediaLink();
         }
         return null;

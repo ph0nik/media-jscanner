@@ -27,29 +27,36 @@ public interface MediaLinksService extends Pagination {
     /*
     * Returns results of latest request
     * */
-    LastRequest getLatestMediaQuery();
+    LastRequest getLatestMediaQueryRequest();
 
     /*
      * Create symlink with specified query result and link properties
      * */
-    SymLinkCreationResult createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
+    LinkCreationResult createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
 
     /*
     * Flag media query element as ignored.
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    MediaIgnored ignoreMediaFile(MediaQuery mediaQuery);
+    MediaLink ignoreMediaFile(MediaQuery mediaQuery);
 
     /*
     * Returns list of all ignored media paths.
     * */
-    List<MediaIgnored> getMediaIgnoredList();
+    List<MediaLink> getMediaIgnoredList();
 
     /*
     * Remove link and add target path back to the queue
     * */
     MediaQuery moveBackToQueue(long mediaLinkId);
+
+    /*
+    * Deletes original element of created link
+    * */
+    MediaLink deleteOriginalFile(long mediaLinkId);
+
+    MediaLink restoreOriginalFile(long mediaLinkId);
 
     /*
     * Remove ignore flag and move back media file into the media queue.
@@ -61,14 +68,11 @@ public interface MediaLinksService extends Pagination {
     * */
     List<MediaLink> getMediaLinks();
 
-    /*
-    * Scan current links folder and delete all links that
-    * are not found in database.
-    * Method removes symbolic links, all the non-media files within the same folder
-    * and parent folder.
-    * */
-    void deleteInvalidLinks();
+    List<MediaLink> searchMediaLinks(String search);
 
+    /*
+    * Checks if given path exists
+    * */
     boolean validatePath(Path path);
 
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);

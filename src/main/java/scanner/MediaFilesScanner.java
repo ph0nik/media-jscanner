@@ -1,15 +1,17 @@
 package scanner;
 
 import dao.MediaTrackerDao;
-import model.MediaIgnored;
 import model.MediaLink;
-import model.MediaQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import util.CleanerService;
 import util.MediaFilter;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -17,59 +19,62 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
+@Component
 public class MediaFilesScanner {
 
     public static final Logger LOG = LoggerFactory.getLogger(MediaFilesScanner.class);
 
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
-    private List<MediaIgnored> allMediaIgnored;
+//    private List<MediaLink> allMediaIgnored;
     private List<MediaLink> allMediaLinks;
-    private LinkedList<Path> candidateFilesList;
-    private List<MediaQuery> mediaQueries;
+    private List<Path> candidateFilesList;
 
-    public MediaFilesScanner(MediaTrackerDao dao, CleanerService cs) {
+    public MediaFilesScanner(@Qualifier("spring") MediaTrackerDao dao, CleanerService cs) {
         this.mediaTrackerDao = dao;
         this.cleanerService = cs;
     }
 
-    public List<MediaQuery> scanMediaFolders(List<Path> paths) throws IOException {
-        loadMediaLists();
-        mediaQueries = new LinkedList<>();
+    public List<Path> scanMediaFolders(List<Path> paths, List<MediaLink> allMediaLinks) throws IOException {
+        this.allMediaLinks = allMediaLinks;
+        candidateFilesList = new LinkedList<>();
         for (Path p : paths) {
             scanFolderTree(p);
         }
-        return mediaQueries;
+        return candidateFilesList;
     }
 
     void scanFolderTree(Path root) throws IOException {
         cleanUp();
-        candidateFilesList = new LinkedList<>();
         Files.walkFileTree(root, new MediaFilesFileVisitor());
-
-        for (Path p : candidateFilesList) {
-            MediaQuery mediaQuery = new MediaQuery(p.toString());
-            mediaQuery.setQueryUuid(UUID.randomUUID());
-            mediaQueries.add(mediaQuery);
-        }
-    }
-
-    void loadMediaLists() {
-        allMediaIgnored = mediaTrackerDao.getAllMediaIgnored();
-        allMediaLinks = mediaTrackerDao.getAllMediaLinks();
+//        extractQueryList();
     }
 
     void cleanUp() {
-        cleanerService.deleteInvalidLink(allMediaLinks, mediaTrackerDao);
-        cleanerService.deleteInvalidIgnoredMedia(allMediaIgnored, mediaTrackerDao);
+        // remowing links pointing to non existing files
+//        cleanerService.deleteInvalidLink(allMediaLinks, mediaTrackerDao);
+        cleanerService.deleteInvalidIgnoredMedia(mediaTrackerDao);
     }
 
+    // write file list for test
+    public void extractQueryList() throws IOException {
+        Path targetFile = Path.of("R:\\!_out.txt");
+        try (BufferedWriter writer = Files.newBufferedWriter(targetFile, StandardCharsets.UTF_8)) {
+            for (Path p : candidateFilesList) {
+                writer.write(p.toString() + "\n");
+            }
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+        }
+
+    }
+
+    /*
+    * Checks if given path matches any paths already in database
+    * */
     boolean containsPath(Path path) {
-        boolean aml = allMediaLinks.stream().anyMatch(x -> x.getTargetPath().equals(path.toString()));
-        boolean ami = allMediaIgnored.stream().anyMatch(x -> x.getTargetPath().equals(path.toString()));
-        return aml || ami;
+        return allMediaLinks.stream().anyMatch(x -> x.getOriginalPath().equals(path.toString()));
     }
 
     class MediaFilesFileVisitor implements FileVisitor<Path> {
@@ -98,6 +103,7 @@ public class MediaFilesScanner {
             return FileVisitResult.CONTINUE;
         }
     }
+
 
 
 }

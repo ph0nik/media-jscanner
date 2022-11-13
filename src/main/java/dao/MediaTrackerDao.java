@@ -1,8 +1,6 @@
 package dao;
 
-import model.MediaIgnored;
 import model.MediaLink;
-import model.MediaQuery;
 
 import java.util.List;
 
@@ -11,26 +9,26 @@ public interface MediaTrackerDao {
     /*
     * Add query element to queue
     * */
-    void addQueryToQueue(MediaQuery query);
+//    void addQueryToQueue(MediaQuery query);
 
     /*
     * Remove query element from queue
     * */
-    void removeQueryFromQueue(MediaQuery query);
+//    void removeQueryFromQueue(MediaQuery query);
 
-    MediaQuery findQueryByFilePath(String filePath);
+//    MediaQuery findQueryByFilePath(String filePath);
 
-    MediaQuery getQueryById(Long id);
+//    MediaQuery getQueryById(Long id);
 
     /*
     * Get all media queries stored in database
     * */
-    List<MediaQuery> getAllMediaQueries();
+//    List<MediaQuery> getAllMediaQueries();
 
     /*
     * Return all MediaQuery elements that have given phrase within their filepath
     * */
-    List<MediaQuery> findInFilePathQuery(String phrase);
+//    List<MediaQuery> findInFilePathQuery(String phrase);
 
     /*
     * Get MediaLink element by id
@@ -40,7 +38,7 @@ public interface MediaTrackerDao {
     /*
     * Add new MediaLink element to database
     * */
-    void addNewLink(MediaLink mediaLInk);
+    MediaLink addNewLink(MediaLink mediaLInk);
 
     MediaLink updateLink(MediaLink mediaLink);
 
@@ -66,15 +64,15 @@ public interface MediaTrackerDao {
     * */
     MediaLink findMediaLinkByTargetPath(String filePath);
 
-    boolean addMediaIgnored(MediaIgnored mediaIgnored);
-
-    MediaIgnored removeMediaIgnored(Long id);
-
-    MediaIgnored getMediaIgnoredById(Long id);
-
-    List<MediaIgnored> getAllMediaIgnored();
-
-    MediaIgnored findMediaIgnoredByTargetPath(String filePath);
+//    MediaLink addMediaIgnored(MediaLink mediaIgnored);
+//
+//    MediaLink removeMediaIgnored(Long id);
+//
+//    MediaLink getMediaIgnoredById(Long id);
+//
+//    List<MediaLink> getAllMediaIgnored();
+//
+//    MediaLink findMediaIgnoredByTargetPath(String filePath);
 
 
 }

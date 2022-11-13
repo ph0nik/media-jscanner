@@ -41,6 +41,8 @@ public class QueryController {
 
     private Future<List<MediaLink>> future;
 
+    private int sessionPageSize = 25;
+
     @ModelAttribute("query_list")
     public List<MediaQuery> getAllMediaQueries() {
         return mediaLinksService.getMediaQueryList();
@@ -52,7 +54,7 @@ public class QueryController {
     }
 
     @ModelAttribute("media_ignored")
-    public List<MediaIgnored> getAllIgnoredMedia() {
+    public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
 
@@ -70,17 +72,38 @@ public class QueryController {
                             @RequestParam("size") Optional<Integer> size,
                             Model model) {
         int currentPage = page.orElse(1);
-        int pageSize = size.orElse(25);
+        int pageSize = size.orElse(sessionPageSize);
+        sessionPageSize = pageSize;
         int min = currentPage * pageSize - pageSize + 1;
         int max = currentPage * pageSize;
 
-        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize));
+        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaLinksService.getMediaQueryList());
 
 //        Get Auto Matcher status
         // 1 * 20 - max, min - 1 * 20 - 20 + 1
         // 2 * 20 - max, min - 2 * 20 - 20 + 1
         // 1 – 25 of 106
         // (currentPage + 1) * pageSize - pageSize + 1 "-" (currentPage + 1) * pageSize of queryList.size
+        boolean autoMatcherStatus = future == null || future.isDone();
+        model.addAttribute("page", paginatedQueries);
+        model.addAttribute("future", autoMatcherStatus);
+        model.addAttribute("page_min", min);
+        model.addAttribute("page_max", max);
+        return "query_list";
+    }
+
+    @PostMapping("/search-query/")
+    public String searchQuery(@RequestParam("search") String search,
+                              Model model) {
+        System.out.println(search);
+        int currentPage = 1;
+        int pageSize = sessionPageSize;
+        sessionPageSize = pageSize;
+        int min = currentPage * pageSize - pageSize + 1;
+        int max = currentPage * pageSize;
+        List<MediaQuery> mediaQueries = mediaQueryService.searchQuery(search);
+        System.out.println(mediaQueries);
+        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaQueries);
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
         model.addAttribute("future", autoMatcherStatus);
@@ -114,7 +137,6 @@ public class QueryController {
     public String searchTmdbWithYear(@PathVariable("id") Long id, @RequestParam String custom,
                                      @RequestParam String uuid, @RequestParam Optional<Integer> year, Model model) {
         MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
-
         List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, queryByUuid, MediaIdentity.IMDB, year.orElse(1000));
 
         model.addAttribute("result_list", queryResults);
@@ -128,7 +150,7 @@ public class QueryController {
      * */
     @GetMapping(value = {"/selectquery", "/selectquery/{id}", "/searchwithyear/{id}"})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
-        LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQuery();
+        LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
         if (latestMediaQuery == null) return "redirect:/query";
 //        MediaQuery queryById = mediaTrackerDao.getQueryById(latestMediaQuery.getLastId());
         MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();

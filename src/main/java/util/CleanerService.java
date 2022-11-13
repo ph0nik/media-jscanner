@@ -1,13 +1,9 @@
 package util;
 
 import dao.MediaTrackerDao;
-import model.MediaIgnored;
-import model.MediaLink;
-import model.MediaQuery;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 public interface CleanerService {
 
@@ -22,7 +18,7 @@ public interface CleanerService {
     /*
     * Deletes folder and contained elements with given path.
     * */
-    void deleteElement(Path linkPath) throws IOException;
+    boolean deleteElement(Path linkPath);
 
     /*
     * Checks if parent folder of given file contains any elements matching criteria.
@@ -30,6 +26,18 @@ public interface CleanerService {
     * */
     void clearParentFolder(Path file) throws IOException;
 
+    /*
+    * Deletes all database entries with invalid paths
+    * */
+    int deleteInvalidDbEntries(MediaTrackerDao mediaTrackerDao);
+
+    // TODO add function to clear original file
+    // clear all links if target file is in specified folder
+    // revert changes by creating hard link based of media link object property
+
+    // TODO function to clear all non existent files from db
+
+    // TODO get link by name (search box)
     /*
     * Using file walk tree, searches for empty folders and deletes them.
     * */
@@ -41,16 +49,10 @@ public interface CleanerService {
     * params:   queries - list of media query elements
     *           dao - dao service
     * */
-    void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao);
+//    void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao);
 
 
-    void deleteInvalidLink(List<MediaLink> links, MediaTrackerDao dao);
+    void deleteInvalidIgnoredMedia(MediaTrackerDao mediaTrackerDao);
 
-    void deleteInvalidIgnoredMedia(List<MediaIgnored> mediaIgnoredList, MediaTrackerDao dao);
-
-    /*
-    * Using links data from database, deletes all unregistered symlinks.
-    * */
-    void deleteInvalidLinks(Path root, MediaTrackerDao dao) throws IOException;
 
 }

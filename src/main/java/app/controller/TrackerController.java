@@ -1,6 +1,5 @@
 package app.controller;
 
-import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import model.form.LinksPathForm;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import runner.TrackerExecutor;
 import service.MediaLinksService;
 import service.PropertiesService;
 import util.TrayMenu;
@@ -34,8 +32,8 @@ public class TrackerController {
     @Autowired
     private TrayMenu trayMenu;
 
-    @Autowired
-    private TrackerExecutor trackerExecutor;
+//    @Autowired
+//    private TrackerExecutor trackerExecutor;
 
     /*
      * Initialize file watcher at startup
@@ -58,7 +56,7 @@ public class TrackerController {
     }
 
     @ModelAttribute("media_ignored")
-    public List<MediaIgnored> getAllIgnoredMedia() {
+    public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
 
@@ -70,12 +68,12 @@ public class TrackerController {
     /*
      * Reload tracker manually
      * */
-    @GetMapping("/reload")
-    public String reloadTracker() {
-        trackerExecutor.stopTracker();
-        trackerExecutor.startTracker();
-        return "redirect:/config";
-    }
+//    @GetMapping("/reload")
+//    public String reloadTracker() {
+//        trackerExecutor.stopTracker();
+//        trackerExecutor.startTracker();
+//        return "redirect:/config";
+//    }
 
     /*
     * Returns configuration panel
@@ -86,11 +84,11 @@ public class TrackerController {
          * Compares actual paths from properties file with paths injected into file watcher.
          * If they differ watcher needs to be restarted
          * */
-        boolean trackerPaths = trackerExecutor.compareTargetList(propertiesService.getTargetFolderList());
-        /*
-         * Returns true if file watcher is running
-         * */
-        boolean trackerStatus = trackerExecutor.trackerStatus();
+//        boolean trackerPaths = trackerExecutor.compareTargetList(propertiesService.getTargetFolderList());
+//        /*
+//         * Returns true if file watcher is running
+//         * */
+//        boolean trackerStatus = trackerExecutor.trackerStatus();
 
         Path linksFolder = propertiesService.getLinksFolder();
         boolean linksPathValid = mediaLinksService.validatePath(linksFolder);
@@ -103,8 +101,8 @@ public class TrackerController {
         boolean userLinksPath = propertiesService.isUserLinksPath();
         boolean userTargetPath = propertiesService.isUserTargetPath();
 
-        model.addAttribute("tracker_status", trackerStatus);
-        model.addAttribute("server_updated", trackerPaths);
+//        model.addAttribute("tracker_status", trackerStatus);
+//        model.addAttribute("server_updated", trackerPaths);
         model.addAttribute("chk_user_target", userTargetPath);
         model.addAttribute("chk_user_links", userLinksPath);
         model.addAttribute("links_folder", linksFolder);

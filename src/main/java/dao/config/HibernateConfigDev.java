@@ -54,6 +54,8 @@ public class HibernateConfigDev {
         hibernateProperties.setProperty("javax.persistence.schema-generation.database.action", "drop-and-create");
         hibernateProperties.setProperty("javax.persistence.schema-generation.create-script-source", "META-INF/sql/create.sql");
         hibernateProperties.setProperty("dialect", "org.hibernate.dialect.H2Dialect");
+//        hibernateProperties.setProperty("javax.persistence.schema-generation.scripts.action", "create");
+//        hibernateProperties.setProperty("javax.persistence.schema-generation.scripts.create-target","samplecreate.ddl");
         hibernateProperties.setProperty("hibernate.show_sql", "true");
         hibernateProperties.setProperty("format_sql", "true");
         hibernateProperties.setProperty("hibernate.connection.charSet", "UTF-8");

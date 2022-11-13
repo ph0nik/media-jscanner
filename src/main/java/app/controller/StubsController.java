@@ -1,6 +1,5 @@
 package app.controller;
 
-import model.MediaIgnored;
 import model.MediaLink;
 import model.MediaQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,7 @@ public class StubsController {
     }
 
     @ModelAttribute("media_ignored")
-    public List<MediaIgnored> getAllIgnoredMedia() {
+    public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
 

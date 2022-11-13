@@ -1,12 +1,12 @@
 package model;
 
-public class SymLinkCreationResult {
+public class LinkCreationResult {
 
     private boolean creationStatus;
     private String creationMessage;
     private MediaLink mediaLink;
 
-    public SymLinkCreationResult(boolean creationStatus, String creationMessage, MediaLink mediaLink) {
+    public LinkCreationResult(boolean creationStatus, String creationMessage, MediaLink mediaLink) {
         this.creationMessage = creationMessage;
         this.creationStatus = creationStatus;
         this.mediaLink = mediaLink;

@@ -77,12 +77,13 @@ public class PropertiesServiceImpl implements PropertiesService {
         String paths;
         String targetFolderMovie = mediaFilesProperties.getProperty(USER_TARGET_PATH);
         if (isPropertyEmpty(targetFolderMovie)) {
-            LOG.info("[ props ] No user target paths found, defaults loaded");
             paths = mediaFilesProperties.getProperty(DEFAULT_TARGET_PATH);
+            LOG.info("[ props ] No user target paths found, defaults loaded");
         } else {
-            LOG.info("[ props ] User target paths loaded");
             paths = targetFolderMovie;
+            LOG.info("[ props ] User target paths loaded");
         }
+        LOG.info("[ props ] {}", paths);
         return Arrays.stream(paths.split(";")).map(Path::of).collect(Collectors.toList());
     }
 
@@ -91,13 +92,16 @@ public class PropertiesServiceImpl implements PropertiesService {
     * */
     public Path getLinksFolder() {
         String linkFolderPath = mediaFilesProperties.getProperty(USER_LINKS_PATH);
+        Path links;
         if (isPropertyEmpty(linkFolderPath)) {
+            links = Path.of(mediaFilesProperties.getProperty(DEFAULT_LINKS_PATH));
             LOG.info("[ props ] No user links path found, defaults loaded");
-            return Path.of(mediaFilesProperties.getProperty(DEFAULT_LINKS_PATH));
         } else {
+            links = Path.of(linkFolderPath);
             LOG.info("[ props ] User links path loaded");
-            return Path.of(linkFolderPath);
         }
+        LOG.info("[ props ] Links path: {}", links);
+        return links;
     }
 
     /*

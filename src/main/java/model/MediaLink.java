@@ -16,13 +16,24 @@ public class MediaLink {
     private String linkPath;
 
     @Column(name = "target_path", unique = true)
-    private String targetPath;
+    private String originalPath;
 
     @Column(name = "the_movie_db_id")
     private int theMovieDbId;
 
     @Column(name = "imdb_id")
     private String imdbId;
+
+    @Column(name = "original_present")
+    private boolean originalPresent = true;
+
+    public boolean isOriginalPresent() {
+        return originalPresent;
+    }
+
+    public void setOriginalPresent(boolean originalPresent) {
+        this.originalPresent = originalPresent;
+    }
 
     public String getImdbId() {
         return imdbId;
@@ -48,12 +59,12 @@ public class MediaLink {
         this.linkPath = linkPath;
     }
 
-    public String getTargetPath() {
-        return targetPath;
+    public String getOriginalPath() {
+        return originalPath;
     }
 
-    public void setTargetPath(String targetPath) {
-        this.targetPath = targetPath;
+    public void setOriginalPath(String originalPath) {
+        this.originalPath = originalPath;
     }
 
     public int getTheMovieDbId() {
@@ -69,9 +80,10 @@ public class MediaLink {
         return "MediaLink{" +
                 "mediaId=" + mediaId +
                 ", linkPath='" + linkPath + '\'' +
-                ", targetPath='" + targetPath + '\'' +
+                ", originalPath='" + originalPath + '\'' +
                 ", theMovieDbId=" + theMovieDbId +
                 ", imdbId='" + imdbId + '\'' +
+                ", originalExists=" + originalPresent +
                 '}';
     }
 }

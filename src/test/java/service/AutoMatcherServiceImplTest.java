@@ -33,7 +33,7 @@ class AutoMatcherServiceImplTest {
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
-        mediaQueryService = new MediaQueryService(mediaTrackerDao, cleanerService);
+        mediaQueryService = new MediaQueryService();
         trayMenu = new TrayMenu();
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
         autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService, trayMenu);

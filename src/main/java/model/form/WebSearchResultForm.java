@@ -7,7 +7,7 @@ public class WebSearchResultForm {
     private Long id;
     private MediaType mediaType;
     private String title;
-    private String filePath;
+    private String originalPath;
     private int theMovieDbId;
     private String imdbId;
     private String description;
@@ -37,12 +37,12 @@ public class WebSearchResultForm {
         this.title = title;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getOriginalPath() {
+        return originalPath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setOriginalPath(String originalPath) {
+        this.originalPath = originalPath;
     }
 
     public int getTheMovieDbId() {
@@ -83,7 +83,7 @@ public class WebSearchResultForm {
                 "id=" + id +
                 ", mediaType=" + mediaType +
                 ", title='" + title + '\'' +
-                ", filePath='" + filePath + '\'' +
+                ", filePath='" + originalPath + '\'' +
                 ", theMovieDbId='" + theMovieDbId + '\'' +
                 ", imdbId='" + imdbId + '\'' +
                 ", description='" + description + '\'' +

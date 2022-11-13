@@ -12,7 +12,7 @@ public class QueryResult implements Comparable<QueryResult> {
     private String description;
     private String poster;
     private String year;
-    private String filePath;
+    private String originalPath;
 
     public String getYear() {
         return year;
@@ -38,12 +38,12 @@ public class QueryResult implements Comparable<QueryResult> {
         this.imdbId = imdbId;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getOriginalPath() {
+        return originalPath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setOriginalPath(String originalPath) {
+        this.originalPath = originalPath;
     }
 
     public String getTitle() {
@@ -97,7 +97,7 @@ public class QueryResult implements Comparable<QueryResult> {
                 ", description='" + description + '\'' +
                 ", poster='" + poster + '\'' +
                 ", year='" + year + '\'' +
-                ", filePath='" + filePath + '\'' +
+                ", originalPath='" + originalPath + '\'' +
                 '}';
     }
 

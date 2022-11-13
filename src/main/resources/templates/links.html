@@ -10,10 +10,10 @@
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body class="container-xl">
+<body class="container-fluid">
 
 <div class="row">
-    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
+    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -77,13 +77,13 @@
         <!--        table head-->
         <thead>
         <tr>
-            <th>id</th>
+            <th class="col">id</th>
             <th>
                 <a href="/links?sort=target">target</a>
                 <span>|</span>
                 <a href="/links?sort=link">link</a>
             </th>
-            <th>tmdb</th>
+            <th class="col">tmdb</th>
             <th colspan="2">imdb</th>
         </tr>
         </thead>
@@ -91,22 +91,48 @@
         <tbody>
         <tr th:each="link : ${link_list}">
             <td th:text="${link.mediaId}"></td>
-            <td>
-                <span th:text="${link.targetPath}" class="row fs-6 fw-bold font-monospace"></span>
+<!--            paths-->
+            <td th:if="${link.originalPresent}">
+                <span th:text="${link.originalPath}" class="row fs-6 fw-bold font-monospace">asd</span>
                 <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
+            <td th:if="${!link.originalPresent}">
+                <span th:text="${link.originalPath}" class="row fs-6 text-info fw-bold font-monospace"></span>
+                <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
+            </td>
+<!--            tmdb id-->
             <td>
                 <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
             </td>
+<!--            imdb id-->
             <td>
                 <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace"></span>
             </td>
+<!--            remove link-->
             <td>
                 <form action="#"
                       th:action="@{/removelink/{id}(id=${link.mediaId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">remove</button>
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>
+                </form>
+            </td>
+<!--            remove orignal file-->
+            <td>
+                <form action="#"
+                      th:action="@{/delete-original/{id}(id=${link.mediaId})}"
+                      method="post">
+                    <input type="hidden" value="" name="custom">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete original</button>
+                </form>
+            </td>
+<!--            restore original file-->
+            <td>
+                <form action="#"
+                      th:action="@{/restore-original/{id}(id=${link.mediaId})}"
+                      method="post">
+                    <input type="hidden" value="" name="custom">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Restore original</button>
                 </form>
             </td>
         </tr>

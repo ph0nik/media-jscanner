@@ -64,6 +64,9 @@ public class TrayMenu {
 
     }
 
+    /*
+    * TODO change to event
+    * */
     public void showMessage(String message) {
         trayIcon.displayMessage("message", message, TrayIcon.MessageType.NONE);
     }

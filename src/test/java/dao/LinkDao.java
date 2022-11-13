@@ -34,7 +34,7 @@ public class LinkDao {
         mediaLink1 = new MediaLink();
         mediaLink1.setLinkPath("some path");
         mediaLink1.setTheMovieDbId(1234);
-        mediaLink1.setTargetPath("target path");
+        mediaLink1.setOriginalPath("target path");
         mediaLink1.setImdbId("imdb id");
     }
 

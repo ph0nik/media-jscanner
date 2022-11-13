@@ -1,9 +1,7 @@
 package util;
 
 import dao.MediaTrackerDao;
-import model.MediaIgnored;
 import model.MediaLink;
-import model.MediaQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,6 +15,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CleanerServiceImpl implements CleanerService {
@@ -27,7 +27,6 @@ public class CleanerServiceImpl implements CleanerService {
 //    sourcePath='G:\Java\media-jscanner\test-folder\movies-source\Memories of Matsuko (2006) [tmdbid-31512]\Memories of Matsuko-cd1.avi',
 //    destPath='.\test-folder\movies-target\Memories of Matsuko-Kiraware Matsuko no Isshō\wrd-matsuko-cd1.avi',
 //    theMovieDbId='31512', sourceParentPath='null'}
-
 
     public void deleteEmptyFolders(Path root) {
         try {
@@ -45,61 +44,35 @@ public class CleanerServiceImpl implements CleanerService {
         }
     }
 
-    @Override
-    public void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao) {
-        for (MediaQuery mq : queries) {
-            File file = new File(mq.getFilePath());
-            if (!file.exists()) {
-                dao.removeQueryFromQueue(mq);
-                LOG.info("[ cleaner ] Invalid queue element deleted: {}", mq);
-            }
-        }
-    }
-
-    @Override
-    public void deleteInvalidLink(List<MediaLink> links, MediaTrackerDao dao) {
-        for(MediaLink ml : links) {
-            File file = new File(ml.getTargetPath());
-            if (!file.exists()) {
-                dao.removeLink(ml.getMediaId());
-                LOG.info("[ cleaner ] Invalid link element deleted: {}", ml);
-            }
-        }
-    }
-
-    @Override
-    public void deleteInvalidIgnoredMedia(List<MediaIgnored> mediaIgnoredList, MediaTrackerDao dao) {
-        for (MediaIgnored mi : mediaIgnoredList) {
-            File file = new File(mi.getTargetPath());
-            if (!file.exists()) {
-                dao.removeMediaIgnored(mi.getMediaId());
-                LOG.info("[ cleaner ] Invalid ignored media deleted: {}", mi);
-            }
-        }
-    }
-
-    // TODO
-    // open link folder
-    // get all media files from folder
-    // if media file doesn't match the one in database delete it
-    // and every file with the same name but different extension
+//    @Override
+//    public void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao) {
+//        for (MediaQuery mq : queries) {
+//            File file = new File(mq.getFilePath());
+//            if (!file.exists()) {
+//                dao.removeQueryFromQueue(mq);
+//                LOG.info("[ cleaner ] Invalid queue element deleted: {}", mq);
+//            }
+//        }
+//    }
 
     /*
-     * Get all media links from db, iterate through links folder and
-     * check if all directories match links from db.
-     * Delete any that are not present.
-     * */
-    public void deleteInvalidLinks(Path root, MediaTrackerDao dao) throws IOException {
-        File[] files = root.toFile().listFiles();
-        if (files != null) {
-            for (File f : files) {
-                List<MediaLink> inFilePathLink = dao.findInLinkPathLink(f.toString());
-                if (inFilePathLink.isEmpty()) {
-                    deleteElement(f.toPath());
-                    LOG.info("[ cleaner ] invalid link deleted: {}", f);
-                }
+    * Removes ignored elements that are connected with non-existing files
+    * */
+    @Override
+    public void deleteInvalidIgnoredMedia(MediaTrackerDao dao) {
+        // TODO move filter elsewhere
+        List<MediaLink> mediaIgnoredList = dao.getAllMediaLinks().stream().filter(mi -> mi.getLinkPath().equals("ignore")).collect(Collectors.toList());
+        int count = 0;
+        for (MediaLink ml : mediaIgnoredList) {
+//            Files.exists(Path.of(ml.getOriginalPath()));
+//            File file = new File(ml.getOriginalPath());
+            if (Files.exists(Path.of(ml.getOriginalPath()))) {
+                dao.removeLink(ml.getMediaId());
+                count++;
+                LOG.info("[ cleaner ] Invalid ignored media deleted: {}", ml);
             }
         }
+        LOG.info("[ cleaner ] {} elements removed", count);
     }
 
     public boolean containsNoMediaFiles(Path targetPath) throws IOException {
@@ -108,12 +81,16 @@ public class CleanerServiceImpl implements CleanerService {
     }
 
     @Override
-    public void deleteElement(Path linkPath) throws IOException {
-            Files.walk(linkPath)
-                    .sorted(Comparator.reverseOrder())
+    public boolean deleteElement(Path linkPath) {
+        boolean res = false;
+        try (Stream<Path> stream = Files.walk(linkPath)) {
+            res = stream.sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
-                    .forEach(File::delete);
-
+                    .allMatch(File::delete);
+        } catch (IOException exception) {
+            LOG.error("[ delete_element ] Error: {}", exception.getMessage());
+        }
+        return res;
     }
 
     @Override
@@ -126,17 +103,28 @@ public class CleanerServiceImpl implements CleanerService {
         } else {
             LOG.error("[ cleaner ] Given path is not a file: {}", path);
         }
-
     }
 
-//    public void deleteNonMediaFiles(Path path) {
-//        File directory = path.toFile();
-//        String[] contents = directory.list();
-//        if (contents != null) {
-//            for (String s : contents) {
-//                deleteElement(directory.toPath().resolve(s));
-//            }
-//        }
-//    }
+    @Override
+    public int deleteInvalidDbEntries(MediaTrackerDao mediaTrackerDao) {
+        List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
+        int counter = 0;
+        for (MediaLink ml : allMediaLinks) {
+            boolean originalExists = Path.of(ml.getOriginalPath()).toFile().exists();
+            boolean linkExists = Path.of(ml.getLinkPath()).toFile().exists();
+            if (!originalExists && !linkExists) {
+                mediaTrackerDao.removeLink(ml.getMediaId());
+                counter++;
+            }
+        }
+        LOG.info("[ clean_invalid_entries ] {} invalid entries deleted", counter);
+        return counter;
+    }
+
+    public static void main(String[] args) {
+        Path path = Path.of("E:\\Temp\\links-folder\\Bewitched (1981) [imdbid-tt0082481]\\folder.jpg");
+        CleanerService cs = new CleanerServiceImpl();
+        cs.deleteElement(path);
+    }
 
 }

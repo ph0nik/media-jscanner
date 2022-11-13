@@ -1,6 +1,6 @@
 package app.controller;
 
-import model.MediaIgnored;
+import model.LinkCreationResult;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
@@ -29,7 +29,7 @@ public class LinksController {
     private PropertiesService propertiesService;
 
     @ModelAttribute("media_ignored")
-    public List<MediaIgnored> getAllIgnoredMedia() {
+    public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
 
@@ -46,17 +46,18 @@ public class LinksController {
                           BindingResult bindingResult,
                           Model model) {
         boolean userPathsProvided = propertiesService.checkUserPaths();
-
+        System.out.println(webSearchResultForm);
         QueryResult qr = new QueryResult();
         qr.setId(webSearchResultForm.getId());
         qr.setImdbId(webSearchResultForm.getImdbId());
         qr.setDescription(webSearchResultForm.getDescription());
         qr.setTitle(webSearchResultForm.getTitle());
         qr.setTheMovieDbId(webSearchResultForm.getTheMovieDbId());
-        qr.setFilePath(webSearchResultForm.getFilePath());
+        qr.setOriginalPath(webSearchResultForm.getOriginalPath());
         qr.setUrl(webSearchResultForm.getUrl());
         MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
-        mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
+        // TODO pass exceptions info to user
+        LinkCreationResult symLink = mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
         return "redirect:/query";
     }
 
@@ -78,7 +79,7 @@ public class LinksController {
          * */
         if (sort == null || sort.isEmpty()) sort = "target";
         if (sort.equals("target")) {
-            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getTargetPath);
+            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getOriginalPath);
             allMediaLinks.sort(comparator);
         }
         if (sort.equals("link")) {
@@ -96,7 +97,19 @@ public class LinksController {
 
     @PostMapping("/removelink/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
-        MediaQuery backToQueue = mediaLinksService.moveBackToQueue(id);
+        mediaLinksService.moveBackToQueue(id);
         return "redirect:/query";
+    }
+
+    @PostMapping("/delete-original/{id}")
+    public String deleteOriginal(@PathVariable("id") long id, Model model) {
+        mediaLinksService.deleteOriginalFile(id);
+        return "redirect:/links";
+    }
+
+    @PostMapping("/restore-original/{id}")
+    public String restoreOriginal(@PathVariable("id") long id, Model model) {
+        mediaLinksService.restoreOriginalFile(id);
+        return "redirect:/links";
     }
 }

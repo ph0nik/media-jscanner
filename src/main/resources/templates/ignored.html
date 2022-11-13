@@ -13,7 +13,7 @@
 <body class="container-xl">
 
 <div class="row">
-    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
+    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -85,7 +85,7 @@
         <tr th:each="ignored : ${media_ignored}">
             <td th:text="${ignored.mediaId}"></td>
             <td>
-                <span th:text="${ignored.targetPath}" class="fs-6 fw-bold font-monospace"></span>
+                <span th:text="${ignored.originalPath}" class="fs-6 fw-bold font-monospace"></span>
             </td>
             <td class="col-2">
                 <form action="#"

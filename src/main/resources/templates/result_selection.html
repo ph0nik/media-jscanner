@@ -15,7 +15,7 @@
 <body class="container-xl">
 
 <div class="row">
-    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs">
+    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -165,7 +165,7 @@
                       class="d-flex flex-row">
                     <input type="hidden" th:value="${result.id}" name="id">
                     <input type="hidden" th:value="${result.title}" name="title">
-                    <input type="hidden" th:value="${result.filePath}" name="filePath">
+                    <input type="hidden" th:value="${result.originalPath}" name="originalPath">
                     <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
                     <input type="hidden" th:value="${result.imdbId}" name="imdbId">
                     <input type="hidden" th:value="${result.description}" name="description">

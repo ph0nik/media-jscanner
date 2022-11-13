@@ -18,10 +18,11 @@ public class PaginationImpl implements Pagination {
     }
 
     @Override
-    public Page<MediaQuery> findPaginatedQueries(Pageable pageable) {
+    public Page<MediaQuery> findPaginatedQueries(Pageable pageable, List<MediaQuery> mediaQueryList) {
 
 //        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
-        List<MediaQuery> allMediaQueries = mediaQueryService.getCurrentMediaQueries();
+//        List<MediaQuery> allMediaQueries = mediaQueryService.getCurrentMediaQueries();
+        List<MediaQuery> allMediaQueries = mediaQueryList;
         int pageSize = pageable.getPageSize();
         int currentPage = pageable.getPageNumber();
         int startItem = currentPage * pageSize;
@@ -34,9 +35,6 @@ public class PaginationImpl implements Pagination {
             list = allMediaQueries.subList(startItem, toIndex);
         }
 
-        Page<MediaQuery> mediaQueryPage =
-                new PageImpl<>(list, PageRequest.of(currentPage, pageSize), allMediaQueries.size());
-
-        return mediaQueryPage;
+        return new PageImpl<>(list, PageRequest.of(currentPage, pageSize), allMediaQueries.size());
     }
 }
