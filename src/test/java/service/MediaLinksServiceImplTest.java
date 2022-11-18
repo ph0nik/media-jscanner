@@ -71,7 +71,7 @@ class MediaLinksServiceImplTest {
         String group = TextExtractTools.getGroupName(fileName);
         String specialWithGroup = (special + " " + group).trim();
         specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : " - [" + specialWithGroup + "]";
-        assertEquals(" - [720p]", specialWithGroup);
+        assertEquals(" - [720p x264]", specialWithGroup);
 
     }
 }

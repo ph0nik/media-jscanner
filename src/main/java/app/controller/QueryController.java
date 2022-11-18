@@ -1,17 +1,18 @@
 package app.controller;
 
-import model.*;
+import model.LastRequest;
+import model.MediaLink;
+import model.MediaQuery;
+import model.QueryResult;
 import model.form.WebSearchResultForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import service.AutoMatcherService;
-import service.MediaLinksService;
-import service.MediaQueryService;
-import service.PropertiesService;
+import service.*;
 import util.MediaIdentity;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 @Controller
+//@RequestMapping(value = "/jscanner")
+@Validated
 public class QueryController {
 
 //    @Autowired
@@ -29,18 +32,21 @@ public class QueryController {
 
     @Autowired
     private MediaLinksService mediaLinksService;
-
     @Autowired
     private PropertiesService propertiesService;
-
     @Autowired
     private AutoMatcherService autoMatcherService;
-
     @Autowired
     private MediaQueryService mediaQueryService;
+    @Autowired
+    private ErrorNotificationService errorNotificationService;
+
+    @ModelAttribute("error")
+    public String getCurrentResult() {
+        return errorNotificationService.getCurrentResult();
+    }
 
     private Future<List<MediaLink>> future;
-
     private int sessionPageSize = 25;
 
     @ModelAttribute("query_list")
@@ -63,11 +69,16 @@ public class QueryController {
         return propertiesService.checkUserPaths();
     }
 
+    @GetMapping("/query")
+    public String redirectToQuery() {
+        return "redirect:/";
+    }
+
     /*
      * Show elements awaiting in the queue and let user select
      * file to process or let auto matcher guess correct movies.
      * */
-    @GetMapping("/query")
+    @GetMapping("/")
     public String queryList(@RequestParam("page") Optional<Integer> page,
                             @RequestParam("size") Optional<Integer> size,
                             Model model) {
@@ -95,14 +106,12 @@ public class QueryController {
     @PostMapping("/search-query/")
     public String searchQuery(@RequestParam("search") String search,
                               Model model) {
-        System.out.println(search);
         int currentPage = 1;
         int pageSize = sessionPageSize;
         sessionPageSize = pageSize;
         int min = currentPage * pageSize - pageSize + 1;
         int max = currentPage * pageSize;
         List<MediaQuery> mediaQueries = mediaQueryService.searchQuery(search);
-        System.out.println(mediaQueries);
         Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaQueries);
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
@@ -151,7 +160,7 @@ public class QueryController {
     @GetMapping(value = {"/selectquery", "/selectquery/{id}", "/searchwithyear/{id}"})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
         LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
-        if (latestMediaQuery == null) return "redirect:/query";
+        if (latestMediaQuery == null) return "redirect:/";
 //        MediaQuery queryById = mediaTrackerDao.getQueryById(latestMediaQuery.getLastId());
         MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
 
@@ -168,12 +177,12 @@ public class QueryController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "redirect:/query";
+        return "redirect:/";
     }
 
     @GetMapping("/auto")
     public String autoMatch() {
         future = autoMatcherService.autoMatchFilesWithFuture();
-        return "redirect:/query";
+        return "redirect:/";
     }
 }

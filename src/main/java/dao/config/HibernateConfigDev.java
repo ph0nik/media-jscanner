@@ -28,7 +28,6 @@ public class HibernateConfigDev {
         sessionFactory.setDataSource(dataSource());
         sessionFactory.setPackagesToScan("model");
         sessionFactory.setHibernateProperties(hibernateProperties());
-
         return sessionFactory;
     }
 

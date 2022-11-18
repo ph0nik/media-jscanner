@@ -1,5 +1,5 @@
 
-let port = 8081;
+let port = 44222;
 let stompClient;
 
 function printResponse(response) {
@@ -33,7 +33,7 @@ function fitString(string) {
 
     // connect and subscribe to message broker at given address
 function connect() {
-    const socket = new SockJS("http://localhost:" + port + "/notifications");
+    const socket = new SockJS("/notifications");
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function () {
         stompClient.subscribe("/user/notification/item", function (response) {

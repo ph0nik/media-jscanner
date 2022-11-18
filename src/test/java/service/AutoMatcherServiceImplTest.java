@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import util.CleanerService;
 import util.CleanerServiceImpl;
-import util.TrayMenu;
+import util.WindowsTrayMenu;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,7 +26,7 @@ class AutoMatcherServiceImplTest {
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
     private MediaQueryService mediaQueryService;
-    private TrayMenu trayMenu;
+    private WindowsTrayMenu windowsTrayMenu;
 
     @BeforeEach
     void initAutoMatcher() {
@@ -34,9 +34,9 @@ class AutoMatcherServiceImplTest {
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
         mediaQueryService = new MediaQueryService();
-        trayMenu = new TrayMenu();
+        windowsTrayMenu = new WindowsTrayMenu();
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
-        autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService, trayMenu);
+        autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
     }
 
     @Test

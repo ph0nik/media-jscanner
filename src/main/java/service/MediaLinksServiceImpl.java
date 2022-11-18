@@ -39,20 +39,14 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     private final MediaQueryService mediaQueryService;
     private LastRequest lastRequest;
 
-    //    public MediaLinksServiceImpl() {
+//    @Autowired
+//    public MediaLinksServiceImpl() {
 //        super(mediaTrackerDao, mediaQueryService);
-//        this.mediaQueryService = mediaQueryService;
-//        this.cleanerService = cleanerService;
-//        linksFolder = propertiesService.getLinksFolder();
-//        mediaTrackerDao = dao;
-//        lastRequest = null;
-//        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
-//        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
 //    }
     @Autowired
     public MediaLinksServiceImpl(@Qualifier("spring") MediaTrackerDao dao, PropertiesService propertiesService,
                                  CleanerService cleanerService, MediaQueryService mediaQueryService) {
-        super(dao, mediaQueryService);
+//        super(dao, mediaQueryService);
         this.mediaQueryService = mediaQueryService;
         this.cleanerService = cleanerService;
         linksFolder = propertiesService.getLinksFolder();
@@ -61,6 +55,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
         requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
+
 
     @Override
     public List<MediaQuery> getMediaQueryList() {
@@ -176,7 +171,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
                 mediaTransferData = responseParser.parseDetailsRequestByExternalId(mediaTransferData, response);
                 mediaTransferData.setImdbId(queryResult.getImdbId());
             }
-            // TODO move exceptions to the end
         } catch (HttpStatusException e) {
             LOG.error(e.getMessage());
             String message = e.getStatusCode() + " : " + e.getMessage();
@@ -218,7 +212,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     LinkCreationResult createHardLinkWithDirectories(MediaLink mediaLink, boolean existingLink) {
         Path linkPath = Path.of(mediaLink.getLinkPath());
         Path parentLinkPath = linkPath.getRoot().resolve(linkPath.subpath(0, linkPath.getNameCount() - 1));
-//        LinkCreationResult linkCreationResult;
         try {
             if (!Files.exists(parentLinkPath)) {
                 Files.createDirectories(parentLinkPath);
@@ -232,12 +225,11 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
             return new LinkCreationResult(true, "New link added", mediaLink);
         } catch (FileAlreadyExistsException e) {
             LOG.error("[ link ] Link already exists: {}", e.getMessage());
-            return new LinkCreationResult(false, e.getMessage(), mediaLink);
+            return new LinkCreationResult(false, "File already exists: " + e.getMessage(), mediaLink);
         } catch (IOException | SecurityException e) {
             LOG.error(e.getMessage());
             return new LinkCreationResult(false, e.getMessage(), mediaLink);
         }
-//        return linkCreationResult;
     }
 
     @Override
@@ -269,7 +261,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
                 .filter(ml -> ml.getTheMovieDbId() < 0)
                 .collect(Collectors.toList());
         return collect;
-//        return mediaTrackerDao.getAllMediaIgnored();
     }
 
     /*
@@ -367,13 +358,10 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     @Override
     @Transactional
     public MediaQuery unIgnoreMedia(long mediaIgnoreId) {
-//        MediaIgnored mediaIgnoredById = mediaTrackerDao.getMediaIgnoredById(mediaIgnoreId);
-//        MediaIgnored mediaIgnored = mediaTrackerDao.removeMediaIgnored(mediaIgnoreId);
         MediaLink mediaLink = mediaTrackerDao.removeLink(mediaIgnoreId);
         MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
         return mediaQuery;
-//        return mediaTrackerDao.findQueryByFilePath(targetPath);
     }
 
     /*
@@ -412,7 +400,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
                 new LinkCreationResult(false, e.getMessage(), ml);
             }
         }
-//        cleanerService.deleteInvalidLinks(oldLinksFolder, mediaTrackerDao);
     }
 
     @Override

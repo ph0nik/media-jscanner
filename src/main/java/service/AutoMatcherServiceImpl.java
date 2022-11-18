@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import util.MediaIdentity;
 import util.MediaType;
-import util.TrayMenu;
 import websocket.NotificationSender;
 import websocket.config.NotificationDispatcher;
 
@@ -31,7 +30,6 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     private final RequestService requestService;
     private final ResponseParser responseParser;
     private final MediaLinksService mediaLinksService;
-//    private final TrayMenu trayMenu;
 
     @Autowired
     private NotificationDispatcher dispatcher;
@@ -43,17 +41,14 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
 //    }
 
     // TODO remove tray reference
-    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService,
-                                  TrayMenu trayMenu) {
+    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
         this.mediaLinksService = mediaLinksService;
-//        this.trayMenu = trayMenu;
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
         requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
     @Async
     public Future<List<MediaLink>> autoMatchFilesWithFuture() {
-//        trayMenu.showMessage("Starting auto matcher");
         List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
         List<MediaLink> mediaLinks = new LinkedList<>();
         AutoMatcherStatus message;
@@ -72,7 +67,6 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         }
         message = getFinalMessage(mediaQueryList, index);
         sendNotification(message);
-//        trayMenu.showMessage("Auto matcher has found " + mediaLinks.size() + " elements.");
         return new AsyncResult<>(mediaLinks);
     }
 
@@ -113,10 +107,6 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         return status;
     }
 
-//    @Override
-//    public void registerDispatcher(NotificationDispatcher dispatcher) {
-//        this.dispatcher = dispatcher;
-//    }
 
     @Override
     public void sendNotification(AutoMatcherStatus notification) {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import service.ErrorNotificationService;
 import service.MediaLinksService;
 import service.PropertiesService;
 import util.MediaIdentity;
@@ -27,6 +28,14 @@ public class LinksController {
 
     @Autowired
     private PropertiesService propertiesService;
+
+    @Autowired
+    private ErrorNotificationService errorNotificationService;
+
+    @ModelAttribute("error")
+    public String getCurrentResult() {
+        return errorNotificationService.getCurrentResult();
+    }
 
     @ModelAttribute("media_ignored")
     public List<MediaLink> getAllIgnoredMedia() {
@@ -58,6 +67,7 @@ public class LinksController {
         MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
         // TODO pass exceptions info to user
         LinkCreationResult symLink = mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
+        errorNotificationService.setLinkCreationResult(symLink);
         return "redirect:/query";
     }
 
@@ -98,7 +108,7 @@ public class LinksController {
     @PostMapping("/removelink/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
         mediaLinksService.moveBackToQueue(id);
-        return "redirect:/query";
+        return "redirect:/";
     }
 
     @PostMapping("/delete-original/{id}")

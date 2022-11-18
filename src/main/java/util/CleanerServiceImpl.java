@@ -112,7 +112,7 @@ public class CleanerServiceImpl implements CleanerService {
         for (MediaLink ml : allMediaLinks) {
             boolean originalExists = Path.of(ml.getOriginalPath()).toFile().exists();
             boolean linkExists = Path.of(ml.getLinkPath()).toFile().exists();
-            if (!originalExists && !linkExists) {
+            if ((!linkExists && originalExists) || (!originalExists && !linkExists)) {
                 mediaTrackerDao.removeLink(ml.getMediaId());
                 counter++;
             }

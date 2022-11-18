@@ -53,7 +53,7 @@ public class IgnoredController {
     public String addToIgnoreList(@PathVariable("id") long id, @RequestParam String uuid, Model model)  {
         MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
         mediaLinksService.ignoreMediaFile(queryByUuid);
-        return "redirect:/query";
+        return "redirect:/";
     }
 
     @PostMapping("/removeignore/{id}")

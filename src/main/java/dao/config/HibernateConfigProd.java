@@ -35,10 +35,10 @@ public class HibernateConfigProd {
     @Bean
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:file:./jscanner");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("");
+        dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+        dataSource.setUrl(env.getProperty("jdbc.url"));
+        dataSource.setUsername(env.getProperty("jdbc.username"));
+        dataSource.setPassword(env.getProperty("jdbc.password"));
         return dataSource;
     }
 
@@ -51,6 +51,7 @@ public class HibernateConfigProd {
 
     private final Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
+//        hibernateProperties.getProperty()
         hibernateProperties.setProperty("javax.persistence.schema-generation.database.action", "create");
         hibernateProperties.setProperty("javax.persistence.schema-generation.create-script-source", "META-INF/sql/create.sql");
         hibernateProperties.setProperty("dialect", "org.hibernate.dialect.H2Dialect");
