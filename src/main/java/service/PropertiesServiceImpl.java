@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ public class PropertiesServiceImpl implements PropertiesService {
 
     //    private static final String configPath = "src/main/resources/mediafolders.properties";
     private static final String MEDIA_FOLDERS_PROPERTIES_FILE = "mediafolders.properties";
+    private static final String EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE = "data/mediafolders.properties";
     private static final String NETWORK_PROPERTIES_FILE = "network.properties";
     private static final String DEFAULT_TARGET_PATH = "defaultTargetFolderMovie";
     private static final String USER_TARGET_PATH = "targetFolderMovie";
@@ -29,6 +31,18 @@ public class PropertiesServiceImpl implements PropertiesService {
 
     public PropertiesServiceImpl() {
         loadPropertiesFromFiles();
+        createDataFolder();
+    }
+
+    void createDataFolder() {
+        File data = new File("data");
+        if (!data.exists()) {
+            try {
+                Files.createDirectories(data.toPath());
+            } catch (IOException e) {
+                LOG.error("[ props ] Cannot create folder: {}", e.getMessage());
+            }
+        }
     }
 
     private void loadPropertiesFromFiles() {
@@ -41,29 +55,29 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     /*
-    * Check if user target path is provided
-    * */
+     * Check if user target path is provided
+     * */
     public boolean isUserTargetPath() {
         String property = mediaFilesProperties.getProperty(USER_TARGET_PATH);
         return !isPropertyEmpty(property);
     }
 
     /*
-    * Check if user links path is provided
-    * */
+     * Check if user links path is provided
+     * */
     public boolean isUserLinksPath() {
         String property = mediaFilesProperties.getProperty(USER_LINKS_PATH);
         return !isPropertyEmpty(property);
     }
 
     /*
-    * Check if given properties file is empty or contain only white spaces
-    * */
+     * Check if given properties file is empty or contain only white spaces
+     * */
     private boolean isPropertyEmpty(String propertyValue) {
         String[] split = propertyValue.split(";");
         return Arrays.stream(split)
-                    .map(String::trim)
-                    .allMatch(String::isEmpty);
+                .map(String::trim)
+                .allMatch(String::isEmpty);
     }
 
     public boolean checkUserPaths() {
@@ -71,8 +85,8 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     /*
-    * Returns list of folders to be watched.
-    * */
+     * Returns list of folders to be watched.
+     * */
     public List<Path> getTargetFolderList() {
         String paths;
         String targetFolderMovie = mediaFilesProperties.getProperty(USER_TARGET_PATH);
@@ -88,8 +102,8 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     /*
-    * Returns folder where symlinks should be stored.
-    * */
+     * Returns folder where symlinks should be stored.
+     * */
     public Path getLinksFolder() {
         String linkFolderPath = mediaFilesProperties.getProperty(USER_LINKS_PATH);
         Path links;
@@ -117,11 +131,11 @@ public class PropertiesServiceImpl implements PropertiesService {
         }
         sb.append(targetPath.toString());
         props.setProperty(USER_TARGET_PATH, sb.toString());
-        try (final OutputStream outputStream = new FileOutputStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
+        try (final OutputStream outputStream = new FileOutputStream(EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.store(outputStream, "File updated");
             LOG.info("[ props ] Target path added: {}", targetPath);
         } catch (IOException e) {
-            LOG.error("[ props ] Error saving target path: {}", MEDIA_FOLDERS_PROPERTIES_FILE);
+            LOG.error("[ props ] Error saving target path: {}", EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE);
         }
         loadPropertiesFromFiles();
     }
@@ -138,7 +152,7 @@ public class PropertiesServiceImpl implements PropertiesService {
             if (!s.equals(targetPath.toString()) && !s.isEmpty()) sb.append(s).append(";");
         }
         props.setProperty(USER_TARGET_PATH, sb.toString());
-        try (final OutputStream outputStream = new FileOutputStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
+        try (final OutputStream outputStream = new FileOutputStream(EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.store(outputStream, "File updated");
             LOG.info("[ props ] Target path removed: {}", targetPath);
         } catch (IOException e) {
@@ -153,10 +167,10 @@ public class PropertiesServiceImpl implements PropertiesService {
     public void setLinksPath(Path linksRoot) {
         Properties props = loadMediaFoldersProperties();
         props.setProperty(USER_LINKS_PATH, linksRoot.toString());
-        try (final OutputStream outputStream = new FileOutputStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
+        try (final OutputStream outputStream = new FileOutputStream(EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.store(outputStream, "File updated");
         } catch (IOException e) {
-            LOG.error("[ props ] Error saving link path: {}", MEDIA_FOLDERS_PROPERTIES_FILE);
+            LOG.error("[ props ] Error saving link path: {}", EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE);
         }
         loadPropertiesFromFiles();
     }
@@ -174,33 +188,33 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     /*
-    * Loads media file properties from external file, with
-    * user provided paths.
-    * Returns non-empty properties object if no error occurred.
-    * Returns empty properties object if there was problem with reading file.
-    * */
+     * Loads media file properties from external file, with
+     * user provided paths.
+     * Returns non-empty properties object if no error occurred.
+     * Returns empty properties object if there was problem with reading file.
+     * */
     private Properties loadExternalMediaFileProperties() {
         Properties props = new Properties();
-        File propertiesFile = new File(MEDIA_FOLDERS_PROPERTIES_FILE);
+        File propertiesFile = new File(EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE);
         try (final InputStream is = new FileInputStream(propertiesFile)) {
             props.load(is);
             LOG.info("[ props ] Loaded from external file.");
         } catch (FileNotFoundException e) {
-            LOG.error("[ props ] No properties file found: {}", MEDIA_FOLDERS_PROPERTIES_FILE);
+            LOG.error("[ props ] No properties file found: {}", EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE);
         } catch (IOException e) {
-            LOG.error("[ props ] Error reading file: {}", MEDIA_FOLDERS_PROPERTIES_FILE);
+            LOG.error("[ props ] Error reading file: {}", EXTERNAL_MEDIA_FOLDERS_PROPERTIES_FILE);
         }
         return props;
     }
 
     /*
-    * Loads media file properties from internal file,
-    * with default values.
-    * */
+     * Loads media file properties from internal file,
+     * with default values.
+     * */
     private Properties loadInternalMediaFileProperties() {
         Properties props = new Properties();
         ClassLoader classLoader = getClass().getClassLoader();
-        try (final InputStream is = classLoader.getResourceAsStream(MEDIA_FOLDERS_PROPERTIES_FILE)){
+        try (final InputStream is = classLoader.getResourceAsStream(MEDIA_FOLDERS_PROPERTIES_FILE)) {
             props.load(is);
             LOG.info("[ props ] No external file found, loading default values");
         } catch (IOException e) {

@@ -1,2 +1,2 @@
 #! /usr/bin/bash
-docker build -t ulozto-remote-downloader:latest .
+docker build -t media-jscanner:latest .

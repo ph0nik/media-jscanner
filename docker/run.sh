@@ -1,2 +1,2 @@
 #! /usr/bin/bash
-docker run --rm -d -p 8081:8081 -v=/mnt/user/downloads:/download --name ulozto-remote-downloader ulozto-remote-downloader --dpath=/download
+docker run --rm -d -p 44222:44222 -v=/mnt/user/movies:/ --name media-jscanner media-jscanner

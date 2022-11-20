@@ -31,12 +31,13 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     private static final String LINKS_ROOT = "LINKS_ROOT";
     private static final MediaIdentity LINK_IDENTIFIER = MediaIdentity.IMDB;
     private static final int DEFAULT_YEAR_VALUE = 1000;
-    private final Path linksFolder;
+    private Path linksFolder;
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final ResponseParser responseParser;
     private final RequestService requestService;
     private final MediaQueryService mediaQueryService;
+    private final PropertiesService propertiesService;
     private LastRequest lastRequest;
 
 //    @Autowired
@@ -49,13 +50,18 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
 //        super(dao, mediaQueryService);
         this.mediaQueryService = mediaQueryService;
         this.cleanerService = cleanerService;
-        linksFolder = propertiesService.getLinksFolder();
+        this.propertiesService = propertiesService;
+        setLinksFolder();
+//        linksFolder = propertiesService.getLinksFolder();
         mediaTrackerDao = dao;
         lastRequest = null;
         responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
         requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
+    void setLinksFolder() {
+        linksFolder = propertiesService.getLinksFolder();
+    }
 
     @Override
     public List<MediaQuery> getMediaQueryList() {
@@ -154,6 +160,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     public LinkCreationResult createSymLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaType mediaType) {
         // naming pattern -> Film (2018) [tmdbid-65567]
         // send request to themoviedb api with given query result
+        setLinksFolder();
         MediaTransferData mediaTransferData = new MediaTransferData();
         mediaTransferData.setMediaType(mediaType);
         MediaLink mediaLink = new MediaLink();
@@ -197,7 +204,9 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         mediaLink.setLinkPath(linkPath.toString());
         mediaLink.setTheMovieDbId(mediaTransferData.getTmdbId());
         mediaLink.setImdbId(mediaTransferData.getImdbId());
-
+        // temp debug
+        LOG.info("query: {}", queryResult);
+        LOG.info("medialink: {}", mediaLink);
         linkCreationResult = createHardLinkWithDirectories(mediaLink);
         if (linkCreationResult.isCreationStatus()) {
             mediaTrackerDao.addNewLink(mediaLink);
