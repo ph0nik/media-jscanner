@@ -1,10 +1,9 @@
 package app.controller;
 
-import model.LastRequest;
-import model.MediaLink;
-import model.MediaQuery;
-import model.QueryResult;
+import model.*;
 import model.form.WebSearchResultForm;
+import model.multipart.MultiPartElement;
+import model.multipart.MultipartDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import service.*;
 import util.MediaIdentity;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -109,7 +107,7 @@ public class QueryController {
         int currentPage = 1;
         int pageSize = sessionPageSize;
         sessionPageSize = pageSize;
-        int min = currentPage * pageSize - pageSize + 1;
+        int min = (currentPage * pageSize) - pageSize + 1;
         int max = currentPage * pageSize;
         List<MediaQuery> mediaQueries = mediaQueryService.searchQuery(search);
         Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaQueries);
@@ -126,30 +124,55 @@ public class QueryController {
      * Present returned results and prompt user to select which title
      * will be used to create symlink.
      * */
-    @PostMapping("/selectquery/{id}")
+    @PostMapping("/select-query/{id}")
     public String selectQuery(@PathVariable("id") Long id, @RequestParam String custom,
                               @RequestParam UUID uuid, Model model) {
-        // get query by id from db
-//        MediaQuery queryById = mediaTrackerDao.getQueryById(id);
-//        MediaQuery queryById = mediaQueryService.getQueryById(id);
-        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid.toString());
+        // TODO is custom needed here?
+        mediaQueryService.setReferenceQuery(uuid);
+        System.out.println(mediaQueryService.getReferenceQuery());
+//        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
+        model.addAttribute("query", mediaQueryService.getReferenceQuery());
+        List<MediaQuery> groupedQueries = mediaQueryService.getGroupedQueries(uuid);
 
-        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, queryByUuid, MediaIdentity.IMDB);
+        if (groupedQueries.size() > 1) {
+            MultipartDto multipartDto = new MultipartDto();
+            // TODO instead of object pass uuid to object
+            multipartDto.setQueryUuid(uuid);
+            for (MediaQuery query : groupedQueries) {
+                MultiPartElement multiPartElement = new MultiPartElement();
+                multiPartElement.setFilePath(query.getFilePath());
+                multipartDto.addMultiPartElement(multiPartElement);
+            }
 
+            model.addAttribute("multipart_dto", multipartDto);
+            return "query_multipart";
+        }
+        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, MediaIdentity.IMDB);
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("query", queryByUuid);
         model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";
     }
 
-    @PostMapping("/searchwithyear/{id}")
+    // test
+    @PostMapping("/set-multipart")
+    public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) {
+        mediaQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
+        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
+        model.addAttribute("query", mediaQueryService.getReferenceQuery());
+        model.addAttribute("result_list", queryResults);
+        model.addAttribute("request_form", new WebSearchResultForm());
+        return "result_selection";
+    }
+
+    @PostMapping("/search-with-year/{id}")
     public String searchTmdbWithYear(@PathVariable("id") Long id, @RequestParam String custom,
-                                     @RequestParam String uuid, @RequestParam Optional<Integer> year, Model model) {
-        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
-        List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, queryByUuid, MediaIdentity.IMDB, year.orElse(1000));
+                                     @RequestParam UUID uuid, @RequestParam Optional<Integer> year, Model model) {
+//        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
+        List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, MediaIdentity.IMDB, year.orElse(1000));
 
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("query", queryByUuid);
+        model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";
     }
@@ -157,11 +180,10 @@ public class QueryController {
     /*
      * GET mapping as a protection measure in case user reloads page
      * */
-    @GetMapping(value = {"/selectquery", "/selectquery/{id}", "/searchwithyear/{id}"})
+    @GetMapping(value = {"/select-query", "/select-query/{id}", "/search-with-year/{id}"})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
         LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
         if (latestMediaQuery == null) return "redirect:/";
-//        MediaQuery queryById = mediaTrackerDao.getQueryById(latestMediaQuery.getLastId());
         MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
 
         model.addAttribute("result_list", latestMediaQuery.getLastRequest());
@@ -172,11 +194,7 @@ public class QueryController {
 
     @GetMapping("/scan")
     public String scanFolders() {
-        try {
-            mediaQueryService.scanForNewMediaQueries(propertiesService.getTargetFolderList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mediaQueryService.scanForNewMediaQueries(propertiesService.getTargetFolderList());
         return "redirect:/";
     }
 

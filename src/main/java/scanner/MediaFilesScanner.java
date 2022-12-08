@@ -17,8 +17,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class MediaFilesScanner {
@@ -36,7 +35,7 @@ public class MediaFilesScanner {
         this.cleanerService = cs;
     }
 
-    public List<Path> scanMediaFolders(List<Path> paths, List<MediaLink> allMediaLinks) throws IOException {
+    public List<Path> scanMediaFolders(List<Path> paths, List<MediaLink> allMediaLinks) {
         this.allMediaLinks = allMediaLinks;
         candidateFilesList = new LinkedList<>();
         for (Path p : paths) {
@@ -45,9 +44,13 @@ public class MediaFilesScanner {
         return candidateFilesList;
     }
 
-    void scanFolderTree(Path root) throws IOException {
+    void scanFolderTree(Path root) {
         cleanUp();
-        Files.walkFileTree(root, new MediaFilesFileVisitor());
+        try {
+            Files.walkFileTree(root, new MediaFilesFileVisitor());
+        } catch (IOException e) {
+            LOG.error("[ scan ] Error: {}", e.getMessage());
+        }
 //        extractQueryList();
     }
 

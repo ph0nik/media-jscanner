@@ -120,23 +120,6 @@ class ResponseParser {
                         queryResults.add(qr);
                     }
                 }
-//                for (int i = 0; i < size; i++) {
-//                    JsonElement result = results.get(i);
-//                    if (result.isJsonObject()) {
-//                        QueryResult qr = new QueryResult();
-//                        qr.setTheMovieDbId(result.getAsJsonObject().get(id).getAsInt());
-//                        qr.setTitle(result.getAsJsonObject().get(title).getAsString());
-//                        qr.setDescription(result.getAsJsonObject().get(desc).getAsString());
-//                        qr.setOriginalPath(path.toString());
-//                        String yearString = result.getAsJsonObject().get(year).getAsString();
-//                        String temp = (yearString.length() >= 4) ? yearString.substring(0, 4) : yearString;
-//                        qr.setYear(temp);
-//                        JsonElement posterObject = result.getAsJsonObject().get(poster);
-//                        String posterPath = (posterObject.isJsonNull()) ? "" : imgWebPath + posterObject.getAsString();
-//                        qr.setPoster(posterPath);
-//                        queryResults.add(qr);
-//                    }
-//                }
             }
         } catch (JsonParseException jsonParseException) {
             LOG.error("[ json_parser ] Invalid json format: \n{}", jsonString);

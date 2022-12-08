@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("dev")
+@Profile("prod")
 public class NoTrayMenu implements TrayMenu {
 
     private static final Logger LOG = LoggerFactory.getLogger(NoTrayMenu.class);

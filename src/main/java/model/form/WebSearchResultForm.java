@@ -2,6 +2,8 @@ package model.form;
 
 import util.MediaType;
 
+import java.util.UUID;
+
 public class WebSearchResultForm {
 
     private Long id;
@@ -12,6 +14,16 @@ public class WebSearchResultForm {
     private String imdbId;
     private String description;
     private String url;
+
+    private UUID queryId;
+
+    public UUID getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(UUID queryId) {
+        this.queryId = queryId;
+    }
 
     public Long getId() {
         return id;
@@ -83,11 +95,12 @@ public class WebSearchResultForm {
                 "id=" + id +
                 ", mediaType=" + mediaType +
                 ", title='" + title + '\'' +
-                ", filePath='" + originalPath + '\'' +
-                ", theMovieDbId='" + theMovieDbId + '\'' +
+                ", originalPath='" + originalPath + '\'' +
+                ", theMovieDbId=" + theMovieDbId +
                 ", imdbId='" + imdbId + '\'' +
                 ", description='" + description + '\'' +
                 ", url='" + url + '\'' +
+                ", queryId=" + queryId +
                 '}';
     }
 }

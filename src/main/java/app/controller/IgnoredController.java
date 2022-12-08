@@ -11,6 +11,7 @@ import service.MediaQueryService;
 import service.PropertiesService;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 public class IgnoredController {
@@ -50,7 +51,7 @@ public class IgnoredController {
     }
 
     @PostMapping("/addignore/{id}")
-    public String addToIgnoreList(@PathVariable("id") long id, @RequestParam String uuid, Model model)  {
+    public String addToIgnoreList(@PathVariable("id") long id, @RequestParam UUID uuid, Model model)  {
         MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
         mediaLinksService.ignoreMediaFile(queryByUuid);
         return "redirect:/";

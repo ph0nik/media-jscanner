@@ -66,7 +66,7 @@ public class CleanerServiceImpl implements CleanerService {
         for (MediaLink ml : mediaIgnoredList) {
 //            Files.exists(Path.of(ml.getOriginalPath()));
 //            File file = new File(ml.getOriginalPath());
-            if (Files.exists(Path.of(ml.getOriginalPath()))) {
+            if (!Files.exists(Path.of(ml.getOriginalPath()))) {
                 dao.removeLink(ml.getMediaId());
                 count++;
                 LOG.info("[ cleaner ] Invalid ignored media deleted: {}", ml);
@@ -75,9 +75,14 @@ public class CleanerServiceImpl implements CleanerService {
         LOG.info("[ cleaner ] {} elements removed", count);
     }
 
-    public boolean containsNoMediaFiles(Path targetPath) throws IOException {
-            return Files.walk(targetPath)
-                    .noneMatch(MediaFilter::validateExtension);
+    public boolean containsNoMediaFiles(Path targetPath) {
+        boolean result = false;
+        try (Stream<Path> stream = Files.walk(targetPath)) {
+            result =  stream.noneMatch(MediaFilter::validateExtension);
+        } catch (IOException e) {
+            LOG.error("[ media_check ] Error: {}", e.getMessage());
+        }
+        return result;
     }
 
     @Override

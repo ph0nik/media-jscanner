@@ -1,0 +1,194 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<head>
+    <title>media-jscanner | query list</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../static/css/all.css" rel="stylesheet">
+    <link th:href="@{/css/all.css}" rel="stylesheet"/>
+    <!--    <link href="../static/style.css" rel="stylesheet">-->
+    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:src="@{/js/sockjs.js}"></script>
+    <script type="text/javascript" th:src="@{/js/stomp.js}"></script>
+    <script type="text/javascript" th:src="@{/js/script.js}"></script>
+</head>
+<body class="container-fluid">
+<div class="row" id="top">
+    <!--    top menu-->
+    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
+        <div class="container-fluid pt-1">
+            <span class="navbar-brand fs-6">media-jscanner</span>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!--                new files-->
+                    <li class="nav-item px-2">
+                        <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+                            <!-- show if any new files are in the queue -->
+                            <span th:case="${true}" th:text="${query_list.size()}"
+                                  class="badge bg-primary rounded-pill"></span>
+                            <!-- for no links -->
+                            <span th:case="${false}" th:text="${query_list.size()}"
+                                  class="badge bg-secondary rounded-pill"></span>
+                        </a>
+                    </li>
+                    <!--                links-->
+                    <li class="nav-item px-2">
+                        <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                            <!-- show if any new files are in the queue -->
+                            <span th:case="${true}" th:text="${link_list.size()}"
+                                  class="badge bg-primary rounded-pill"></span>
+                            <!-- for no links -->
+                            <span th:case="${false}" th:text="${link_list.size()}"
+                                  class="badge bg-secondary rounded-pill"></span>
+                        </a>
+                    </li>
+                    <!--                stubs-->
+                    <li class="nav-item px-2">
+                        <a class="nav-link" href="/stubs">stubs</a>
+                    </li>
+                    <!--                ignored-->
+                    <li class="nav-item px-2">
+                        <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
+                            <!-- show if any new files are in the queue -->
+                            <span th:case="${true}" th:text="${media_ignored.size()}"
+                                  class="badge bg-primary rounded-pill"></span>
+                            <!-- for no links -->
+                            <span th:case="${false}" th:text="${media_ignored.size()}"
+                                  class="badge bg-secondary rounded-pill"></span>
+                        </a>
+                    </li>
+                    <!--                config-->
+                    <li class="nav-item px-2">
+                        <a class="nav-link" href="/config">config</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+        <div class="col-2">
+            <!--scan folders-->
+            <div class="col d-flex justify-content-center">
+                <form action="#"
+                      th:action="@{/scan}"
+                      method="get">
+                    <input type="hidden">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="m-2">Refresh</span>
+                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>
+
+<!--error, no user paths found-->
+<div class="row" th:switch="${user_paths}">
+    <div th:case="${false}" class="col-8 offset-md-2">
+        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
+
+            <span class="text-danger text-center"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
+                User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
+                tab</span>
+        </div>
+    </div>
+</div>
+<span th:text="${error}"></span>
+<!-- multipart query selection  -->
+<div class="row">
+    <p th:text="${query.filePath}"></p>
+    <p>
+        Multiple media found in selected folder, select all elements that belong to the same group as file above.
+    </p>
+    <form action="#" th:action="@{/set-multipart}" th:object="${multipart_dto}"
+          method="post">
+        <fieldset>
+            <table>
+                <thead>
+                <tr>
+                    <th>file path</th>
+                    <th>multipart</th>
+                    <th>same</th>
+                    <th>different</th>
+                    <th>media type</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="mpe, item : *{multiPartElementList}">
+                    <td>
+
+                        <span th:text="${mpe.filePath}"></span>
+                        <input type="hidden" th:name="${'multipart-' + item.index}"
+                               th:field="*{multiPartElementList[__${item.index}__].filePath}"
+                        >
+                    </td>
+<!--                    multipart select-->
+                    <td>
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="radio" aria-label="Radio button for following text input"
+                                       id="multipart" th:name="${'multipart-' + item.index}" value="1"
+                                       th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}"
+                                >
+                            </div>
+                            <input type="number" class="form-control" id="title_no" th:name="${'multipart-' + item.index}" min="0" max="50"
+                                   th:field="*{multiPartElementList[__${item.index}__].partNumber}"
+                            >
+                        </div>
+<!--                        <input type="radio" id="multipart" th:name="${'multipart-' + item.index}" value="1"-->
+<!--                               th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}"-->
+<!--                        >-->
+<!--                        <input type="number" id="title_no" th:name="${'multipart-' + item.index}" min="0" max="50"-->
+<!--                               th:field="*{multiPartElementList[__${item.index}__].partNumber}"-->
+<!--                        >-->
+                    </td>
+<!--                    same media-->
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="same_title" th:name="${'multipart-' + item.index}" value="-1"
+                                   th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">
+                        </div>
+<!--                        <input type="radio" id="same_title" th:name="${'multipart-' + item.index}" value="-1"-->
+<!--                               th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}"-->
+<!--                        >-->
+                    </td>
+<!--                    different media-->
+                    <td>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" id="dif_title" th:name="${'multipart-' + item.index}" value="0"
+                                   th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">
+                        </div>
+<!--                        <input type="radio" id="dif_title" th:name="${'multipart-' + item.index}" value="0"-->
+<!--                               th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">-->
+                    </td>
+                    <td>
+
+                        <select th:name="${'multipart-' + item.index}"
+                                id="mediatype"
+                                class="form-select form-select-sm mx-2"
+                                th:field="*{multiPartElementList[__${item.index}__].mediaType}">
+                            <option th:each="media : ${T(util.MediaType).values()}"
+                                    th:value="${media}" th:text="${media.displayValue}"
+                                    th:selected="${media == 'MOVIE'}"></option>
+                        </select>
+                    </td>
+                </tr>
+                </tbody>
+
+                <button class="btn btn-outline-primary btn-sm" type="submit">Submit</button>
+
+
+            </table>
+        </fieldset>
+    </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+</body>
+</html>

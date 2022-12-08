@@ -10,6 +10,26 @@ public class MediaTransferData {
     private int tmdbId;
     private MediaType mediaType;
 
+    private int partNumber;
+
+    private LinkCreationResult linkCreationResult;
+
+    public LinkCreationResult getLinkCreationResult() {
+        return linkCreationResult;
+    }
+
+    public int getPartNumber() {
+        return partNumber;
+    }
+
+    public void setPartNumber(int partNumber) {
+        this.partNumber = partNumber;
+    }
+
+    public void setLinkCreationResult(LinkCreationResult linkCreationResult) {
+        this.linkCreationResult = linkCreationResult;
+    }
+
     public MediaType getMediaType() {
         return mediaType;
     }
@@ -52,12 +72,14 @@ public class MediaTransferData {
 
     @Override
     public String toString() {
-        return "MediaData{" +
+        return "MediaTransferData{" +
                 "title='" + title + '\'' +
                 ", year=" + year +
                 ", imdbId='" + imdbId + '\'' +
                 ", tmdbId=" + tmdbId +
                 ", mediaType=" + mediaType +
+                ", partNumber=" + partNumber +
+                ", linkCreationResult=" + linkCreationResult +
                 '}';
     }
 }

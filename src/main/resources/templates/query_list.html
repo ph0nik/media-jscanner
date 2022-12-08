@@ -77,7 +77,7 @@
                       th:action="@{/scan}"
                       method="get">
                     <input type="hidden">
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-success" type="submit">
                         <span class="m-2">Refresh</span>
                         <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
                 </form>
@@ -155,14 +155,14 @@
             </li>
             <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                 <a th:if="${page.getNumber() > 0}"
-                   th:href="@{/query(size=${page.size}, page=${page.getNumber()})}"
+                   th:href="@{/(size=${page.size}, page=${page.getNumber()})}"
                    class="page-link">< Previous</a>
                 <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
             </li>
 
             <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
                 <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
-                   th:href="@{/query(size=${page.size}, page=${page.getNumber() + 2})}"
+                   th:href="@{/(size=${page.size}, page=${page.getNumber() + 2})}"
                    class="page-link">Next ></a>
                 <span th:if="${page.getNumber() + 1 == page.getTotalPages()}" class="page-link disabled">Next ></span>
             </li>
@@ -175,11 +175,16 @@
                   action="#"
                   th:action="@{/search-query/}"
                   method="post">
-                <input class="form-control me-2" type="search" placeholder="Find in queries..." name="search" id="search"
-                       aria-label="Search">
-                <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>
+<!--                <input class="form-control me-2" type="search" placeholder="Find in queries..." name="search" id="search"-->
+<!--                       aria-label="Search">-->
+<!--                <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>-->
+                <div class="input-group">
+                    <input type="search" class="form-control" placeholder="Find in queries..." aria-label="queries search" aria-describedby="button-addon2" name="search" id="search">
+                    <button class="btn btn-outline-primary btn-sm" type="submit" id="button-addon2">Search</button>
+                </div>
             </form>
         </div>
+
     </nav>
     <!--number of shown elements-->
     <nav aria-label="range">
@@ -223,10 +228,11 @@
                 <span th:text="${query.getFileName()}" class="row fs-6 fw-bold font-monospace"></span>
             </td>
             <!--            search with this fila -->
+
             <td class="col-1" th:switch="${future}">
-                <!--                      th:action="@{/selectquery/{id}(id=${query.queryId})}"-->
+                <!--                      th:action="@{/select-query/{id}(id=${query.queryId})}"-->
                 <form action="#"
-                      th:action="@{/selectquery/{id}(id=${query.queryId})}"
+                      th:action="@{/select-query/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">
@@ -234,6 +240,10 @@
                     <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>search
                     </button>
                 </form>
+<!--                <div class="input-group">-->
+<!--                    <button class="btn btn-secondary btn-sm" type="submit">search</button>-->
+<!--                    <button class="btn btn-warning btn-sm" type="submit">ignore</button>-->
+<!--                </div>-->
             </td>
             <!--            ignore-->
             <td class="col-1" th:switch="${future}">

@@ -128,7 +128,6 @@ public class TrackerController {
     @PostMapping("/addtarget")
     public String addPath(@RequestParam String path, Model model) {
         propertiesService.setTargetPath(Path.of(path));
-        // TODO path validation
         return "redirect:/config";
     }
 

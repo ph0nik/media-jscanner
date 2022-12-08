@@ -1,33 +1,33 @@
 # media-jscanner
 
-This is tool designed to create additional layer between 
+The tool designed to create additional layer between 
 local video files collection and media management solutions 
-such as Emby or Jellyfin. It uses two, user privided locations: 
-**source** and **target** folder. 
+such as Emby or Jellyfin. It uses two, user provided locations: 
+**links** and **target** folder. 
 
-**Target** folder is a place where the video
-files are being collected, user may provide multiple locations for media files.
-**Source** folder is a single place where symbolic links for all the media files are stored.
+**Target** folders are source for media files, program will scan those folders and look for video files.
 
-Program keeps data of all created symbolic links and files marked as ignored.
-Every scan of target folders is filtered against current collection and files that match
-given criteria are being presented to user as potential new additions.
+**Links** folder is where hard links are being created.
 
-After scan a web search is performed for each new media file. 
-If the results are ambiguous or certain title is not found user can perform
-custom search either using keywords related to the movie title or title and year of production.
+First, user needs to define both locations. All provided paths must be absolute paths and all of them must belong to the same volume.
+In the ***new files*** tab ***scan*** button will initiate search for video files, which will return results list.
+Then user can decide to either create new link for a given file or ignore it.
 
-User is presented with results and prompted to select correct movie title for given media file.
-Based of user selection symbolic link is created.
-File naming and organization in **source** folder is based of Jellyfin/Emby documentation,
-to ensure that those tools will get the right data for each media file.
+***Search*** button on each result will initiate web search for information about given video file. 
+This will return list of movie titles that are possible matches for this file. In some cases additional 
+search parameters are needed, so user may try search with custom query or movie title and year of production.
 
-In case of original file being deleted media-jscanner will delete matching link and
-all extra data that might be stored within the same folder (such as subtitles, posters, etc.).
+Next, user selects matching title from the list and based of this hard link is created using predefined naming pattern.
+Current pattern matches Jellyfin requirements and is as follows:
 
-By default, both paths are defined inside *mediafolder.properties* file.
+```
+/%movie_title% (%year_of_production%) [imdbid-%imdb_id%]/%movie_title% [%optional_info%].%extension%
+```
 
-mvn clean package -P dev
+Program will recognize some additional information like theatrical version or directors cut.
+
+Program stores history of action on files, so it can ignore files that have been already linked or restore
+original filename if necessary.
 
 Technologies used:
 - Spring Boot,

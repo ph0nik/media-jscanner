@@ -13,7 +13,7 @@ public interface CleanerService {
     * If none of such elements are found, folder is considered as empty
     * and method returns true.
     * */
-    boolean containsNoMediaFiles(Path linkPath) throws IOException;
+    boolean containsNoMediaFiles(Path linkPath);
 
     /*
     * Deletes folder and contained elements with given path.

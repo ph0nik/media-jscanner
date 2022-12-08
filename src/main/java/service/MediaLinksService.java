@@ -2,7 +2,6 @@ package service;
 
 import model.*;
 import util.MediaIdentity;
-import util.MediaType;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -20,9 +19,18 @@ public interface MediaLinksService extends Pagination {
      * otherwise query from MediaQuery object is being used.
      * Returns List of QueryResult or null in case of exception.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
+//    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
 
-    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity, int year);
+    /*
+     * Executes media query search using web search engine and web api search engine.
+     * Return results or empty list if nothing was found.
+     * On connection error it returns query result elements with error description.
+     * */
+    List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity);
+
+//    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity, int year);
+
+    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaIdentity mediaIdentity, int year);
 
     /*
     * Returns results of latest request
@@ -32,7 +40,13 @@ public interface MediaLinksService extends Pagination {
     /*
      * Create symlink with specified query result and link properties
      * */
-    LinkCreationResult createSymLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
+//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
+
+    List<LinkCreationResult> createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity);
+
+//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaType mediaType, int partNumber);
+
+    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaQuery mediaQuery);
 
     /*
     * Flag media query element as ignored.
@@ -78,4 +92,8 @@ public interface MediaLinksService extends Pagination {
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 
 
+    /*
+    * Returns true if more than one media file belongs to the same directory at the same level
+    * */
+    boolean isMultipart(MediaQuery mediaQuery);
 }

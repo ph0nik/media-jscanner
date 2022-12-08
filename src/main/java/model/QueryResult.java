@@ -14,6 +14,16 @@ public class QueryResult implements Comparable<QueryResult> {
     private String year;
     private String originalPath;
 
+//    private UUID queryId;
+//
+//    public UUID getQueryId() {
+//        return queryId;
+//    }
+//
+//    public void setQueryId(UUID queryId) {
+//        this.queryId = queryId;
+//    }
+
     public String getYear() {
         return year;
     }

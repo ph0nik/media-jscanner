@@ -1,32 +1,45 @@
 package model;
 
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import util.MediaType;
+
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.UUID;
 
-@Entity
-@Table(name = "media_query")
 public class MediaQuery {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private long queryId;
-
-    @Transient
     private UUID queryUuid;
-
-    @Column(name = "file_path", unique = true)
-    @NotNull
     private String filePath;
-
-    public MediaQuery() {}
+    /*
+    * -1 not multipart but grouped
+    * 0 default
+    * +1 multipart and grouped
+    * */
+    private byte multipart;
+    private MediaType mediaType;
 
     public MediaQuery(String filePath) {
         this.filePath = filePath;
+        multipart = -1;
+        queryUuid = UUID.randomUUID();
+    }
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public byte getMultipart() {
+        return multipart;
+    }
+
+    public void setMultipart(byte multipart) {
+        this.multipart = multipart;
     }
 
     public String getFileName() {
@@ -89,6 +102,8 @@ public class MediaQuery {
                 "queryId=" + queryId +
                 ", queryUuid=" + queryUuid +
                 ", filePath='" + filePath + '\'' +
+                ", multipart=" + multipart +
+                ", mediaType=" + mediaType +
                 '}';
     }
 }

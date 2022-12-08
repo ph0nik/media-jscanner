@@ -54,7 +54,6 @@ public class LinksController {
     public String newLink(WebSearchResultForm webSearchResultForm,
                           BindingResult bindingResult,
                           Model model) {
-        boolean userPathsProvided = propertiesService.checkUserPaths();
         System.out.println(webSearchResultForm);
         QueryResult qr = new QueryResult();
         qr.setId(webSearchResultForm.getId());
@@ -66,8 +65,11 @@ public class LinksController {
         qr.setUrl(webSearchResultForm.getUrl());
         MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
         // TODO pass exceptions info to user
-        LinkCreationResult symLink = mediaLinksService.createSymLink(qr, mediaIdentity, webSearchResultForm.getMediaType());
-        errorNotificationService.setLinkCreationResult(symLink);
+        // get grouped queries that are marked only as part of the same title
+        // TODO make this function for collection of media queries
+        List<LinkCreationResult> linkCreationResults = mediaLinksService.createFileLink(qr, mediaIdentity);
+        // TODO implement list of results
+        linkCreationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
         return "redirect:/query";
     }
 
@@ -76,6 +78,7 @@ public class LinksController {
         return "redirect:/links";
     }
 
+    // TODO add pagination and search
     /*
      * Show all existing symlinks.
      * */
@@ -104,6 +107,13 @@ public class LinksController {
 //        model.addAttribute("user_paths", userPathsProvided);
         return "links";
     }
+
+    // TODO search link
+    @PostMapping("/search-link/")
+    public String searchLink(@RequestParam("query") String query, Model model) {
+        return "";
+    }
+
 
     @PostMapping("/removelink/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {

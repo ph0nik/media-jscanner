@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 
 @Component
-@Profile("prod")
+@Profile("dev")
 public class WindowsTrayMenu implements TrayMenu {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowsTrayMenu.class);

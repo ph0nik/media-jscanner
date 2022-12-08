@@ -7,7 +7,7 @@ FROM eclipse-temurin:11.0.17_8-jre-ubi9-minimal@sha256:2fb0e563f8be7f3729d3db659
 COPY media-jscanner-1.0.jar /app.jar
 
 # ENTRYPOINT ["java", "-jar", "/app.jar"]
-CMD ["java", "-jar", "/app.jar", "-Dspring.profiles.active=prod"]
+CMD ["java", "-Dspring.profiles.active=prod", "-jar", "/app.jar"]
 
 # to build
 # docker build -t media-jscanner:latest .

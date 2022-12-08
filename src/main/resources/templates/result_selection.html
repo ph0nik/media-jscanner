@@ -78,7 +78,7 @@
             <div class="col">
                 <form class="d-flex"
                       action="#"
-                      th:action="@{/selectquery/{id}(id=${query.queryId})}"
+                      th:action="@{/select-query/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">
                     <input class="form-control me-2" type="search" placeholder="Search" name="custom" id="custom"
@@ -98,7 +98,7 @@
             <div class="col">
                 <form class="d-flex"
                       action="#"
-                      th:action="@{/searchwithyear/{id}(id=${query.queryId})}"
+                      th:action="@{/search-with-year/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">
                     <input class="form-control me-2" type="text" placeholder="title" name="custom" id="custom_tmdb"
@@ -170,6 +170,7 @@
                     <input type="hidden" th:value="${result.imdbId}" name="imdbId">
                     <input type="hidden" th:value="${result.description}" name="description">
                     <input type="hidden" th:value="${result.url}" name="url">
+                    <input type="hidden" th:value="${query.queryUuid}" name="queryId">
 
                     <button class="btn btn-outline-primary btn-sm" type="submit">Select</button>
                     <select name="mediatype"
