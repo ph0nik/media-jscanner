@@ -17,3 +17,8 @@ color: white;
 background-color: #AA5939;
 color: white;
 }
+
+/*
+input[type="checkbox"]:checked + #row-selected {
+border-color: #0dcaf0!important;
+}*/

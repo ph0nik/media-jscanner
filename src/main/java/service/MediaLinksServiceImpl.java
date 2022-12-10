@@ -189,7 +189,10 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     boolean linkRecordExist(MediaLink mediaLink) {
-        return getMediaLinks().stream().anyMatch(ml -> ml.getTheMovieDbId() == mediaLink.getTheMovieDbId());
+        return getMediaLinks().stream()
+                .anyMatch(ml ->
+                        ml.getLinkPath().equals(mediaLink.getLinkPath()) &&
+                                ml.getOriginalPath().equals(mediaLink.getOriginalPath()));
     }
 
     MediaLink createFilePaths(QueryResult queryResult, MediaTransferData mediaTransferData, MediaLink mediaLink) {

@@ -129,21 +129,17 @@ public class QueryController {
                               @RequestParam UUID uuid, Model model) {
         // TODO is custom needed here?
         mediaQueryService.setReferenceQuery(uuid);
-        System.out.println(mediaQueryService.getReferenceQuery());
-//        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         List<MediaQuery> groupedQueries = mediaQueryService.getGroupedQueries(uuid);
 
         if (groupedQueries.size() > 1) {
             MultipartDto multipartDto = new MultipartDto();
-            // TODO instead of object pass uuid to object
             multipartDto.setQueryUuid(uuid);
             for (MediaQuery query : groupedQueries) {
                 MultiPartElement multiPartElement = new MultiPartElement();
                 multiPartElement.setFilePath(query.getFilePath());
                 multipartDto.addMultiPartElement(multiPartElement);
             }
-
             model.addAttribute("multipart_dto", multipartDto);
             return "query_multipart";
         }

@@ -3,6 +3,8 @@ package service;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -13,17 +15,17 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-
 @Component
 public class MediaQueryService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MediaQueryService.class);
 
     private List<MediaQuery> mediaQueriesList = new LinkedList<>();
 
     private List<MediaQuery> groupedQueriesToProcess;
 
     private MediaQuery referenceQuery;
-    private final Map<Path, List<UUID>> mediaQueriesByRootMap = new HashMap<>();
+    private Map<Path, List<UUID>> mediaQueriesByRootMap = new HashMap<>();
 
     @Autowired
     @Qualifier("spring")
@@ -44,14 +46,50 @@ public class MediaQueryService {
     public void scanForNewMediaQueries(List<Path> paths) {
         List<Path> candidates = mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
         mediaQueriesList = new LinkedList<>();
+//        mediaQueriesByRootMap = new HashMap<>();
         candidates.forEach(c -> addQueryToQueue(c.toString()));
     }
 
     public MediaQuery addQueryToQueue(String filepath) {
         MediaQuery mq = new MediaQuery(filepath);
         mediaQueriesList.add(mq);
-        groupByParentPath(mq);
+        groupByParentPathBatch(mediaQueriesList);
         return mq;
+    }
+
+    /*
+     * Removes given element from the query list
+     * */
+    public void removeQueryFromQueue(MediaQuery mediaQuery) {
+        mediaQueriesList = getCurrentMediaQueries()
+                .stream()
+                .filter(mq -> !mq.getQueryUuid().equals(mediaQuery.getQueryUuid()))
+                .collect(Collectors.toList());
+        groupByParentPathBatch(mediaQueriesList);
+    }
+
+    /*
+     * Removes list element with given path
+     * */
+    public void removeQueryByFilePath(String path) {
+        mediaQueriesList = getCurrentMediaQueries()
+                .stream()
+                .filter(mq -> !mq.getFilePath().equals(path))
+                .collect(Collectors.toList());
+        groupByParentPathBatch(mediaQueriesList);
+    }
+
+    public MediaQuery getQueryByUuid(UUID uuid) {
+        Optional<MediaQuery> first = mediaQueriesList
+                .stream()
+                .filter(x -> x.getQueryUuid().equals(uuid))
+                .findFirst();
+        return first.orElse(null);
+    }
+
+    void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
+        mediaQueriesByRootMap = new HashMap<>();
+        mediaQueryList.forEach(this::groupByParentPath);
     }
 
     /*
@@ -68,14 +106,15 @@ public class MediaQueryService {
      * Returns list of media queries of elements sharing the same folder at the same file tree level.
      * */
     public List<MediaQuery> getGroupedQueries(UUID mediaQueryUuid) {
+        if (mediaQueriesByRootMap.isEmpty()) return List.of();
         Path parent = Path.of(getQueryByUuid(mediaQueryUuid).getFilePath()).getParent();
-        List<MediaQuery> output = mediaQueriesByRootMap.get(parent)
+        return mediaQueriesByRootMap.get(parent)
                 .stream()
                 .map(this::getQueryByUuid)
+                .peek(System.out::println)
                 // after creating link other files within the same folder are ignored, so they won't appear here
                 .filter(query -> query.getMultipart() == -1)
                 .collect(Collectors.toList());
-        return output;
     }
 
     public List<MediaQuery> searchQuery(String search) {
@@ -104,21 +143,24 @@ public class MediaQueryService {
         return List.copyOf(groupedQueriesToProcess);
     }
 
-    // TODO move selected elements to temporary list
     public List<MediaQuery> addQueriesToProcess(List<MultiPartElement> mediaQueryList) {
         groupedQueriesToProcess = new LinkedList<>();
+        int count = 0;
         for (MediaQuery current : mediaQueriesList) {
             for (MultiPartElement mpe : mediaQueryList) {
                 if (mpe.getFilePath().equals(current.getFilePath()) && mpe.getMultipartSwitch() != 0) {
-                    if (mpe.getMultipartSwitch() == 1 && mpe.getPartNumber() != 0) {
-                        current.setMultipart(mpe.getPartNumber());
-                    } else {
-                        current.setMultipart((byte) -1);
-                    }
+                    current.setMultipart(mpe.getPartNumber());
                     current.setMediaType(mpe.getMediaType());
                     groupedQueriesToProcess.add(current);
+                    count++;
                 }
             }
+        }
+        LOG.info("[ query_service ] Grouped {} elements", count);
+        // if none selected add reference query to queue
+        if (count == 0) {
+            LOG.info("[ query_service ] No queries marked, adding reference to the queue");
+            addQueryToProcess(referenceQuery);
         }
         return List.copyOf(groupedQueriesToProcess);
     }
@@ -143,84 +185,6 @@ public class MediaQueryService {
                 .filter(x -> x.getFilePath().equals(filepath))
                 .findFirst();
         return first.orElse(null);
-    }
-
-    /*
-     * Removes given element from the query list
-     * */
-    public void removeQueryFromQueue(MediaQuery mediaQuery) {
-        mediaQueriesList = getCurrentMediaQueries()
-                .stream()
-                .filter(mq -> !mq.getQueryUuid().equals(mediaQuery.getQueryUuid()))
-                .collect(Collectors.toList());
-    }
-
-    /*
-     * Removes list element with given path
-     * */
-    public void removeQueryByFilePath(String path) {
-        mediaQueriesList = getCurrentMediaQueries()
-                .stream()
-                .filter(x -> !x.getFilePath().equals(path))
-                .collect(Collectors.toList());
-    }
-
-    public MediaQuery getQueryByUuid(UUID uuid) {
-        Optional<MediaQuery> first = mediaQueriesList
-                .stream()
-                .filter(x -> x.getQueryUuid().equals(uuid))
-                .findFirst();
-        return first.orElse(null);
-    }
-
-    // TODO detect multiple parts
-    // /share/download/random-sources/Running Scared/Running.Scared.2006.HDDVD.1080p.x264.DTS-NiX-2.mkv
-    // /share/download/random-sources/Running Scared/Running.Scared.2006.HDDVD.1080p.x264.DTS-NiX-1.mkv
-    // mediaQuery.multipart, 0 for none, 1 ... 99 for part number
-
-    static void testMultipleParts(List<String> list) {
-        Map<Path, List<String>> collect = list.stream()
-                .collect(groupingBy(s -> Path.of(s).getParent()));
-        for (Path p : collect.keySet()) {
-            // if key has more than one entry
-            System.out.println(collect.get(p));
-            if (collect.get(p).size() > 1) {
-                for (int i = 0; i < collect.get(p).size(); i++) {
-                    // take i-th string in collection
-                    String temp = collect.get(p).get(i);
-                    // compare to every other one
-
-                }
-//                for (String str : collect.get(p)) {
-//                    System.out.println(str);
-//                }
-            }
-        }
-
-    }
-
-    static void compareString(String comparingTo, String comparingWith) {
-        char[] to = comparingTo.toCharArray();
-        char[] with = comparingWith.toCharArray();
-        int sameChars = 0;
-        if (to.length == with.length) {
-            for (int i = 0; i < to.length; i++) {
-                if (to[i] == with[i]) sameChars++;
-            }
-        }
-        System.out.println("same chars: " + comparingTo + " " + sameChars);
-        System.out.println("difference: " + comparingWith + " " + (to.length - sameChars));
-    }
-
-    public static void main(String[] args) {
-        String part1 = "/share/download/random-sources/Running Scared/Running.Scared.2006.HDDVD.1080p.x264.DTS-NiX-2.mkv";
-        String part2 = "/share/download/random-sources/Running Scared/Running.Scared.2006.HDDVD.1080p.x264.DTS-NiX-1.mkv";
-        String part3 = "/share/download/random-sources/Kin-dza-dza_1986.1080p.BluRay.DTS.x264.HDCLUB-SbR/Kin-dza-dza_.Part.Two.1986.1080p.BluRay.DTS.x264.HDCLUB-SbR.mkv";
-        String part4 = "/share/download/random-sources/Master.and.Commander.The.Far.Side.of.the.World.2003.720p.BluRay.DTS.x264-ESiR.sample.mkv";
-        String part5 = "/share/download/random-sources/War.of.the.Worlds.2005.720p.BluRay.DTS.x264-ESiR.mkv";
-        System.out.println(Path.of(part5.replaceAll("/share/download/random-sources", "")).getRoot());
-        List<String> part11 = List.of(part1, part2, part3, part4, part5);
-        testMultipleParts(part11);
     }
 
 }

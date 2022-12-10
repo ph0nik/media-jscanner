@@ -5,6 +5,7 @@ import util.MediaType;
 public class MultiPartElement {
 
     private String filePath;
+    // TODO change this to boolean, true for part, false for different
     private byte multipartSwitch;
     private byte partNumber;
     private MediaType mediaType;

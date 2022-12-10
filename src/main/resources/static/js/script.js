@@ -2,6 +2,19 @@
 let port = 44222;
 let stompClient;
 
+const checkBox = document.getElementsByClassName("query-select");
+
+function setEvent() {
+    Array.from(checkBox).forEach((item, index) => {
+        item.addEventListener("change", event => {
+            document.getElementById("row-selected" + index).className = (item.checked) ?
+            document.getElementById("row-selected" + index).className.replace("border-white", "border-info") :
+            document.getElementById("row-selected" + index).className.replace("border-info", "border-white");
+
+        })
+    })
+}
+
 function printResponse(response) {
     let responseObj = JSON.parse(response.body);
 
@@ -93,7 +106,10 @@ function stopAndDisconnect() {
     disconnect();
 }
 
-window.onload = connectAndReceive();
+window.onload = function() {
+    connectAndReceive();
+    setEvent(); // init event listeners for list elements
+}
 
 // on window closing remove client from listeners and disconnect from websocket
 window.onbeforeunload = function() {

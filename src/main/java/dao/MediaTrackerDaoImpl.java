@@ -16,7 +16,7 @@ import java.util.List;
 
 
 @Component("hibernate")
-public class MediaTrackerDaoImpl implements MediaTrackerDao {
+public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
 
     private static final String IGNORE_PATH = "ignored";
     private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
@@ -28,116 +28,11 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
         return MediaEntityManager.getEntityManagerFactory().createEntityManager();
     }
 
-//    @Override
-//    public void addQueryToQueue(MediaQuery query) {
-//        EntityManager entityManager = getEntityManager();
-//        EntityTransaction transaction = null;
-//        try {
-//            transaction = entityManager.getTransaction();
-//            transaction.begin();
-//            entityManager.persist(query);
-//            transaction.commit();
-//        } catch (Exception e) {
-//            Throwable cause = e.getCause();
-//            while ((cause != null) && !(cause instanceof ConstraintViolationException)) {
-//                cause = cause.getCause();
-//            }
-//            if (cause != null) {
-//                LOG.error("[ dao ] " + cause.getMessage());
-//            }
-//            if (transaction != null) transaction.rollback();
-//            LOG.error("[ dao ] " + e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
-//    }
-//
-//    @Override
-//    public void removeQueryFromQueue(MediaQuery mediaQuery) {
-//        EntityManager entityManager = getEntityManager();
-//        EntityTransaction transaction = null;
-//        try {
-//            transaction = entityManager.getTransaction();
-//            transaction.begin();
-//            MediaQuery find = entityManager.find(MediaQuery.class, mediaQuery.getQueryId());
-//            if (find != null) entityManager.remove(find);
-//            transaction.commit();
-//        } catch (Exception e) {
-//            if (transaction != null) transaction.rollback();
-//            LOG.error(e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
-//
-//    }
-//
-//    @Override
-//    public MediaQuery findQueryByFilePath(String filePath) {
-//        // typed query throws exception if nothing is found
-//        EntityManager entityManager = getEntityManager();
-//        MediaQuery singleResult = null;
-//        try {
-//            TypedQuery<MediaQuery> typedQuery = entityManager.createQuery("SELECT q FROM MediaQuery q WHERE q.filePath=:filepath", MediaQuery.class);
-//            typedQuery.setParameter("filepath", filePath);
-//            singleResult = typedQuery.getSingleResult();
-//        } catch (NoResultException e) {
-//            LOG.error(e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
-//        return singleResult;
-//    }
-//
-//    @Override
-//    public MediaQuery getQueryById(Long id) {
-//        return getEntityManager().find(MediaQuery.class, id);
-//    }
-//
-//
-//    @Override
-//    public List<MediaQuery> getAllMediaQueries() {
-//        EntityManager entityManager = getEntityManager();
-//        List<MediaQuery> resultList = List.of();
-//        try {
-//            String all = "SELECT q FROM MediaQuery q";
-//            TypedQuery<MediaQuery> allQuery = entityManager.createQuery(all, MediaQuery.class);
-//            resultList = allQuery.getResultList();
-//        } catch (Exception e) {
-//            LOG.error(e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
-//        return resultList;
-//    }
-//
-//    @Override
-//    public List<MediaQuery> findInFilePathQuery(String phrase) {
-//        EntityManager entityManager = getEntityManager();
-//        List<MediaQuery> mediaQuery = null;
-//        String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
-//        try {
-//            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-//            CriteriaQuery<MediaQuery> cr = cb.createQuery(MediaQuery.class);
-//            Root<MediaQuery> root = cr.from(MediaQuery.class);
-//            cr.select(root).where(cb.like(root.get("filePath"), query));
-//
-//            TypedQuery<MediaQuery> mq = entityManager.createQuery(cr);
-//            mediaQuery = mq.getResultList();
-//        } catch (NoResultException e) {
-//            mediaQuery = List.of();
-//            LOG.error(e.getMessage());
-//        } finally {
-//            entityManager.close();
-//        }
-//        return mediaQuery;
-//    }
-
     @Override
     public MediaLink getLinkById(Long id) {
         MediaLink mediaLink = getEntityManager().find(MediaLink.class, id);
         return mediaLink;
     }
-
 
     @Override
     public MediaLink addNewLink(MediaLink mediaLInk) {
@@ -277,6 +172,18 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao {
             entityManager.close();
         }
         return singleResult;
+    }
+
+    @Override
+    public List<MediaLink> importLinks(String filePath) {
+        EntityManager entityManager = getEntityManager();
+        // TODO
+        return null;
+    }
+
+    @Override
+    public void exportLinks(String filePath) {
+        // TODO
     }
 
 //    @Override
