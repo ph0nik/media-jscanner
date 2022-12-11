@@ -2,8 +2,11 @@
 
 The tool designed to create additional layer between 
 local video files collection and media management solutions 
-such as Emby or Jellyfin. It uses two, user provided locations: 
-**links** and **target** folder. 
+such as Emby or Jellyfin. It helps user identify media before it gets
+added to media collection.
+
+It's based on user provided locations:
+**links** and **target** folders. 
 
 **Target** folders are source for media files, program will scan those folders and look for video files.
 
@@ -12,6 +15,8 @@ such as Emby or Jellyfin. It uses two, user provided locations:
 First, user needs to define both locations. All provided paths must be absolute paths and all of them must belong to the same volume.
 In the ***new files*** tab ***scan*** button will initiate search for video files, which will return results list.
 Then user can decide to either create new link for a given file or ignore it.
+If there are multiple files in the same folder at the same level, user will be prompted to select
+which of them are the parts of the same title. 
 
 ***Search*** button on each result will initiate web search for information about given video file. 
 This will return list of movie titles that are possible matches for this file. In some cases additional 

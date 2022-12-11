@@ -29,6 +29,8 @@ public class PropertiesServiceImpl implements PropertiesService {
     private Properties networkProperties;
     private Properties mediaFilesProperties;
 
+    private List<Path> targetFoldersList;
+
     public PropertiesServiceImpl() {
         loadPropertiesFromFiles();
         createDataFolder();
@@ -48,6 +50,7 @@ public class PropertiesServiceImpl implements PropertiesService {
     private void loadPropertiesFromFiles() {
         networkProperties = loadNetworkProperties();
         mediaFilesProperties = loadMediaFoldersProperties();
+        targetFoldersList = loadFolderProperties();
     }
 
     public Properties getNetworkProperties() {
@@ -84,10 +87,7 @@ public class PropertiesServiceImpl implements PropertiesService {
         return isUserTargetPath() && isUserLinksPath();
     }
 
-    /*
-     * Returns list of folders to be watched.
-     * */
-    public List<Path> getTargetFolderList() {
+    List<Path> loadFolderProperties() {
         String paths;
         String targetFolderMovie = mediaFilesProperties.getProperty(USER_TARGET_PATH);
         if (isPropertyEmpty(targetFolderMovie)) {
@@ -97,8 +97,26 @@ public class PropertiesServiceImpl implements PropertiesService {
             paths = targetFolderMovie;
             LOG.info("[ props ] User target paths loaded");
         }
-        LOG.info("[ props ] {}", paths);
+        LOG.info("[ props ] Target paths: {}", paths);
         return Arrays.stream(paths.split(";")).map(Path::of).collect(Collectors.toList());
+    }
+
+    /*
+     * Returns list of folders to be scanned.
+     * */
+    public List<Path> getTargetFolderList() {
+        return List.copyOf(targetFoldersList);
+//        String paths;
+//        String targetFolderMovie = mediaFilesProperties.getProperty(USER_TARGET_PATH);
+//        if (isPropertyEmpty(targetFolderMovie)) {
+//            paths = mediaFilesProperties.getProperty(DEFAULT_TARGET_PATH);
+//            LOG.info("[ props ] No user target paths found, defaults loaded");
+//        } else {
+//            paths = targetFolderMovie;
+//            LOG.info("[ props ] User target paths loaded");
+//        }
+//        LOG.info("[ props ] Target paths: {}", paths);
+//        return Arrays.stream(paths.split(";")).map(Path::of).collect(Collectors.toList());
     }
 
     /*

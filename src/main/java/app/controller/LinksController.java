@@ -6,6 +6,8 @@ import model.MediaQuery;
 import model.QueryResult;
 import model.form.WebSearchResultForm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +19,8 @@ import util.MediaIdentity;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -31,6 +35,8 @@ public class LinksController {
 
     @Autowired
     private ErrorNotificationService errorNotificationService;
+
+    private int sessionPageSize = 25;
 
     @ModelAttribute("error")
     public String getCurrentResult() {
@@ -47,6 +53,15 @@ public class LinksController {
         return propertiesService.checkUserPaths();
     }
 
+    @ModelAttribute("query_list")
+    public List<MediaQuery> getAllMediaQueries() {
+        return mediaLinksService.getMediaQueryList();
+    }
+
+    @ModelAttribute("link_list")
+    public List<MediaLink> getAllMediaLinks() {
+        return mediaLinksService.getMediaLinks();
+    }
     /*
      * Create new link with query id and query result object.
      * */
@@ -78,45 +93,51 @@ public class LinksController {
         return "redirect:/links";
     }
 
-    // TODO add pagination and search
     /*
      * Show all existing symlinks.
      * */
     @RequestMapping(value = "/links", method = GET)
-    public String linksSorted(@RequestParam(value = "sort", required = false) String sort, Model model) {
-        List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
-        // TODO search for link & update all dead files on reload
-        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
+    public String linksSorted(@RequestParam(value = "sort", required = false) String sort,
+                              @RequestParam("page") Optional<Integer> page,
+                              @RequestParam("size") Optional<Integer> size,
+                              Model model) {
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(sessionPageSize);
+        sessionPageSize = pageSize;
+        int min = currentPage * pageSize - pageSize + 1;
+        int max = currentPage * pageSize;
         /*
          * Optional request parameter is being evaluated and list is sorted
          * accordingly. If no argument is given sorting falls back to default.
          * */
-        if (sort == null || sort.isEmpty()) sort = "target";
-        if (sort.equals("target")) {
-            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getOriginalPath);
-            allMediaLinks.sort(comparator);
+        Comparator<MediaLink> comparator;
+        if (sort != null && sort.equals("link")) {
+            comparator = Comparator.comparing(MediaLink::getLinkPath);
+        } else {
+            comparator = Comparator.comparing(MediaLink::getOriginalPath);
         }
-        if (sort.equals("link")) {
-            Comparator<MediaLink> comparator = Comparator.comparing(MediaLink::getLinkPath);
-            allMediaLinks.sort(comparator);
-        }
-
-//        boolean userPathsProvided = propertiesService.checkUserPaths();
-
-        model.addAttribute("query_list", allMediaQueries);
-        model.addAttribute("link_list", allMediaLinks);
-//        model.addAttribute("user_paths", userPathsProvided);
+        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks().stream().sorted(comparator).collect(Collectors.toList());
+        Page<MediaLink> paginatedLinks = mediaLinksService.findPaginatedLinks(PageRequest.of(currentPage - 1, pageSize), allMediaLinks);
+        // TODO update all dead files on reload
+        model.addAttribute("page", paginatedLinks);
+        model.addAttribute("page_min", min);
+        model.addAttribute("page_max", max);
         return "links";
     }
 
-    // TODO search link
     @PostMapping("/search-link/")
-    public String searchLink(@RequestParam("query") String query, Model model) {
-        return "";
+    public String searchLink(@RequestParam("search") String search, Model model) {
+        int min = 1;
+        int max = sessionPageSize;
+        Page<MediaLink> paginatedLinks = mediaLinksService.findPaginatedLinks(PageRequest.of(0, sessionPageSize), mediaLinksService.searchMediaLinks(search));
+        model.addAttribute("page", paginatedLinks);
+        model.addAttribute("page_min", min);
+        model.addAttribute("page_max", max);
+        return "links";
     }
 
 
-    @PostMapping("/removelink/{id}")
+    @PostMapping("/remove-link/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
         mediaLinksService.moveBackToQueue(id);
         return "redirect:/";

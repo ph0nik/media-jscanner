@@ -12,7 +12,7 @@
 </head>
 <body class="container-fluid">
 
-<div class="row">
+<div class="row" id="top">
     <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
         <div class="container-fluid pt-1">
             <span class="navbar-brand fs-6">media-jscanner</span>
@@ -71,6 +71,65 @@
         </div>
     </div>
 </div>
+<!--page selection-->
+<div class="d-flex flex-row justify-content-between align-items-center m-2">
+    <nav aria-label="...">
+        <ul class="pagination pagination-sm">
+            <li class="page-item disabled" aria-current="page">
+                <span class="page-link" th:text="${page_min + ' - ' + page_max + ' of ' + link_list.size()}"></span>
+            </li>
+            <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
+                <a th:if="${page.getNumber() > 0}"
+                   th:href="@{/links(size=${page.size}, page=${page.getNumber()})}"
+                   class="page-link">< Previous</a>
+                <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
+            </li>
+
+            <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
+                <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
+                   th:href="@{/links(size=${page.size}, page=${page.getNumber() + 2})}"
+                   class="page-link">Next ></a>
+                <span th:if="${page.getNumber() + 1 == page.getTotalPages()}" class="page-link disabled">Next ></span>
+            </li>
+        </ul>
+    </nav>
+    <!--search box-->
+    <nav aria-label="search">
+        <div class="row m-2">
+            <div class="col">
+                <form class="d-flex"
+                      action="#"
+                      th:action="@{/search-link/}"
+                      method="post">
+                    <div class="input-group">
+                        <input type="search" class="form-control" placeholder="Search links..." aria-label="queries search"
+                               aria-describedby="button-addon2" name="search" id="search">
+                        <button class="btn btn-outline-primary btn-sm" type="submit" id="button-addon2">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <!--number of shown elements-->
+    <nav aria-label="range">
+        <ul class="pagination pagination-sm">
+            <li class="page-item" aria-current="page">
+                <span>
+                    Show
+                </span>
+                <a th:if="${page.size != 25}" href="#" th:href="@{/links(size=25, page=1)}">25</a>
+                <span th:if="${page.size == 25}">25</span>
+                <a th:if="${page.size != 50}" href="#" th:href="@{/links(size=50, page=1)}">50</a>
+                <span th:if="${page.size == 50}">50</span>
+                <a th:if="${page.size != 100}" href="#" th:href="@{/links(size=100, page=1)}">100</a>
+                <span th:if="${page.size == 100}">100</span>
+                <span>
+                    elements on page.
+                </span>
+            </li>
+        </ul>
+    </nav>
+</div>
 <!--table-->
 <div class="row">
     <table class="table table-striped">
@@ -89,9 +148,10 @@
         </thead>
         <!--        table body-->
         <tbody>
-        <tr th:each="link : ${link_list}">
-            <td th:text="${link.mediaId}"></td>
-<!--            paths-->
+        <tr th:each="link, iter : ${page.getContent()}">
+            <td class="text-center"
+                th:text="${link.mediaId}"></td>
+            <!--            paths-->
             <td th:if="${link.originalPresent}">
                 <span th:text="${link.originalPath}" class="row fs-6 fw-bold font-monospace">asd</span>
                 <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
@@ -100,24 +160,24 @@
                 <span th:text="${link.originalPath}" class="row fs-6 text-info fw-bold font-monospace"></span>
                 <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
-<!--            tmdb id-->
+            <!--            tmdb id-->
             <td>
                 <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
             </td>
-<!--            imdb id-->
+            <!--            imdb id-->
             <td>
                 <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace"></span>
             </td>
-<!--            remove link-->
+            <!--            remove link-->
             <td>
                 <form action="#"
-                      th:action="@{/removelink/{id}(id=${link.mediaId})}"
+                      th:action="@{/remove-link/{id}(id=${link.mediaId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
                     <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>
                 </form>
             </td>
-<!--            remove orignal file-->
+            <!--            remove orignal file-->
             <td>
                 <form action="#"
                       th:action="@{/delete-original/{id}(id=${link.mediaId})}"
@@ -126,7 +186,7 @@
                     <button class="btn btn-outline-danger btn-sm" type="submit">Delete original</button>
                 </form>
             </td>
-<!--            restore original file-->
+            <!--            restore original file-->
             <td>
                 <form action="#"
                       th:action="@{/restore-original/{id}(id=${link.mediaId})}"
@@ -138,6 +198,38 @@
         </tr>
         </tbody>
     </table>
+</div>
+<!--page selection-->
+<div class="d-flex flex-row justify-content-between align-items-center">
+    <nav aria-label="...">
+        <ul class="pagination pagination-sm">
+            <li class="page-item disabled" aria-current="page">
+                <span class="page-link" th:text="${page_min + ' - ' + page_max + ' of ' + link_list.size()}"></span>
+            </li>
+            <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
+                <a th:if="${page.getNumber() > 0}"
+                   th:href="@{/links(size=${page.size}, page=${page.getNumber()})}"
+                   class="page-link">< Previous</a>
+                <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
+            </li>
+
+            <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
+                <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
+                   th:href="@{/links(size=${page.size}, page=${page.getNumber() + 2})}"
+                   class="page-link">Next ></a>
+                <span th:if="${page.getNumber() + 1 == page.getTotalPages()}" class="page-link disabled">Next ></span>
+            </li>
+        </ul>
+    </nav>
+    <!--back to the top-->
+    <nav aria-label="back">
+        <ul class="pagination pagination-sm">
+            <li class="page-item" aria-current="page">
+                <a href="#top">back to the top
+                    <i class="fa-solid fa-arrow-turn-up"></i></a>
+            </li>
+        </ul>
+    </nav>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"

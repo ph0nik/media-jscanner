@@ -33,6 +33,9 @@ public class MediaQueryService {
     @Autowired
     private MediaFilesScanner mediaFilesScanner;
 
+    @Autowired
+    private PropertiesService propertiesService;
+
     public MediaQuery getReferenceQuery() {
         return referenceQuery;
     }
@@ -46,7 +49,6 @@ public class MediaQueryService {
     public void scanForNewMediaQueries(List<Path> paths) {
         List<Path> candidates = mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
         mediaQueriesList = new LinkedList<>();
-//        mediaQueriesByRootMap = new HashMap<>();
         candidates.forEach(c -> addQueryToQueue(c.toString()));
     }
 
@@ -88,28 +90,32 @@ public class MediaQueryService {
     }
 
     void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
+        List<Path> targetFolderList = propertiesService.getTargetFolderList();
         mediaQueriesByRootMap = new HashMap<>();
-        mediaQueryList.forEach(this::groupByParentPath);
+        mediaQueryList.forEach(mq -> groupByParentPath(mq, targetFolderList));
     }
 
     /*
      * Group media query element ids by parent folder
      * */
-    void groupByParentPath(MediaQuery mediaQuery) {
+    void groupByParentPath(MediaQuery mediaQuery, List<Path> targetFolderList) {
         Path parent = Path.of(mediaQuery.getFilePath()).getParent();
-        List<UUID> uuids = (mediaQueriesByRootMap.get(parent) == null) ? new LinkedList<>() : mediaQueriesByRootMap.get(parent);
-        uuids.add(mediaQuery.getQueryUuid());
-        mediaQueriesByRootMap.put(parent, uuids);
+        if (targetFolderList.stream().noneMatch(target -> target.equals(parent))) {
+            List<UUID> uuids = (mediaQueriesByRootMap.get(parent) == null) ? new LinkedList<>() : mediaQueriesByRootMap.get(parent);
+            uuids.add(mediaQuery.getQueryUuid());
+            mediaQueriesByRootMap.put(parent, uuids);
+        }
+
     }
 
     /*
      * Returns list of media queries of elements sharing the same folder at the same file tree level.
      * */
     public List<MediaQuery> getGroupedQueries(UUID mediaQueryUuid) {
-        if (mediaQueriesByRootMap.isEmpty()) return List.of();
         Path parent = Path.of(getQueryByUuid(mediaQueryUuid).getFilePath()).getParent();
-        return mediaQueriesByRootMap.get(parent)
-                .stream()
+        List<UUID> uuids = mediaQueriesByRootMap.get(parent);
+        if (mediaQueriesByRootMap.isEmpty() || uuids == null) return List.of();
+        return uuids.stream()
                 .map(this::getQueryByUuid)
                 .peek(System.out::println)
                 // after creating link other files within the same folder are ignored, so they won't appear here

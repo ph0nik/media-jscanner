@@ -63,6 +63,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             } catch (InterruptedException e) {
             }
         }
+        LOG.info("[ auto ] Elements to process: {}", mediaQueryList.size());
         for (MediaQuery mq : mediaQueryList) {
             message = getMessage(mediaQueryList, mq, index++);
             sendNotification(message);
@@ -76,12 +77,13 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             }
         }
         message = getFinalMessage(mediaQueryList, index);
+
         sendNotification(message);
         return new AsyncResult<>(mediaLinks);
     }
 
     public List<LinkCreationResult> autoMatchSingleFile(Path path) {
-        List<LinkCreationResult> linksWithBestMatches = null;
+        List<LinkCreationResult> linksWithBestMatches = List.of();
         DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
         if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
             List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);

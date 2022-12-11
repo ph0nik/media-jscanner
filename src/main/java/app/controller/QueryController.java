@@ -104,13 +104,10 @@ public class QueryController {
     @PostMapping("/search-query/")
     public String searchQuery(@RequestParam("search") String search,
                               Model model) {
-        int currentPage = 1;
-        int pageSize = sessionPageSize;
-        sessionPageSize = pageSize;
-        int min = (currentPage * pageSize) - pageSize + 1;
-        int max = currentPage * pageSize;
+        int min = 1;
+        int max = sessionPageSize;
         List<MediaQuery> mediaQueries = mediaQueryService.searchQuery(search);
-        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaQueries);
+        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(0, sessionPageSize), mediaQueries);
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
         model.addAttribute("future", autoMatcherStatus);
@@ -155,7 +152,7 @@ public class QueryController {
     public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) {
         mediaQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
-//        model.addAttribute("query", mediaQueryService.getReferenceQuery());
+        model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
         model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";

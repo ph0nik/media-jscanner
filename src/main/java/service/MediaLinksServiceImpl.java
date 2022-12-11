@@ -469,7 +469,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     /*
-     * TODO is this function necessary?
+     *
      * */
     public void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder) {
         List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();
