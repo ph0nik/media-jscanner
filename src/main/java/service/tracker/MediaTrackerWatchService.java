@@ -137,7 +137,7 @@
 //                         * and if those elements match definition of media files.
 //                         * If so, proceed to remove all the data pointing to them from database.
 //                         * */
-//                        // TODO change those two methods to single one, test it
+
 //                        String parent = child.getName(child.getNameCount() - 1).toString();
 //                        removeQueryByPath(parent);
 ////                        removeQueryByParentPath(child);

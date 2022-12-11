@@ -9,7 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import util.*;
+import util.CleanerService;
+import util.MediaIdentity;
+import util.MediaType;
+import util.SearchType;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -17,10 +20,11 @@ import java.net.UnknownHostException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static util.TextExtractTools.*;
 
@@ -40,7 +44,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     private final PropertiesService propertiesService;
     private LastRequest lastRequest;
 
-//    @Autowired
+    //    @Autowired
 //    public MediaLinksServiceImpl() {
 //        super(mediaTrackerDao, mediaQueryService);
 //    }
@@ -248,13 +252,13 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     /*
-    * Creates hard link with parameters provided in MediaLink object.
-    * Returns LinkCreationResult which contains result status (true for success and false for failure),
-    * optional error message and original MediaLink object.
-    * Params:   mediaLink - object containing prerequisites for creating link
-    *           existingLink - boolean value representing current state of link, for existing links
-    *           use true to invert and recreate original, source file.
-    * */
+     * Creates hard link with parameters provided in MediaLink object.
+     * Returns LinkCreationResult which contains result status (true for success and false for failure),
+     * optional error message and original MediaLink object.
+     * Params:   mediaLink - object containing prerequisites for creating link
+     *           existingLink - boolean value representing current state of link, for existing links
+     *           use true to invert and recreate original, source file.
+     * */
     LinkCreationResult createHardLinkWithDirectories(MediaLink mediaLink, boolean existingLink) {
         LOG.info("[ link ] {}", mediaLink);
         Path linkPath = Path.of(mediaLink.getLinkPath());
@@ -280,7 +284,8 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     @Override
-    public MediaLink ignoreMediaFile(MediaQuery mediaQuery) {
+    public MediaLink ignoreMediaFile() {
+        MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
         MediaLink mediaIgnored = new MediaLink();
         mediaIgnored.setOriginalPath(mediaQuery.getFilePath());
         mediaIgnored.setLinkPath("ignore");
@@ -290,15 +295,56 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         mediaTrackerDao.addNewLink(mediaIgnored);
         LOG.info("[ ignore ] Ignored element: {}", mediaQuery.getFilePath());
         mediaQueryService.removeQueryFromQueue(mediaQuery);
-        return mediaTrackerDao.findMediaLinkByTargetPath(mediaQuery.getFilePath());
+        return mediaTrackerDao.getMediaLinkByTargetPath(mediaQuery.getFilePath());
     }
 
     @Override
     public List<MediaLink> getMediaLinks() {
+//        return mediaTrackerDao.getAllMediaLinks()
+//                .stream()
+//                .filter(ml -> ml.getTheMovieDbId() >= 0)
+//                .collect(Collectors.toList());
+        return filterMediaLinks(false).collect(Collectors.toList());
+    }
+
+    Stream<MediaLink> getAllMediaLinks(Predicate<MediaLink> mediaLinkSwitch) {
         return mediaTrackerDao.getAllMediaLinks()
                 .stream()
-                .filter(ml -> ml.getTheMovieDbId() >= 0)
+                .filter(mediaLinkSwitch);
+//                .collect(Collectors.toList());
+    }
+
+    Stream<MediaLink> filterMediaLinks(boolean ignoredOnly) {
+        if (ignoredOnly) return getAllMediaLinks(ml -> ml.getTheMovieDbId() < 0);
+        return getAllMediaLinks(ml -> ml.getTheMovieDbId() >= 0);
+    }
+
+    List<MediaLink> searchMediaLinks(String phrase, boolean ignoredOnly) {
+        return filterMediaLinks(ignoredOnly)
+                .filter(ml ->
+                        ml.getOriginalPath().toLowerCase().contains(phrase.toLowerCase()) ||
+                        ml.getLinkPath().toLowerCase().contains(phrase.toLowerCase()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MediaLink> searchMediaIgnoredList(String query) {
+        return searchMediaLinks(query, true);
+    }
+
+    @Override
+    public List<MediaLink> searchMediaLinks(String query) {
+        return searchMediaLinks(query, false);
+    }
+
+    void refreshLinksInfo() {
+        getMediaIgnoredList().stream()
+                .filter(ml -> ml.getMediaId() < 0)
+                .filter(ml -> !validatePath(Path.of(ml.getOriginalPath())) && ml.isOriginalPresent())
+                .forEach(ml -> {
+                    ml.setOriginalPresent(false);
+                    mediaTrackerDao.updateLink(ml);
+                });
     }
 
     @Override
@@ -452,32 +498,12 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         }
     }
 
-    @Override
-    public List<MediaLink> searchMediaLinks(String search) {
-        return getMediaLinks().stream()
-                .filter(ml -> ml.getOriginalPath().toLowerCase().contains(search.toLowerCase())
-                        || ml.getLinkPath().toLowerCase().contains(search.toLowerCase()))
-                .collect(Collectors.toList());
-    }
-
     /*
-    * Returns true if more than one media file belongs to the same directory at the same level
-    * */
+     * Returns true if more than one media file belongs to the same directory at the same level
+     * */
     @Override
     public boolean isMultipart(MediaQuery mediaQuery) {
         return mediaQueryService.getGroupedQueries(mediaQuery.getQueryUuid()).size() > 1;
     }
 
-    public static void main(String[] args) {
-        String pasd = "E:\\Filmy SD\\Memories of Matsuko-Kiraware Matsuko no Isshō\\wrd-matsuko-cd1.avi";
-        String regex = "-([a-zA-Z0-9]+)(\\.\\w+)?$";
-        Pattern p = Pattern.compile(regex);
-        Matcher matcher = p.matcher(pasd);
-        String out = "";
-        if (matcher.find()) {
-            int i = matcher.groupCount();
-            if (i > 0) out = matcher.group(1);
-        }
-        System.out.println(out);
-    }
 }

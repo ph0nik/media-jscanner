@@ -85,6 +85,7 @@ public class LinksController {
     @RequestMapping(value = "/links", method = GET)
     public String linksSorted(@RequestParam(value = "sort", required = false) String sort, Model model) {
         List<MediaQuery> allMediaQueries = mediaLinksService.getMediaQueryList();
+        // TODO search for link & update all dead files on reload
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks();
         /*
          * Optional request parameter is being evaluated and list is sorted

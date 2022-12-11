@@ -53,7 +53,12 @@ public interface MediaLinksService extends Pagination {
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    MediaLink ignoreMediaFile(MediaQuery mediaQuery);
+    MediaLink ignoreMediaFile();
+
+    /*
+    * Filter all ignored results with given query
+    * */
+    List<MediaLink> searchMediaIgnoredList(String query);
 
     /*
     * Returns list of all ignored media paths.
@@ -81,6 +86,8 @@ public interface MediaLinksService extends Pagination {
     * Returns list of existing media links
     * */
     List<MediaLink> getMediaLinks();
+
+
 
     List<MediaLink> searchMediaLinks(String search);
 

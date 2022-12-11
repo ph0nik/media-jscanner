@@ -8,7 +8,6 @@ import service.PropertiesServiceImpl;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -33,11 +32,7 @@ class MediaFilesScannerTest {
         Path path = Path.of("G:\\Java\\media-jscanner\\test-folder\\movies-incoming\\");
         List<Path> paths = List.of(path);
         List<MediaQuery> mediaQueries = List.of(new MediaQuery(alucarda));
-        try {
-            mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
 
 //        List<MediaQuery> allMediaQueries = mediaTrackerDao.getAllMediaQueries();
 //        allMediaQueries.forEach(System.out::println);

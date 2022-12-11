@@ -155,6 +155,16 @@ public class QueryController {
     public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) {
         mediaQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
+//        model.addAttribute("query", mediaQueryService.getReferenceQuery());
+        model.addAttribute("result_list", queryResults);
+        model.addAttribute("request_form", new WebSearchResultForm());
+        return "result_selection";
+    }
+
+    @GetMapping("/skip-multipart")
+    public String skipMultiPart(Model model) {
+        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
         model.addAttribute("request_form", new WebSearchResultForm());

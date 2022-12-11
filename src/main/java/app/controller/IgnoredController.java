@@ -50,17 +50,24 @@ public class IgnoredController {
         return "ignored";
     }
 
-    @PostMapping("/addignore/{id}")
+    @PostMapping("/add-ignore/{id}")
     public String addToIgnoreList(@PathVariable("id") long id, @RequestParam UUID uuid, Model model)  {
-        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
-        mediaLinksService.ignoreMediaFile(queryByUuid);
+        mediaQueryService.setReferenceQuery(uuid);
+        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+        mediaLinksService.ignoreMediaFile();
         return "redirect:/";
     }
 
-    @PostMapping("/removeignore/{id}")
+    @PostMapping("/remove-ignore/{id}")
     public String removeFromIgnroredList(@PathVariable("id") long id, Model model) {
         mediaLinksService.unIgnoreMedia(id);
         return "redirect:/ignored";
+    }
+
+    @PostMapping("/search-ignore/")
+    public String searchWithGivenPhrase(@RequestParam String query, Model model) {
+
+        return "ignored";
     }
 
 

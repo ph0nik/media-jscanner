@@ -126,10 +126,8 @@ public class CleanerServiceImpl implements CleanerService {
         return counter;
     }
 
-    public static void main(String[] args) {
-        Path path = Path.of("E:\\Temp\\links-folder\\Bewitched (1981) [imdbid-tt0082481]\\folder.jpg");
-        CleanerService cs = new CleanerServiceImpl();
-        cs.deleteElement(path);
-    }
-
+//    @Override
+//    public boolean originalFileExists(MediaLink mediaLink) {
+//        return new File(mediaLink.getOriginalPath()).exists();
+//    }
 }

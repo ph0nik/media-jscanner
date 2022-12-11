@@ -39,11 +39,11 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                stubs-->
+                <!--                stubs-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/stubs">stubs</a>
                 </li>
-<!--                ignored-->
+                <!--                ignored-->
                 <li class="nav-item px-2">
                     <a th:switch="${media_ignored.size() > 0}" class="nav-link active" href="/ignored">ignored
                         <!-- show if any new files are in the queue -->
@@ -54,7 +54,7 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                config-->
+                <!--                config-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
@@ -66,8 +66,26 @@
 <div class="row" th:switch="${user_paths}">
     <div th:case="${false}" class="col-8 offset-md-2">
         <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
+                tab</p>
         </div>
+    </div>
+</div>
+<div class="row m-2">
+    <div class="col">
+        <form class="d-flex"
+              action="#"
+              th:action="@{/search-query/}"
+              method="post">
+            <!--                <input class="form-control me-2" type="search" placeholder="Find in queries..." name="search" id="search"-->
+            <!--                       aria-label="Search">-->
+            <!--                <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>-->
+            <div class="input-group">
+                <input type="search" class="form-control" placeholder="Find in ignored media..." aria-label="queries search"
+                       aria-describedby="button-addon2" name="search" id="search">
+                <button class="btn btn-outline-primary btn-sm" type="submit" id="button-addon2">Search</button>
+            </div>
+        </form>
     </div>
 </div>
 <!--table-->
@@ -89,10 +107,10 @@
             </td>
             <td class="col-2">
                 <form action="#"
-                      th:action="@{/removeignore/{id}(id=${ignored.mediaId})}"
+                      th:action="@{/remove-ignore/{id}(id=${ignored.mediaId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">remove</button>
+                    <button class="btn btn-outline-danger btn-sm" type="submit">undo</button>
                 </form>
             </td>
         </tr>

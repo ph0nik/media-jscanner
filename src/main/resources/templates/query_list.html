@@ -86,9 +86,9 @@
     </nav>
 </div>
 <!-- Auto matcher-->
-<div class="row align-items-center">
+<div class="row m-2">
     <!--match button-->
-    <div th:switch="${future}" class="col-2 align-self-center p-2">
+    <div th:switch="${future}" class="col-1 align-self-center p-2">
         <form action="#"
               th:action="@{/auto}"
               method="get">
@@ -175,9 +175,6 @@
                   action="#"
                   th:action="@{/search-query/}"
                   method="post">
-<!--                <input class="form-control me-2" type="search" placeholder="Find in queries..." name="search" id="search"-->
-<!--                       aria-label="Search">-->
-<!--                <button class="btn btn-outline-primary btn-sm" type="submit">Search</button>-->
                 <div class="input-group">
                     <input type="search" class="form-control" placeholder="Find in queries..." aria-label="queries search" aria-describedby="button-addon2" name="search" id="search">
                     <button class="btn btn-outline-primary btn-sm" type="submit" id="button-addon2">Search</button>
@@ -248,7 +245,7 @@
             <!--            ignore-->
             <td class="col-1" th:switch="${future}">
                 <form action="#"
-                      th:action="@{/addignore/{id}(id=${query.queryId})}"
+                      th:action="@{/add-ignore/{id}(id=${query.queryId})}"
                       method="post">
                     <input type="hidden" value="" name="custom">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">

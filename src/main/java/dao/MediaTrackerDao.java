@@ -31,13 +31,17 @@ public interface MediaTrackerDao {
     /*
      * Return all MediaLink elements that have given phrase within their filepath
      * */
-    public List<MediaLink> findInTargetPathLink(String phrase);
+    public List<MediaLink> findInOriginalPathLink(String phrase);
 
     public List<MediaLink> findInLinkPathLink(String phrase);
+
+//    public List<MediaLink> getAllIgnoredMedia();
+//
+//    public List<MediaLink> searchInIgnoredMedia(String phrase);
 
     /*
     * Return all MediaLink elements with given filepath
     * */
-    MediaLink findMediaLinkByTargetPath(String filePath);
+    MediaLink getMediaLinkByTargetPath(String filePath);
 
 }

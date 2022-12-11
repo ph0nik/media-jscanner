@@ -45,7 +45,7 @@ public class LinkDao {
         assertEquals(1, allMediaLinks.size());
         allMediaLinks.forEach(System.out::println);
 
-        List<MediaLink> path = mediaTrackerDao.findInTargetPathLink("get pa");
+        List<MediaLink> path = mediaTrackerDao.findInOriginalPathLink("get pa");
         assertEquals(1, path.size());
     }
 

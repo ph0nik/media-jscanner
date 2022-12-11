@@ -112,7 +112,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
      * Method finds all elements that have given phrase within their target path.
      * */
     @Override
-    public List<MediaLink> findInTargetPathLink(String phrase) {
+    public List<MediaLink> findInOriginalPathLink(String phrase) {
         EntityManager entityManager = getEntityManager();
         List<MediaLink> mediaQuery = null;
         String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
@@ -159,7 +159,7 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
      * Find media link element by exact target path string.
      * */
     @Override
-    public MediaLink findMediaLinkByTargetPath(String targetPath) {
+    public MediaLink getMediaLinkByTargetPath(String targetPath) {
         EntityManager entityManager = getEntityManager();
         MediaLink singleResult = null;
         try {

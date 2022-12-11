@@ -104,8 +104,17 @@
         <p th:text="${query.filePath}"></p>
     </div>
     <div class="row">
-        <p>Multiple media found in selected folder, select all elements that belong to the same group as file above.</p>
+        <div class="col">
+            <p>Multiple media found in selected folder, select all elements that belong to the same group as file
+                above.</p>
+        </div>
+        <div clall="col">
+            <form action="#" th:action="@{/skip-multipart}" method="get">
+                <button class="btn btn-outline-primary" type="submit">Skip ></button>
+            </form>
+        </div>
     </div>
+
     <fieldset>
         <table class="table table-striped table-hover table-borderless">
             <form action="#" th:action="@{/set-multipart}" th:object="${multipart_dto}"
@@ -119,7 +128,7 @@
                 </tr>
                 </thead>
                 <tbody>
-<!--                select element-->
+                <!--                select element-->
                 <tr class="row justify-content-around border-bottom border-white" th:id="${'row-selected' + item.index}"
                     th:each="mpe, item : *{multiPartElementList}">
                     <td class="col-1">
@@ -130,7 +139,7 @@
                             <input class="form-check-input" type="hidden" value="0"
                                    th:name="${'multipart-' + item.index}"
                                    th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">
-<!--                            <i class="fa-solid fa-check"></i>-->
+                            <!--                            <i class="fa-solid fa-check"></i>-->
                         </div>
 
                     </td>
@@ -142,12 +151,12 @@
                     <!--                    multipart select-->
                     <td class="col-1">
                         <div class="input-group input-group-sm">
-<!--                            <div class="input-group-text">-->
-<!--                                <input class="form-check-input mt-0" type="radio"-->
-<!--                                       aria-label="Radio button for following text input"-->
-<!--                                       id="multipart" th:name="${'multipart-' + item.index}" value="1"-->
-<!--                                       th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">-->
-<!--                            </div>-->
+                            <!--                            <div class="input-group-text">-->
+                            <!--                                <input class="form-check-input mt-0" type="radio"-->
+                            <!--                                       aria-label="Radio button for following text input"-->
+                            <!--                                       id="multipart" th:name="${'multipart-' + item.index}" value="1"-->
+                            <!--                                       th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">-->
+                            <!--                            </div>-->
                             <input type="number" class="form-control" id="title_no"
                                    th:name="${'multipart-' + item.index}" min="0" max="50"
                                    th:field="*{multiPartElementList[__${item.index}__].partNumber}">
