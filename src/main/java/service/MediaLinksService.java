@@ -65,6 +65,8 @@ public interface MediaLinksService extends Pagination {
     * */
     List<MediaLink> getMediaIgnoredList();
 
+    void clearInvalidIgnoreAndLinks();
+
     /*
     * Remove link and add target path back to the queue
     * */
@@ -94,7 +96,7 @@ public interface MediaLinksService extends Pagination {
     /*
     * Checks if given path exists
     * */
-    boolean validatePath(Path path);
+    boolean validatePath(String path);
 
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 

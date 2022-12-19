@@ -91,12 +91,12 @@ public class TrackerController {
 //        boolean trackerStatus = trackerExecutor.trackerStatus();
 
         Path linksFolder = propertiesService.getLinksFolder();
-        boolean linksPathValid = mediaLinksService.validatePath(linksFolder);
+        boolean linksPathValid = mediaLinksService.validatePath(linksFolder.toString());
 
         List<Path> targetFolderList = propertiesService.getTargetFolderList();
         Map<Path, Boolean> pathsValidated = new HashMap<>();
         for (Path p : targetFolderList) {
-            pathsValidated.put(p, mediaLinksService.validatePath(p));
+            pathsValidated.put(p, mediaLinksService.validatePath(p.toString()));
         }
         boolean userLinksPath = propertiesService.isUserLinksPath();
         boolean userTargetPath = propertiesService.isUserTargetPath();

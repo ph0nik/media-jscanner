@@ -101,6 +101,7 @@ public class QueryController {
         return "query_list";
     }
 
+    // TODO add option to provide imdb identifier instead of searching titles
     @PostMapping("/search-query/")
     public String searchQuery(@RequestParam("search") String search,
                               Model model) {

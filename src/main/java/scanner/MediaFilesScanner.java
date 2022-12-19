@@ -45,19 +45,12 @@ public class MediaFilesScanner {
     }
 
     void scanFolderTree(Path root) {
-        cleanUp();
         try {
             Files.walkFileTree(root, new MediaFilesFileVisitor());
         } catch (IOException e) {
             LOG.error("[ scan ] Error: {}", e.getMessage());
         }
 //        extractQueryList();
-    }
-
-    void cleanUp() {
-        // remowing links pointing to non existing files
-//        cleanerService.deleteInvalidLink(allMediaLinks, mediaTrackerDao);
-        cleanerService.deleteInvalidIgnoredMedia(mediaTrackerDao);
     }
 
     // write file list for test
@@ -70,7 +63,6 @@ public class MediaFilesScanner {
         } catch (IOException e) {
             LOG.error(e.getMessage());
         }
-
     }
 
     /*

@@ -110,12 +110,9 @@ public class LinksController {
          * Optional request parameter is being evaluated and list is sorted
          * accordingly. If no argument is given sorting falls back to default.
          * */
-        Comparator<MediaLink> comparator;
-        if (sort != null && sort.equals("link")) {
-            comparator = Comparator.comparing(MediaLink::getLinkPath);
-        } else {
-            comparator = Comparator.comparing(MediaLink::getOriginalPath);
-        }
+        Comparator<MediaLink> comparator = (sort != null && sort.equals("link"))
+                ? Comparator.comparing(MediaLink::getLinkPath)
+                : Comparator.comparing(MediaLink::getOriginalPath);
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks().stream().sorted(comparator).collect(Collectors.toList());
         Page<MediaLink> paginatedLinks = mediaLinksService.findPaginatedLinks(PageRequest.of(currentPage - 1, pageSize), allMediaLinks);
         // TODO update all dead files on reload

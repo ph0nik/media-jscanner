@@ -1,8 +1,8 @@
 package util;
 
 import dao.MediaTrackerDao;
+import model.MediaLink;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public interface CleanerService {
@@ -16,15 +16,29 @@ public interface CleanerService {
     boolean containsNoMediaFiles(Path linkPath);
 
     /*
+    * Deletes media link element, removes record from database, and clears folder if no
+    * other media files are present
+    * */
+    void deleteInvalidLink(MediaLink mediaLink, MediaTrackerDao dao);
+
+    /*
     * Deletes folder and contained elements with given path.
     * */
     boolean deleteElement(Path linkPath);
 
     /*
+    * Deletes empty directories.
+    * Directory is considered empty if it contains no directory and no media files.
+    * */
+    void clearEmptyFolders(Path root);
+
+    void clearParentFolder(MediaLink mediaLink);
+
+    /*
     * Checks if parent folder of given file contains any elements matching criteria.
     * If not, method removes all the content and parent folder.
     * */
-    void clearParentFolder(Path file) throws IOException;
+    void clearParentFolder(Path file);
 
     /*
     * Deletes all database entries with invalid paths
@@ -52,7 +66,6 @@ public interface CleanerService {
 //    void deleteInvalidMediaQuery(List<MediaQuery> queries, MediaTrackerDao dao);
 
 
-    void deleteInvalidIgnoredMedia(MediaTrackerDao mediaTrackerDao);
-
+//    void deleteInvalidIgnoredMedia(MediaTrackerDao mediaTrackerDao);
 
 }

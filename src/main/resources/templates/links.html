@@ -136,64 +136,79 @@
         <!--        table head-->
         <thead>
         <tr>
-            <th class="col">id</th>
-            <th>
+            <th class="col-1 text-center">id</th>
+            <th class="col">
                 <a href="/links?sort=target">target</a>
                 <span>|</span>
                 <a href="/links?sort=link">link</a>
             </th>
-            <th class="col">tmdb</th>
-            <th colspan="2">imdb</th>
+            <th class="col-1 text-center">tmdb</th>
+            <th class="col-1 text-center">imdb</th>
+            <th class="col-1 text-center">qwe</th>
+            <th class="col-1 text-center">qwe</th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
         <tr th:each="link, iter : ${page.getContent()}">
-            <td class="text-center"
-                th:text="${link.mediaId}"></td>
+            <td class="col-1 text-center"
+                th:text="${link.mediaId}">asd</td>
             <!--            paths-->
-            <td th:if="${link.originalPresent}">
-                <span th:text="${link.originalPath}" class="row fs-6 fw-bold font-monospace">asd</span>
-                <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
+            <td class="col" th:if="${link.originalPresent}">
+                <div th:text="${link.originalPath}" class="row fs-6 fw-bold font-monospace">original path</div>
+                <div th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace">link path</div>
             </td>
-            <td th:if="${!link.originalPresent}">
+            <td class="col" th:if="${!link.originalPresent}">
                 <span th:text="${link.originalPath}" class="row fs-6 text-info fw-bold font-monospace"></span>
                 <span th:text="${link.linkPath}" class="row fs-7 fw-normal font-monospace"></span>
             </td>
             <!--            tmdb id-->
-            <td>
-                <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace"></span>
+            <td class="col-1 text-center">
+                <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace">tmdbi_id</span>
             </td>
             <!--            imdb id-->
-            <td>
-                <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace"></span>
+            <td class="col-1 text-center">
+                <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace">imdb_id</span>
             </td>
             <!--            remove link-->
-            <td>
-                <form action="#"
-                      th:action="@{/remove-link/{id}(id=${link.mediaId})}"
-                      method="post">
-                    <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>
-                </form>
-            </td>
+<!--            <td>-->
+<!--                <form class="row"-->
+<!--                      action="#"-->
+<!--                      th:action="@{/remove-link/{id}(id=${link.mediaId})}"-->
+<!--                      method="post">-->
+<!--                    <input type="hidden" value="" name="custom">-->
+<!--                    <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>-->
+<!--                </form>-->
+<!--            </td>-->
             <!--            remove orignal file-->
-            <td>
-                <form action="#"
-                      th:action="@{/delete-original/{id}(id=${link.mediaId})}"
-                      method="post">
-                    <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete original</button>
-                </form>
+            <td class="col-1 text-center">
+                <div class="row">
+                    <form action="#"
+                          th:action="@{/delete-original/{id}(id=${link.mediaId})}"
+                          method="post">
+                        <input type="hidden" value="" name="custom">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                </div>
+                <div class="row">
+                    <form action="#"
+                          th:action="@{/remove-link/{id}(id=${link.mediaId})}"
+                          method="post">
+                        <input type="hidden" value="" name="custom">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Undo</button>
+                    </form>
+                </div>
             </td>
             <!--            restore original file-->
-            <td>
-                <form action="#"
-                      th:action="@{/restore-original/{id}(id=${link.mediaId})}"
-                      method="post">
-                    <input type="hidden" value="" name="custom">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Restore original</button>
-                </form>
+            <td class="col-1 text-center">
+                <div class="row">
+                    <form action="#"
+                          th:action="@{/restore-original/{id}(id=${link.mediaId})}"
+                          method="post">
+                        <input type="hidden" value="" name="custom">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Restore</button>
+                    </form>
+                </div>
             </td>
         </tr>
         </tbody>

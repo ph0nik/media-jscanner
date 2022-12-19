@@ -79,6 +79,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     @Override
     public List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity) {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
+        // TODO make guards so that malformed input gets correct response
         List<QueryResult> webSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.WEB_SEARCH);
         List<QueryResult> tmdbSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API);
         tmdbSearchResults.addAll(webSearchResults);
@@ -208,7 +209,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         if (mediaTransferData.getMediaType() == MediaType.EXTRAS) {
             linkPath = createExtrasLinkPath(queryResult, mediaTransferData, LINK_IDENTIFIER);
         }
-
         mediaLink.setOriginalPath(originalPath.toString());
         mediaLink.setLinkPath(linkPath.toString());
         mediaLink.setTheMovieDbId(mediaTransferData.getTmdbId());
@@ -291,7 +291,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         mediaIgnored.setLinkPath("ignore");
         mediaIgnored.setImdbId("none");
         mediaIgnored.setTheMovieDbId(-1);
-
+        mediaIgnored.setOriginalPresent(true);
         mediaTrackerDao.addNewLink(mediaIgnored);
         LOG.info("[ ignore ] Ignored element: {}", mediaQuery.getFilePath());
         mediaQueryService.removeQueryFromQueue(mediaQuery);
@@ -300,23 +300,29 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
 
     @Override
     public List<MediaLink> getMediaLinks() {
-//        return mediaTrackerDao.getAllMediaLinks()
-//                .stream()
-//                .filter(ml -> ml.getTheMovieDbId() >= 0)
-//                .collect(Collectors.toList());
         return filterMediaLinks(false).collect(Collectors.toList());
     }
 
-    Stream<MediaLink> getAllMediaLinks(Predicate<MediaLink> mediaLinkSwitch) {
-        return mediaTrackerDao.getAllMediaLinks()
-                .stream()
-                .filter(mediaLinkSwitch);
-//                .collect(Collectors.toList());
+    @Override
+    public List<MediaLink> getMediaIgnoredList() {
+        return filterMediaLinks(true).collect(Collectors.toList());
     }
 
     Stream<MediaLink> filterMediaLinks(boolean ignoredOnly) {
-        if (ignoredOnly) return getAllMediaLinks(ml -> ml.getTheMovieDbId() < 0);
-        return getAllMediaLinks(ml -> ml.getTheMovieDbId() >= 0);
+        return (ignoredOnly)
+                ? getAllMediaLinks(ml -> ml.getLinkPath().equals("ignore"))
+                : getAllMediaLinks(ml -> !ml.getLinkPath().equals("ignore"));
+    }
+
+    /*
+    * Returns stream of media links based on given predicate, at each call validates
+    * original files presence.
+    * */
+    Stream<MediaLink> getAllMediaLinks(Predicate<MediaLink> mediaLinkSwitch) {
+        return mediaTrackerDao.getAllMediaLinks()
+                .stream()
+                .filter(mediaLinkSwitch)
+                .map(this::validateLink);
     }
 
     List<MediaLink> searchMediaLinks(String phrase, boolean ignoredOnly) {
@@ -337,22 +343,29 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         return searchMediaLinks(query, false);
     }
 
-    void refreshLinksInfo() {
-        getMediaIgnoredList().stream()
-                .filter(ml -> ml.getMediaId() < 0)
-                .filter(ml -> !validatePath(Path.of(ml.getOriginalPath())) && ml.isOriginalPresent())
-                .forEach(ml -> {
-                    ml.setOriginalPresent(false);
-                    mediaTrackerDao.updateLink(ml);
-                });
+    @Override
+    public void clearInvalidIgnoreAndLinks() {
+        clearInvalidIgnore();
+        clearInvalidLinks();
     }
 
-    @Override
-    public List<MediaLink> getMediaIgnoredList() {
-        return mediaTrackerDao.getAllMediaLinks()
-                .stream()
-                .filter(ml -> ml.getTheMovieDbId() < 0)
-                .collect(Collectors.toList());
+    /*
+    * Remove ignore media record if original file is no longer present.
+    * */
+    void clearInvalidIgnore() {
+        getMediaIgnoredList().stream()
+                .filter(mi -> !mi.isOriginalPresent())
+                .forEach(mi -> mediaTrackerDao.removeLink(mi.getMediaId()));
+    }
+
+    /*
+    * Remove link record if neither original nor link file exists.
+    * */
+    void clearInvalidLinks() {
+        getMediaLinks().stream()
+                .filter(ml -> !ml.isOriginalPresent())
+                .filter(ml -> !validatePath(ml.getLinkPath()))
+                .forEach(ml -> mediaTrackerDao.removeLink(ml.getMediaId()));
     }
 
     /*
@@ -435,6 +448,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     public MediaLink deleteOriginalFile(long mediaLinkId) {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
         cleanerService.deleteElement(Path.of(mediaLink.getOriginalPath()));
+        cleanerService.clearParentFolder(Path.of(mediaLink.getOriginalPath()));
         LOG.info("[ delete_original ] Original file deleted: {}", mediaLink.getOriginalPath());
         mediaLink.setOriginalPresent(false);
         mediaTrackerDao.updateLink(mediaLink);
@@ -461,11 +475,22 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     /*
+    * Checks if original path of given media link exists and updates boolean value if needed.
+    * */
+    MediaLink validateLink(MediaLink mediaLink) {
+        if (!validatePath(mediaLink.getOriginalPath()) && mediaLink.isOriginalPresent()) {
+            mediaLink.setOriginalPresent(false);
+            mediaTrackerDao.updateLink(mediaLink);
+        }
+        return mediaLink;
+    }
+
+    /*
      * Checks whether given path of file or directory exists
      * */
     @Override
-    public boolean validatePath(Path path) {
-        return path.toFile().exists();
+    public boolean validatePath(String path) {
+        return Path.of(path).toFile().exists();
     }
 
     /*
