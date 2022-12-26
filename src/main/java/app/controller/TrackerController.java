@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import service.MediaLinksService;
 import service.PropertiesService;
+import util.MediaFilter;
 import util.TrayMenu;
 
 import javax.annotation.PostConstruct;
@@ -63,6 +64,11 @@ public class TrackerController {
     @ModelAttribute("user_paths")
     public boolean checkForUserProvidedPaths() {
         return propertiesService.checkUserPaths();
+    }
+
+    @ModelAttribute("extensions")
+    public List<String> getCurrentExtensions() {
+        return MediaFilter.getExtensions();
     }
 
     /*
@@ -141,6 +147,13 @@ public class TrackerController {
             mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolder(), newLinksPath);
         }
         propertiesService.setLinksPath(newLinksPath);
+        return "redirect:/config";
+    }
+
+
+    @PostMapping("/clear-folders")
+    public String clearSelectedFolder(@RequestParam String path, Model model) {
+        mediaLinksService.removeEmptyFolders(path);
         return "redirect:/config";
     }
 }

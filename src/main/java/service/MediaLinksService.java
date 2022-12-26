@@ -98,6 +98,10 @@ public interface MediaLinksService extends Pagination {
     * */
     boolean validatePath(String path);
 
+    void removeEmptyFolders();
+
+    void removeEmptyFolders(String path);
+
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 
 

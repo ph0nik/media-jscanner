@@ -5,9 +5,13 @@
       lang="en">
 
 <head>
-    <title>media-jscanner | query list</title>
+    <title>media-jscanner | configuration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../static/css/all.css" rel="stylesheet">
+    <link th:href="@{/css/all.css}" rel="stylesheet"/>
+    <link href="../static/style.css" rel="stylesheet">
+    <link th:href="@{/style.css}" rel="stylesheet"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
@@ -38,11 +42,6 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-<!--                stubs-->
-                <li class="nav-item px-2">
-                    <a class="nav-link" href="/stubs">stubs</a>
-                </li>
-<!--                ignored-->
                 <li class="nav-item px-2">
                     <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
                         <!-- show if any new files are in the queue -->
@@ -65,117 +64,155 @@
 <div class="row" th:switch="${user_paths}">
     <div th:case="${false}" class="col-8 offset-md-2">
         <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code> tab</p>
+            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
+                tab</p>
         </div>
     </div>
 </div>
 
 <!--links path-->
-<div class="row m-3">
-    <!--TODO make card style options-->
-<!--    <div class="card p-0">-->
-<!--        <div class="card-header">-->
-<!--            Links folder-->
-<!--        </div>-->
-<!--        <div class="card-body">-->
-<!--            <h5 class="card-title">Special title treatment</h5>-->
-<!--            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>-->
-<!--            <a href="#" class="btn btn-primary">Go somewhere</a>-->
-<!--        </div>-->
-<!--    </div>-->
-    <table class="table">
-        <thead class="">
-        <tr>
-            <th colspan="2">Links folder path</th>
-        </tr>
-        </thead>
-        <tbody class="table-secondary">
-        <tr>
-            <td class="col-1">
-                <span>current:</span>
-            </td>
-            <td th:switch="${links_path_validated}" colspan="2" class="align-middle col-10">
-                <span class="fw-normal font-monospace" th:text="${links_folder}"></span>
-                <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
-            </td>
-        </tr>
-<!--        links form-->
-        <form class="d-flex"
-              action="#"
-              th:action="@{/addlink}"
-              th:object="${links_path_form}"
-              method="post">
-            <tr>
-                <td>
+<div class="row m-2">
+    <form class="d-flex p-0"
+          action="#"
+          th:action="@{/addlink}"
+          th:object="${links_path_form}"
+          method="post">
+        <table class="table table-sm table-borderless">
+            <thead class="table-light">
+            <tr class="row m-0 py-1">
+                <th class="col">Links folder path</th>
+            </tr>
+            </thead>
+            <tbody class="table-secondary">
+            <tr class="row m-0">
+                <td class="col-1 text-end">
+                    <span>current:</span>
+                </td>
+                <td class="align-middle col" th:switch="${links_path_validated}">
+                    <span class="fw-normal font-monospace" th:text="${links_folder}"></span>
+                    <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                </td>
+            </tr>
+            <!--        links form-->
+            <tr class="row m-0">
+                <td class="col-1 text-end">
                     <span>new:</span>
                 </td>
-                <td class="align-middle">
-                    <input class="form-control me-2" type="search" placeholder="path..." th:field="*{linksFilePath}" name="linkpath" id="linkpath"
-                           aria-label="Search">
-                </td>
-                <td class="col-2 align-middle">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
+                <td class="col align-middle">
+                    <div class="input-group input-group-sm pe-2">
+                        <input class="form-control" type="search" placeholder="path..." th:field="*{linksFilePath}"
+                               name="linkpath" id="linkpath"
+                               aria-label="Search">
+                        <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
+                    </div>
+                    <div class="form-check text-muted">
+                        <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="move"
+                               value="true">
+                        <label class="form-check-label" for="move">Move current links folder content to a new
+                            location.</label>
+                    </div>
                 </td>
             </tr>
-            <tr>
-                <td></td>
-                <td>
-                    <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="move" value="true">
-                    <label class="form-check-label" for="move">Move current links folder content to a new location.</label>
-                </td>
-                <td></td>
-            </tr>
-        </form>
-        </tbody>
-    </table>
+            <!--        <tr class="row m-0">-->
+            <!--            <td class="col"></td>-->
+            <!--            <td class="col-10">-->
+            <!--                <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="move"-->
+            <!--                       value="true">-->
+            <!--                <label class="form-check-label" for="move">Move current links folder content to a new-->
+            <!--                    location.</label>-->
+            <!--            </td>-->
+
+            <!--        </tr>-->
+            </tbody>
+        </table>
+    </form>
 </div>
 
 <!--target paths list-->
-<div class="row m-3">
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Target folder paths</th>
-            <th></th>
+<div class="row m-2">
+    <table class="table table-sm table-borderless">
+        <thead class="table-light">
+        <tr class="row m-0 py-1">
+            <th class="col">Target folder paths</th>
         </tr>
         </thead>
         <tbody class="table-secondary">
         <!--                path in table -->
-        <tr th:each="path : ${target_folder_list}">
-            <td th:switch="${target_path_validated.get(path)}">
-                <span class="fw-normal font-monospace" th:text="${path}">
-
-                </span>
+        <tr class="row m-0" th:each="path, iter : ${target_folder_list}">
+            <!--            <td class="col-1 text-center">-->
+            <!--                <div class="form-check">-->
+            <!--                    <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="clear"-->
+            <!--                           value="true">-->
+            <!--                </div>-->
+            <!--            </td>-->
+            <td class="col-1 text-end">
+                <span th:text="${iter.index + 1 + ' .'}"></span>
+            </td>
+            <td class="col" th:switch="${target_path_validated.get(path)}">
+                <span class="fw-normal font-monospace" th:text="${path}"></span>
                 <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
             </td>
-            <td th:switch="${chk_user_target}" class="align-middle col-2">
-                <form th:case="${true}"
-                      action="#"
-                      th:action="@{/deletepath}"
-                      method="post">
-                    <input type="hidden" th:value="${path}" name="path">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
-                </form>
+            <td class="col-2 align-middle">
+<!--                <div class="row" th:switch="${chk_user_target}">-->
+                    <div class="row" th:if="${chk_user_target}">
+                    <form
+                          action="#"
+                          th:action="@{/deletepath}"
+                          method="post"
+                          class="col">
+                        <input type="hidden" th:value="${path}" name="path">
+                        <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
+                    </form>
+                    <form
+                          action="#"
+                          th:action="@{/clear-folders}"
+                          method="post"
+                          class="col">
+                        <div class="input-group input-group-sm">
+                            <input type="hidden" th:value="${path}" name="path">
+                            <i class="fa-regular fa-trash-can m-2"></i>
+                            <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders">Clear folder
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </td>
         </tr>
-<!--                     add new path-->
-        <tr>
+        <!--                     add new path-->
+        <tr class="row m-0">
+
             <form class="d-flex"
                   action="#"
                   th:action="@{/addtarget}"
                   method="post">
-                <td>
-                    <input class="form-control  me-2" type="search" placeholder="path..." name="path" id="path"
-                           aria-label="Search">
+                <td class="col-1"></td>
+
+                <td class="col">
+                    <div class="input-group input-group-sm pe-2">
+                        <input class="form-control" type="search" placeholder="path..." name="path" id="path"
+                               aria-label="Search">
+                        <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
+                    </div>
                 </td>
-<!--                                button-->
-                <td class="col-2 align-middle">
-                    <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
-                </td>
+                <!--                                button-->
+                <!--                    <td class="col align-middle">-->
+                <!--                        <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>-->
+                <!--                    </td>-->
+
             </form>
         </tr>
         </tbody>
     </table>
+</div>
+<div class="row bg-light m-2">
+    <div class="row  m-0 py-1">
+        <span>Media files extensions:</span>
+    </div>
+    <div class="row justify-content-start">
+        <div class="col">
+            <span class="badge bg-secondary fs-6 m-1" th:text="${ext}" th:each="ext : ${extensions}"></span>
+        </div>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"

@@ -122,6 +122,13 @@ public class LinksController {
         return "links";
     }
 
+    @GetMapping("/clear-links/")
+    public String clearLinks(Model model) {
+        mediaLinksService.clearInvalidIgnoreAndLinks();
+        return "redirect:/links";
+    }
+
+    // TODO add search for words after whitespaces
     @PostMapping("/search-link/")
     public String searchLink(@RequestParam("search") String search, Model model) {
         int min = 1;
@@ -132,7 +139,6 @@ public class LinksController {
         model.addAttribute("page_max", max);
         return "links";
     }
-
 
     @PostMapping("/remove-link/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {

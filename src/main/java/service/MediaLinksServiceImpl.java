@@ -216,6 +216,8 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
         return mediaLink;
     }
 
+    // TODO v the series errorr with imdb link from ddg
+
     MediaTransferData getSelectionDetails(MediaTransferData mediaTransferData, QueryResult queryResult, MediaIdentity mediaIdentifier) {
         MediaLink mediaLink = new MediaLink();
         try {
@@ -448,7 +450,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     public MediaLink deleteOriginalFile(long mediaLinkId) {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
         cleanerService.deleteElement(Path.of(mediaLink.getOriginalPath()));
-        cleanerService.clearParentFolder(Path.of(mediaLink.getOriginalPath()));
+        cleanerService.clearParentFolder(Path.of(mediaLink.getOriginalPath()).getParent());
         LOG.info("[ delete_original ] Original file deleted: {}", mediaLink.getOriginalPath());
         mediaLink.setOriginalPresent(false);
         mediaTrackerDao.updateLink(mediaLink);
@@ -492,6 +494,19 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     public boolean validatePath(String path) {
         return Path.of(path).toFile().exists();
     }
+
+    // test
+    @Override
+    public void removeEmptyFolders() {
+        // TODO exclude torrent folder from clearing
+        propertiesService.getTargetFolderList().forEach(cleanerService::clearEmptyFolders);
+    }
+
+    @Override
+    public void removeEmptyFolders(String path) {
+        cleanerService.clearEmptyFolders(Path.of(path));
+    }
+
 
     /*
      *

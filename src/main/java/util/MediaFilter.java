@@ -7,7 +7,7 @@ import java.util.List;
 public class MediaFilter {
 
     private static final List<String> extensions = List.of(".mkv", ".avi", ".rmvb", ".wmv", ".mpg",
-            ".mpeg", ".mpv", ".ogm", ".m2v", ".qt", ".mov", ".asf", ".mp4", ".m4v");
+            ".mpeg", ".mpv", ".ts", ".ogm", ".ogv",  ".m2v", ".qt", ".mov", ".asf", ".mp4", ".m4v", ".m2ts", ".vob", ".vp6", ".av1", ".vc1", ".flv");
 
     /*
     * Checking if given element name ends with one of given extensions.
@@ -18,6 +18,10 @@ public class MediaFilter {
             if (name.endsWith(s)) return true;
         }
         return false;
+    }
+
+    public static List<String> getExtensions() {
+        return List.copyOf(extensions);
     }
 
     public static boolean validateExtension(Path path) {

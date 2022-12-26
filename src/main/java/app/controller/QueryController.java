@@ -202,6 +202,12 @@ public class QueryController {
         return "redirect:/";
     }
 
+    @GetMapping("/clear-folders/")
+    public String clearEmptyFolders(Model model) {
+        mediaLinksService.removeEmptyFolders();
+        return "redirect:/";
+    }
+
     @GetMapping("/auto")
     public String autoMatch() {
         future = autoMatcherService.autoMatchFilesWithFuture();
