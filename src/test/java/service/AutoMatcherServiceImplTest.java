@@ -28,6 +28,8 @@ class AutoMatcherServiceImplTest {
     private MediaQueryService mediaQueryService;
     private WindowsTrayMenu windowsTrayMenu;
 
+    private FileService fileService;
+
     @BeforeEach
     void initAutoMatcher() {
         mediaTrackerDao = new MediaTrackerDaoImpl();
@@ -35,7 +37,7 @@ class AutoMatcherServiceImplTest {
         propertiesService = new PropertiesServiceImpl();
         mediaQueryService = new MediaQueryService();
         windowsTrayMenu = new WindowsTrayMenu();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService, fileService);
         autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
     }
 

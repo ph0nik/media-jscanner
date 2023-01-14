@@ -1,30 +1,39 @@
 package model;
 
 
+import com.opencsv.bean.CsvBindByName;
+import service.backup.model.CsvBean;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "media_link")
-public class MediaLink {
+public class MediaLink extends CsvBean {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @CsvBindByName(column = "id")
     private long mediaId;
 
     @Column(name = "link_path")
+    @CsvBindByName(column = "link_path")
     private String linkPath;
 
     @Column(name = "target_path", unique = true)
+    @CsvBindByName(column = "target_path")
     private String originalPath;
 
     @Column(name = "the_movie_db_id")
+    @CsvBindByName(column = "the_movie_db_id")
     private int theMovieDbId;
 
     @Column(name = "imdb_id")
+    @CsvBindByName(column = "imdb_id")
     private String imdbId;
 
     @Column(name = "original_present")
+    @CsvBindByName(column = "original_present")
     private boolean originalPresent = true;
 
     public boolean isOriginalPresent() {

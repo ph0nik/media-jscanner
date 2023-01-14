@@ -1,28 +1,39 @@
 package model;
 
+import util.MediaType;
+
 import java.util.Objects;
+import java.util.UUID;
 
 public class QueryResult implements Comparable<QueryResult> {
 
-    private long id;
-    private String url;
+    private Long id;
+    private MediaType mediaType;
+    private String title;
+    private String originalPath;
     private int theMovieDbId;
     private String imdbId;
-    private String title;
     private String description;
+    private String url;
+    private UUID queryId;
     private String poster;
     private String year;
-    private String originalPath;
 
-//    private UUID queryId;
-//
-//    public UUID getQueryId() {
-//        return queryId;
-//    }
-//
-//    public void setQueryId(UUID queryId) {
-//        this.queryId = queryId;
-//    }
+    public UUID getQueryId() {
+        return queryId;
+    }
+
+    public void setQueryId(UUID queryId) {
+        this.queryId = queryId;
+    }
+
+    public MediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(MediaType mediaType) {
+        this.mediaType = mediaType;
+    }
 
     public String getYear() {
         return year;
@@ -64,11 +75,11 @@ public class QueryResult implements Comparable<QueryResult> {
         this.title = title;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -100,14 +111,16 @@ public class QueryResult implements Comparable<QueryResult> {
     public String toString() {
         return "QueryResult{" +
                 "id=" + id +
-                ", url='" + url + '\'' +
+                ", mediaType=" + mediaType +
+                ", title='" + title + '\'' +
+                ", originalPath='" + originalPath + '\'' +
                 ", theMovieDbId=" + theMovieDbId +
                 ", imdbId='" + imdbId + '\'' +
-                ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
+                ", url='" + url + '\'' +
+                ", queryId=" + queryId +
                 ", poster='" + poster + '\'' +
                 ", year='" + year + '\'' +
-                ", originalPath='" + originalPath + '\'' +
                 '}';
     }
 

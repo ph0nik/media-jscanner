@@ -14,7 +14,6 @@ public class WebSearchResultForm {
     private String imdbId;
     private String description;
     private String url;
-
     private UUID queryId;
 
     public UUID getQueryId() {

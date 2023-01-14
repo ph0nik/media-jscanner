@@ -24,6 +24,8 @@ class ResponseParser {
     private static final String TMDB_MOVIE_YEAR = "tmdb_movieyear";
     private static final String TMDB_IMDB_ID = "tmdb_imdb";
     private static final String TMDB_ID = "tmdb_id";
+    private static final String TMDB_TV_TITLE = "tmdb_tvtitle";
+    private static final String TMDB_TV_YEAR = "tmdb_tvyear";
 
     private final Properties networkProperties;
 
@@ -196,20 +198,25 @@ class ResponseParser {
             String titleElement = networkProperties.getProperty(TMDB_MOVIE_TITLE);
             String yearElement = networkProperties.getProperty(TMDB_MOVIE_YEAR);
             String tmdbIdElement = networkProperties.getProperty(TMDB_ID);
+            String tvNameElement = networkProperties.getProperty(TMDB_TV_TITLE);
+            String tvYearElement = networkProperties.getProperty(TMDB_TV_YEAR);
 
             if (jsonElement.isJsonObject()) {
                 JsonObject asJsonObject = jsonElement.getAsJsonObject();
-                if (asJsonObject.has("movie_results")) {
-                    JsonArray asJsonArray = asJsonObject.get("movie_results").getAsJsonArray();
-                    if (!asJsonArray.isEmpty()) {
-                        JsonObject obj = asJsonArray.get(0).getAsJsonObject();
-                        String title = obj.get(titleElement).getAsString();
-                        String releaseDate = obj.get(yearElement).getAsString();
-                        int year = LocalDate.parse(releaseDate).getYear();
-                        int tmdbId = obj.get(tmdbIdElement).getAsInt();
-                        mediaTransferData.setTitle(title);
-                        mediaTransferData.setYear(year);
-                        mediaTransferData.setTmdbId(tmdbId);
+                if (asJsonObject.has("movie_results")
+                        && asJsonObject.has("tv_results")) {
+                    JsonArray movieResults = asJsonObject.get("movie_results").getAsJsonArray();
+                    JsonArray tvResults = asJsonObject.get("tv_results").getAsJsonArray();
+                    if (!movieResults.isEmpty()) {
+                        JsonObject obj = movieResults.get(0).getAsJsonObject();
+                        mediaTransferData.setTitle(obj.get(titleElement).getAsString());
+                        mediaTransferData.setYear(LocalDate.parse(obj.get(yearElement).getAsString()).getYear());
+                        mediaTransferData.setTmdbId(obj.get(tmdbIdElement).getAsInt());
+                    } else if (!tvResults.isEmpty()){
+                        JsonObject obj = tvResults.get(0).getAsJsonObject();
+                        mediaTransferData.setTitle(obj.get(tvNameElement).getAsString());
+                        mediaTransferData.setYear(LocalDate.parse(obj.get(tvYearElement).getAsString()).getYear());
+                        mediaTransferData.setTmdbId(obj.get(tmdbIdElement).getAsInt());
                     }
                 }
             }

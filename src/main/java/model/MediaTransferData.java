@@ -9,7 +9,6 @@ public class MediaTransferData {
     private String imdbId;
     private int tmdbId;
     private MediaType mediaType;
-
     private int partNumber;
 
     private LinkCreationResult linkCreationResult;

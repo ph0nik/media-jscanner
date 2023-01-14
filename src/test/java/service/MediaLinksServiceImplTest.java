@@ -23,13 +23,14 @@ class MediaLinksServiceImplTest {
     private MediaQueryService mediaQueryService;
     private MediaLinksServiceImpl mediaLinksService;
 
+    private FileService fileService;
     @BeforeEach
     void initService() {
         propertiesService = new PropertiesServiceImpl();
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
         mediaQueryService = new MediaQueryService();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService, fileService);
     }
 
     @Test

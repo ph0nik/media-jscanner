@@ -169,13 +169,21 @@ public class QueryController {
         return "result_selection";
     }
 
-    @PostMapping("/search-with-year/{id}")
-    public String searchTmdbWithYear(@PathVariable("id") Long id, @RequestParam String custom,
-                                     @RequestParam UUID uuid, @RequestParam Optional<Integer> year, Model model) {
-//        MediaQuery queryByUuid = mediaQueryService.getQueryByUuid(uuid);
+    @PostMapping("/search-with-year/")
+    public String searchTmdbWithYear(@RequestParam String custom, @RequestParam Optional<Integer> year, Model model) {
         List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, MediaIdentity.IMDB, year.orElse(1000));
 
         model.addAttribute("result_list", queryResults);
+        model.addAttribute("query", mediaQueryService.getReferenceQuery());
+        model.addAttribute("request_form", new WebSearchResultForm());
+        return "result_selection";
+    }
+
+    @PostMapping("/imdb-link/")
+    public String passImdbLink(@RequestParam String imdbLink, Model model) {
+        // TODO link parser
+        System.out.println(imdbLink);
+        model.addAttribute("result_list", List.of());
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";

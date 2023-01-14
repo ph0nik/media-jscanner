@@ -12,6 +12,7 @@ public class Application {
         builder.headless(false);
         builder.run(args);
 
+
 //        SpringApplication.run(Application.class, args);
 
     }

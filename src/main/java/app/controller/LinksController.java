@@ -142,6 +142,7 @@ public class LinksController {
 
     @PostMapping("/remove-link/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
+        // TODO when original is already deleted
         mediaLinksService.moveBackToQueue(id);
         return "redirect:/";
     }
