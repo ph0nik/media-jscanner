@@ -32,6 +32,8 @@ public interface MediaLinksService extends Pagination {
 
     List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaIdentity mediaIdentity, int year);
 
+    List<QueryResult> searchWithImdbId(String imdbId, MediaIdentity mediaIdentity);
+
     /*
     * Returns results of latest request
     * */
@@ -46,7 +48,7 @@ public interface MediaLinksService extends Pagination {
 
 //    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaType mediaType, int partNumber);
 
-    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaQuery mediaQuery);
+//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaQuery mediaQuery);
 
     /*
     * Flag media query element as ignored.

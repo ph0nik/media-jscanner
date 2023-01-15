@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class TextExtractToolsTest {
 
     static List<String> testFiles;
@@ -29,9 +31,25 @@ public class TextExtractToolsTest {
             System.out.print(" -> ");
             String s = TextExtractTools.replaceIllegalCharacters(file);
             System.out.println(TextExtractTools.checkForSpecialDescriptor(s));
-
         }
+    }
 
+    @Test
+    public void extractImdbIdCorrectUrl() {
+        String sampleid = "https://www.imdb.com/title/tt14138650/?ref_=fn_al_tt_1";
+        String expededid = "tt14138650";
+        String imdbIdFromLink = TextExtractTools.getImdbIdFromLink(sampleid);
+        assertEquals(expededid, imdbIdFromLink);
+    }
+
+    @Test
+    public void extractImdbIdMalformedUrl() {
+        String sampleid = "https://www.imdb.com/title/?ref_=fn_al_tt_1";
+        String imdbIdFromLink = TextExtractTools.getImdbIdFromLink(sampleid);
+        assertEquals("", imdbIdFromLink);
+        sampleid = "Some random text";
+        imdbIdFromLink = TextExtractTools.getImdbIdFromLink(sampleid);
+        assertEquals("", imdbIdFromLink);
     }
 
 }

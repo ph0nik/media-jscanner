@@ -1,8 +1,6 @@
 package util;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -61,25 +59,16 @@ public class TextExtractTools {
     }
 
     /*
-     * Search for phrases within filename that indicate multi disc release.
-     * If that is the case, it returns number that points to the part of the movie.
-     * */
-    public static int checkForMultiDiscs(String filename) {
-        List<String> pattern = Arrays.asList("cd[^A-Za-z]?\\d", "disc[^A-Za-z]?\\d", "part[^A-Za-z]?\\d", "chapter[^A-Za-z]?\\d", "s\\d\\de\\d\\d");
-        String nameOnly = filename.substring(filename.lastIndexOf("\\") + 1, filename.lastIndexOf(".")).toLowerCase();
-        for (String s : pattern) {
-            Pattern p = Pattern.compile(s);
-            Matcher m = p.matcher(nameOnly);
-            if (m.find()) {
-                String found = m.group();
-                String noDigit = "\\D";
-                String output = found.replaceAll(noDigit, "");
-                return Integer.parseInt(output);
-            }
-        }
-        return 0;
-    }
+    * Extracts imdb id from provided imdb link
+    * */
+    public static String getImdbIdFromLink(String imdbLink) {
+        String imdbPattern = "^https:.+title\\/(tt\\d+)\\/";
+        Pattern p = Pattern.compile(imdbPattern);
+        Matcher matcher = p.matcher(imdbLink);
+        if (matcher.find() && matcher.groupCount() > 0) return matcher.group(1);
+        return "";
 
+    }
     /*
      * Replaces all illegal characters within provided string with underscores
      * */

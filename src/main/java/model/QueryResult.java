@@ -19,6 +19,22 @@ public class QueryResult implements Comparable<QueryResult> {
     private String poster;
     private String year;
 
+    private byte multipart;
+
+    public QueryResult() {};
+
+    public QueryResult(String path) {
+        this.originalPath = path;
+    }
+
+    public byte getMultipart() {
+        return multipart;
+    }
+
+    public void setMultipart(byte multipart) {
+        this.multipart = multipart;
+    }
+
     public UUID getQueryId() {
         return queryId;
     }
@@ -121,6 +137,7 @@ public class QueryResult implements Comparable<QueryResult> {
                 ", queryId=" + queryId +
                 ", poster='" + poster + '\'' +
                 ", year='" + year + '\'' +
+                ", multipart=" + multipart +
                 '}';
     }
 

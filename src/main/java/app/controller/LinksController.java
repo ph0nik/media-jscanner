@@ -4,7 +4,6 @@ import model.LinkCreationResult;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
-import model.form.WebSearchResultForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,23 +65,14 @@ public class LinksController {
      * Create new link with query id and query result object.
      * */
     @PostMapping("/newlink")
-    public String newLink(WebSearchResultForm webSearchResultForm,
+    public String newLink(QueryResult queryResult,
                           BindingResult bindingResult,
                           Model model) {
-        System.out.println(webSearchResultForm);
-        QueryResult qr = new QueryResult();
-        qr.setId(webSearchResultForm.getId());
-        qr.setImdbId(webSearchResultForm.getImdbId());
-        qr.setDescription(webSearchResultForm.getDescription());
-        qr.setTitle(webSearchResultForm.getTitle());
-        qr.setTheMovieDbId(webSearchResultForm.getTheMovieDbId());
-        qr.setOriginalPath(webSearchResultForm.getOriginalPath());
-        qr.setUrl(webSearchResultForm.getUrl());
-        MediaIdentity mediaIdentity = (webSearchResultForm.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
+        MediaIdentity mediaIdentity = (queryResult.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
         // TODO pass exceptions info to user
         // get grouped queries that are marked only as part of the same title
         // TODO make this function for collection of media queries
-        List<LinkCreationResult> linkCreationResults = mediaLinksService.createFileLink(qr, mediaIdentity);
+        List<LinkCreationResult> linkCreationResults = mediaLinksService.createFileLink(queryResult, mediaIdentity);
         // TODO implement list of results
         linkCreationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
         return "redirect:/query";

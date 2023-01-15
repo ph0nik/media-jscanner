@@ -20,59 +20,42 @@
 <body class="container-fluid">
 <div class="row" id="top">
     <!--    top menu-->
-    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
-        <div class="container-fluid pt-1">
-            <span class="navbar-brand fs-6">media-jscanner</span>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!--                new files-->
-                    <li class="nav-item px-2">
-                        <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
-                            <!-- show if any new files are in the queue -->
-                            <span th:case="${true}" th:text="${query_list.size()}"
-                                  class="badge bg-primary rounded-pill"></span>
-                            <!-- for no links -->
-                            <span th:case="${false}" th:text="${query_list.size()}"
-                                  class="badge bg-secondary rounded-pill"></span>
-                        </a>
-                    </li>
-                    <!--                links-->
-                    <li class="nav-item px-2">
-                        <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
-                            <!-- show if any new files are in the queue -->
-                            <span th:case="${true}" th:text="${link_list.size()}"
-                                  class="badge bg-primary rounded-pill"></span>
-                            <!-- for no links -->
-                            <span th:case="${false}" th:text="${link_list.size()}"
-                                  class="badge bg-secondary rounded-pill"></span>
-                        </a>
-                    </li>
-                    <!--                stubs-->
-                    <li class="nav-item px-2">
-                        <a class="nav-link" href="/stubs">stubs</a>
-                    </li>
-                    <!--                ignored-->
-                    <li class="nav-item px-2">
-                        <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored
-                            <!-- show if any new files are in the queue -->
-                            <span th:case="${true}" th:text="${media_ignored.size()}"
-                                  class="badge bg-primary rounded-pill"></span>
-                            <!-- for no links -->
-                            <span th:case="${false}" th:text="${media_ignored.size()}"
-                                  class="badge bg-secondary rounded-pill"></span>
-                        </a>
-                    </li>
-                    <!--                config-->
-                    <li class="nav-item px-2">
-                        <a class="nav-link" href="/config">config</a>
-                    </li>
-                </ul>
-
-            </div>
+    <nav class="nav navbar-light bg-light align-items-center">
+        <div class="col">
+            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
+                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
+                <li class="nav-item px-2">
+                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${link_list.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${link_list.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a class="nav-link" href="/ignored">ignored</a>
+                </li>
+                <li class="nav-item px-2">
+                    <a class="nav-link" href="/config">config</a>
+                </li>
+            </ul>
         </div>
+        <div class="col"></div>
         <div class="col-2">
             <!--scan folders-->
-            <div class="col d-flex justify-content-center">
+            <div class="col d-flex justify-content-center p-1">
                 <form action="#"
                       th:action="@{/scan}"
                       method="get">
@@ -99,29 +82,47 @@
         </div>
     </div>
 </div>
+<!-- info with file path -->
+<div class="row m-2 justify-content-center">
+    <div class="col">
+        <p class="text-center light-text">Multiple files found in folder with:</p>
+        <p th:text="${query.filePath}" class="h3 fw-bold auto-matcher text-center">file path</p>
+    </div>
+</div>
+<div class="row m-2 justify-content-center align-items-center">
+    <div class="col-1"></div>
+    <div class="col-4">
+        <p class="text-center light-text">Select all elements referring to the same title.</br>You may skip this part to treat selected file as standalone title.</p>
+    </div>
+    <div class="col-1">
+        <form action="#" th:action="@{/skip-multipart}" method="get">
+            <button class="btn btn-secondary" type="submit">Skip >></button>
+        </form>
+    </div>
+</div>
 <!-- multipart query selection  -->
 <div class="row mx-2">
-    <div class="row">
-        <p th:text="${query.filePath}">file path</p>
-    </div>
-    <div class="row">
-        <div class="col-1">
-            <p>Multiple media found in selected folder, select all elements that belong to the same group as file
-                above.</p>
-        </div>
-        <div clall="col-6">
-            <form action="#" th:action="@{/skip-multipart}" method="get">
-                <button class="btn btn-outline-primary" type="submit">Skip >></button>
-            </form>
-        </div>
-    </div>
+<!--    <div class="row">-->
+<!--        <p th:text="${query.filePath}">file path</p>-->
+<!--    </div>-->
+<!--    <div class="row">-->
+<!--        <div class="col-1">-->
+<!--            <p>Multiple media found in selected folder, select all elements that belong to the same group as file-->
+<!--                above.</p>-->
+<!--        </div>-->
+<!--        <div class="col-6">-->
+<!--            <form action="#" th:action="@{/skip-multipart}" method="get">-->
+<!--                <button class="btn btn-outline-primary" type="submit">Skip >></button>-->
+<!--            </form>-->
+<!--        </div>-->
+<!--    </div>-->
 
     <fieldset>
         <table class="table table-dark table-striped table-hover table-borderless">
             <form action="#" th:action="@{/set-multipart}" th:object="${multipart_dto}"
                   method="post">
                 <thead>
-                <tr class="row m-0">
+                <tr class="row m-0 text-white-50">
                     <th class="col-1 text-end"></th>
                     <th class="col-9">file path</th>
                     <th class="col-1 text-center">media part</th>

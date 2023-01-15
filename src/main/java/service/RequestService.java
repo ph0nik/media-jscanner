@@ -25,30 +25,11 @@ class RequestService {
         return new RequestService(networkProperties);
     }
 
-    /*
-     * Search query executed via themoviedb api
-     * */
-    String tmdbApiSearchRequest(String query) throws IOException {
-        LOG.info("[ request_service ] api search query: {}", query);
-        String apiRequest =
-                networkProperties.getProperty("tmdb_api3") +
-                        networkProperties.getProperty("tmdb_movie_search") +
-                        networkProperties.getProperty("tmdb_request_lang") +
-                        networkProperties.getProperty("tmdb_movie_search_query") +
-                        query;
-        return tmdbApiGeneralRequest(apiRequest);
-    }
-
     String tmdbApiTitleAndYear(DeductedQuery deductedQuery) throws IOException {
         LOG.info("[ request service ] creating deducted query");
-        String apiRequest =
-                networkProperties.getProperty("tmdb_api3") +
-                        networkProperties.getProperty("tmdb_movie_search") +
-                        networkProperties.getProperty("tmdb_request_lang") +
-                        networkProperties.getProperty("tmdb_movie_search_query") +
-                        deductedQuery.getPhrase() +
-                        networkProperties.getProperty("tmdb_movie_search_year") +
-                        deductedQuery.getYear();
+        String apiRequest = networkProperties.getProperty("tmdb_movie_title_year")
+                .replace("<<query>>", deductedQuery.getPhrase())
+                .replace("<<year>>", deductedQuery.getYear());
         return tmdbApiGeneralRequest(apiRequest);
     }
 
@@ -57,11 +38,8 @@ class RequestService {
      * */
     private String generateQuery(String phrase) {
         phrase = phrase.replaceAll("-", " ");
-            return networkProperties.getProperty("imdb_pre_query") +
-                    phrase +
-                    " " +
-                    networkProperties.getProperty("imdb_post_query") +
-                    networkProperties.getProperty("imdb_query_options");
+        return networkProperties.getProperty("imdb_web_search")
+                .replace("<<query>>", phrase);
     }
 
     String webSearchRequest(String query) throws IOException {
@@ -100,17 +78,12 @@ class RequestService {
         }
         String apiRequest = "";
         if (mediaIdentity.equals(MediaIdentity.IMDB)) {
-            apiRequest = networkProperties.getProperty("tmdb_api3") +
-                    networkProperties.getProperty("tmdb_external_id") +
-                    queryResult.getImdbId() +
-                    networkProperties.getProperty("tmdb_request_lang") +
-                    networkProperties.getProperty("tmdb_external_site");
+            apiRequest = networkProperties.getProperty("tmdb_search_with_imdb")
+                    .replace("<<imdb_id>>", queryResult.getImdbId());
         }
         if (mediaIdentity.equals(MediaIdentity.TMDB)) {
-            apiRequest = networkProperties.getProperty("tmdb_api3") +
-                    networkProperties.getProperty("tmdb_movie_category") +
-                    queryResult.getTheMovieDbId() +
-                    networkProperties.getProperty("tmdb_request_lang");
+            apiRequest = networkProperties.getProperty("tmdb_search_with_tmdb")
+                    .replace("<<tmdb_id>>", Integer.toString(queryResult.getTheMovieDbId()));
         }
         return tmdbApiGeneralRequest(apiRequest);
     }

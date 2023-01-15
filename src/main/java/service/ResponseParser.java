@@ -9,6 +9,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.parser.FindResults;
+import service.parser.MovieItem;
+import service.parser.MovieResults;
+import service.parser.TvItem;
 import util.MediaIdentity;
 
 import java.nio.file.Path;
@@ -16,16 +20,12 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 class ResponseParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
-    private static final String TMDB_MOVIE_TITLE = "tmdb_movietitle";
-    private static final String TMDB_MOVIE_YEAR = "tmdb_movieyear";
-    private static final String TMDB_IMDB_ID = "tmdb_imdb";
-    private static final String TMDB_ID = "tmdb_id";
-    private static final String TMDB_TV_TITLE = "tmdb_tvtitle";
-    private static final String TMDB_TV_YEAR = "tmdb_tvyear";
+    private static final String TMDB_POSTER_PREFIX = "tmdb_poster_prefix";
 
     private final Properties networkProperties;
 
@@ -51,7 +51,7 @@ class ResponseParser {
         Elements linksChildren = linksBase.children();
         long id = 0;
         for (Element el : linksChildren) {
-            QueryResult qr = new QueryResult();
+            QueryResult qr = new QueryResult(filePath.toString());
             Elements result__title = el.getElementsByClass("result__title");
             // extract url
             String url = result__title.select("a").attr("href");
@@ -91,40 +91,20 @@ class ResponseParser {
             return queryResults;
         }
         try {
-            JsonElement jsonElement = JsonParser.parseString(jsonString);
-            String imgWebPath = "https://image.tmdb.org/t/p/w92";
-            String title = "title";
-            String desc = "overview";
-            String id = "id";
-            String poster = "poster_path";
-            String year = "release_date";
-            if (jsonElement.isJsonObject()) {
-                JsonObject asJsonObject = jsonElement.getAsJsonObject();
-                JsonArray results = asJsonObject.getAsJsonArray("results");
-                if (results == null) return queryResults;
-//                int size = (results != null) ? results.size() : 0;
-                for (JsonElement je : results) {
-                    if (jsonElement.isJsonObject()) {
-                        QueryResult qr = new QueryResult();
-                        qr.setOriginalPath(path.toString());
-                        int queryTmdb = (je.getAsJsonObject().get(id) != null) ? je.getAsJsonObject().get(id).getAsInt() : 0;
-                        String queryTitle = (je.getAsJsonObject().get(title) != null) ? je.getAsJsonObject().get(title).getAsString() : "";
-                        String queryDescription = (je.getAsJsonObject().get(desc) != null) ? je.getAsJsonObject().get(desc).getAsString() : "";
-                        String yearString = (je.getAsJsonObject().get(year) != null) ? je.getAsJsonObject().get(year).getAsString() : "";
-                        String queryYear = (yearString.length() >= 4) ? yearString.substring(0, 4) : yearString;
-                        JsonElement posterObject = je.getAsJsonObject().get(poster);
-                        String posterPath = (posterObject == null || posterObject.isJsonNull()) ? "" : imgWebPath + posterObject.getAsString();
-                        qr.setTheMovieDbId(queryTmdb);
-                        qr.setTitle(queryTitle);
-                        qr.setDescription(queryDescription);
-                        qr.setYear(queryYear);
-                        qr.setPoster(posterPath);
-                        queryResults.add(qr);
-                    }
-                }
-            }
-        } catch (JsonParseException jsonParseException) {
-            LOG.error("[ json_parser ] Invalid json format: \n{}", jsonString);
+            MovieResults movieResults = new Gson().fromJson(jsonString, MovieResults.class);
+            queryResults = movieResults.getMovieResults().stream().map(movieItem -> {
+                QueryResult qr = new QueryResult(path.toString());
+                qr.setTheMovieDbId(movieItem.getId());
+                qr.setTitle(movieItem.getTitle());
+                qr.setDescription(movieItem.getDescription());
+                String queryYear = (movieItem.getDate().length() >= 4) ? movieItem.getDate().substring(0, 4) : movieItem.getDate();
+                qr.setYear(queryYear);
+                String posterPath = (movieItem.getPoster() == null) ? "" : networkProperties.getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
+                qr.setPoster(posterPath);
+                return qr;
+            }).collect(Collectors.toList());
+        } catch (JsonSyntaxException ex) {
+            LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
         }
         return queryResults;
     }
@@ -151,6 +131,39 @@ class ResponseParser {
         }
     }
 
+    QueryResult parseTmdbApiWithImdbId(String jsonString, QueryResult queryResult) {
+        if (jsonString == null) {
+            LOG.error("[ json_parser ] Input is null");
+            return queryResult;
+        }
+        try {
+            FindResults movieResults = new Gson().fromJson(jsonString, FindResults.class);
+            if (movieResults.getMovieResults().size() != 0) {
+                MovieItem movieItem = movieResults.getMovieResults().get(0);
+                queryResult.setTheMovieDbId(movieItem.getId());
+                queryResult.setTitle(movieItem.getTitle());
+                queryResult.setDescription(movieItem.getDescription());
+                String queryYear = (movieItem.getDate().length() >= 4) ? movieItem.getDate().substring(0, 4) : movieItem.getDate();
+                queryResult.setYear(queryYear);
+                String posterPath = (movieItem.getPoster() == null) ? "" : networkProperties.getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
+                queryResult.setPoster(posterPath);
+                return queryResult;
+            }
+            TvItem movieItem = movieResults.getTvResults().get(0);
+            queryResult.setTheMovieDbId(movieItem.getId());
+            queryResult.setTitle(movieItem.getTitle());
+            queryResult.setDescription(movieItem.getDescription());
+            String queryYear = (movieItem.getDate().length() >= 4) ? movieItem.getDate().substring(0, 4) : movieItem.getDate();
+            queryResult.setYear(queryYear);
+            String posterPath = (movieItem.getPoster() == null) ? "" : networkProperties.getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
+            queryResult.setPoster(posterPath);
+            return queryResult;
+        } catch (JsonSyntaxException ex) {
+            LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
+        }
+        return queryResult;
+    }
+
     /*
      * Returns Media Data object consisting of title and year elements if found, otherwise returns empty object.
      * Accepts json object as String.
@@ -161,24 +174,12 @@ class ResponseParser {
             return mediaTransferData;
         }
         try {
-            JsonElement jsonElement = JsonParser.parseString(responseJson);
-            String titleElement = networkProperties.getProperty(TMDB_MOVIE_TITLE);
-            String yearElement = networkProperties.getProperty(TMDB_MOVIE_YEAR);
-            String imdbId = networkProperties.getProperty(TMDB_IMDB_ID);
-            if (jsonElement.isJsonObject()) {
-                JsonObject asJsonObject = jsonElement.getAsJsonObject();
-                if (asJsonObject.has(titleElement) && asJsonObject.has(yearElement)) {
-                    String title = asJsonObject.get(titleElement).getAsString();
-                    String imdb = asJsonObject.get(imdbId).getAsString();
-                    String rawDate = asJsonObject.get(yearElement).getAsString();
-                    int year = LocalDate.parse(rawDate).getYear();
-                    mediaTransferData.setTitle(title);
-                    mediaTransferData.setYear(year);
-                    mediaTransferData.setImdbId(imdb);
-                }
-            }
-        } catch (JsonParseException jsonParseException) {
-            LOG.error("[ json_parser ] Invalid json format: \n{}", responseJson);
+            MovieItem movieItem = new Gson().fromJson(responseJson, MovieItem.class);
+            mediaTransferData.setTitle(movieItem.getTitle());
+            mediaTransferData.setImdbId(movieItem.getImdbId());
+            mediaTransferData.setYear(LocalDate.parse(movieItem.getDate()).getYear());
+        } catch (JsonSyntaxException ex) {
+            LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
         }
         return mediaTransferData;
     }
@@ -189,39 +190,27 @@ class ResponseParser {
      * Returns empty object if parsing errors occur.
      * */
     MediaTransferData parseDetailsRequestByExternalId(MediaTransferData mediaTransferData, String responseJson) {
+        System.out.println(responseJson);
         if (responseJson == null) {
             LOG.error("[ json_parser ] Input is null");
             return mediaTransferData;
         }
         try {
-            JsonElement jsonElement = JsonParser.parseString(responseJson);
-            String titleElement = networkProperties.getProperty(TMDB_MOVIE_TITLE);
-            String yearElement = networkProperties.getProperty(TMDB_MOVIE_YEAR);
-            String tmdbIdElement = networkProperties.getProperty(TMDB_ID);
-            String tvNameElement = networkProperties.getProperty(TMDB_TV_TITLE);
-            String tvYearElement = networkProperties.getProperty(TMDB_TV_YEAR);
-
-            if (jsonElement.isJsonObject()) {
-                JsonObject asJsonObject = jsonElement.getAsJsonObject();
-                if (asJsonObject.has("movie_results")
-                        && asJsonObject.has("tv_results")) {
-                    JsonArray movieResults = asJsonObject.get("movie_results").getAsJsonArray();
-                    JsonArray tvResults = asJsonObject.get("tv_results").getAsJsonArray();
-                    if (!movieResults.isEmpty()) {
-                        JsonObject obj = movieResults.get(0).getAsJsonObject();
-                        mediaTransferData.setTitle(obj.get(titleElement).getAsString());
-                        mediaTransferData.setYear(LocalDate.parse(obj.get(yearElement).getAsString()).getYear());
-                        mediaTransferData.setTmdbId(obj.get(tmdbIdElement).getAsInt());
-                    } else if (!tvResults.isEmpty()){
-                        JsonObject obj = tvResults.get(0).getAsJsonObject();
-                        mediaTransferData.setTitle(obj.get(tvNameElement).getAsString());
-                        mediaTransferData.setYear(LocalDate.parse(obj.get(tvYearElement).getAsString()).getYear());
-                        mediaTransferData.setTmdbId(obj.get(tmdbIdElement).getAsInt());
-                    }
-                }
+            FindResults movieResults = new Gson().fromJson(responseJson, FindResults.class);
+            if (movieResults.getMovieResults().size() != 0) {
+                MovieItem movieItem = movieResults.getMovieResults().get(0);
+                mediaTransferData.setTmdbId(movieItem.getId());
+                mediaTransferData.setTitle(movieItem.getTitle());
+                mediaTransferData.setYear(LocalDate.parse(movieItem.getDate()).getYear());
+                return mediaTransferData;
             }
-        } catch (JsonParseException jsonParseException) {
-            LOG.error("[ json_parser ] Invalid json format: \n{}", responseJson);
+            TvItem movieItem = movieResults.getTvResults().get(0);
+            mediaTransferData.setTmdbId(movieItem.getId());
+            mediaTransferData.setTitle(movieItem.getTitle());
+            mediaTransferData.setYear(LocalDate.parse(movieItem.getDate()).getYear());
+            return mediaTransferData;
+        } catch (JsonSyntaxException ex) {
+            LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
         }
         return mediaTransferData;
     }

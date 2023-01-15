@@ -1,7 +1,9 @@
 package app.controller;
 
-import model.*;
-import model.form.WebSearchResultForm;
+import model.LastRequest;
+import model.MediaLink;
+import model.MediaQuery;
+import model.QueryResult;
 import model.multipart.MultiPartElement;
 import model.multipart.MultipartDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +146,7 @@ public class QueryController {
         mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom, MediaIdentity.IMDB);
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("request_form", new WebSearchResultForm());
+        model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
 
@@ -155,7 +157,6 @@ public class QueryController {
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("request_form", new WebSearchResultForm());
         return "result_selection";
     }
 
@@ -165,27 +166,25 @@ public class QueryController {
         List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("", MediaIdentity.IMDB);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
-        model.addAttribute("request_form", new WebSearchResultForm());
+        model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
 
     @PostMapping("/search-with-year/")
     public String searchTmdbWithYear(@RequestParam String custom, @RequestParam Optional<Integer> year, Model model) {
         List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, MediaIdentity.IMDB, year.orElse(1000));
-
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
-        model.addAttribute("request_form", new WebSearchResultForm());
+        model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
 
     @PostMapping("/imdb-link/")
     public String passImdbLink(@RequestParam String imdbLink, Model model) {
-        // TODO link parser
-        System.out.println(imdbLink);
-        model.addAttribute("result_list", List.of());
+        List<QueryResult> queryResults = mediaLinksService.searchWithImdbId(imdbLink, MediaIdentity.IMDB);
+        model.addAttribute("result_list", queryResults);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
-        model.addAttribute("request_form", new WebSearchResultForm());
+        model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
 
@@ -199,7 +198,7 @@ public class QueryController {
         MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
 
         model.addAttribute("result_list", latestMediaQuery.getLastRequest());
-        model.addAttribute("request_form", new WebSearchResultForm());
+        model.addAttribute("query_result", new QueryResult());
         model.addAttribute("query", lastMediaQuery);
         return "result_selection";
     }

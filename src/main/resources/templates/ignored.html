@@ -17,48 +17,52 @@
 <body class="container-fluid">
 
 <div class="row" id="top">
-    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">
-        <div class="container-fluid pt-1">
-            <span class="navbar-brand fs-6">media-jscanner</span>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!--                                new files-->
+    <!--    top menu-->
+    <nav class="nav navbar-light bg-light align-items-center">
+        <div class="col">
+            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
+                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size() > 0}" class="nav-link" href="/query">new files
-                        <!-- show if any new files are in the queue -->
+                    <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
+                        <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${query_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
-                        <!-- for no links -->
+                        <!--                         for no links -->
                         <span th:case="${false}" th:text="${query_list.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-                <!--                                links-->
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size() > 0}" class="nav-link" href="/links">links
-                        <!-- show if any new files are in the queue -->
+                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                        <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
-                        <!-- for no links -->
+                        <!--                         for no links -->
                         <span th:case="${false}" th:text="${link_list.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
-                <!--                ignored-->
                 <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size() > 0}" class="nav-link active" href="/ignored">ignored
-                        <!-- show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${media_ignored.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!-- for no links -->
-                        <span th:case="${false}" th:text="${media_ignored.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+                    <a class="nav-link active" href="/ignored">ignored</a>
                 </li>
-                <!--                config-->
                 <li class="nav-item px-2">
                     <a class="nav-link" href="/config">config</a>
                 </li>
             </ul>
+        </div>
+        <div class="col"></div>
+        <div class="col-2">
+            <!--scan folders-->
+            <div class="col d-flex justify-content-center p-1">
+                <form action="#"
+                      th:action="@{/scan}"
+                      method="get">
+                    <input type="hidden">
+                    <button class="btn btn-success" type="submit">
+                        <span class="m-2">Refresh</span>
+                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
+                </form>
+            </div>
         </div>
     </nav>
 </div>

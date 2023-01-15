@@ -17,39 +17,6 @@
 <body class="container-fluid">
 
 <div class="row" id="top">
-<!--    <nav class="nav navbar-light bg-light align-items-center">-->
-<!--        <div class="container-fluid pt-1">-->
-<!--            <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>-->
-<!--            <ul class="navbar-nav me-auto mb-2 mb-lg-0">-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files-->
-<!--                        &lt;!&ndash;                         show if any new files are in the queue &ndash;&gt;-->
-<!--                        <span th:case="${true}" th:text="${query_list.size()}"-->
-<!--                              class="badge bg-primary rounded-pill"></span>-->
-<!--                        &lt;!&ndash;                         for no links &ndash;&gt;-->
-<!--                        <span th:case="${false}" th:text="${query_list.size()}"-->
-<!--                              class="badge bg-secondary rounded-pill"></span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links-->
-<!--                        &lt;!&ndash;                         show if any new files are in the queue &ndash;&gt;-->
-<!--                        <span th:case="${true}" th:text="${link_list.size()}"-->
-<!--                              class="badge bg-primary rounded-pill"></span>-->
-<!--                        &lt;!&ndash;                         for no links &ndash;&gt;-->
-<!--                        <span th:case="${false}" th:text="${link_list.size()}"-->
-<!--                              class="badge bg-secondary rounded-pill"></span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link" href="/ignored">ignored</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link" href="/config">config</a>-->
-<!--                </li>-->
-<!--            </ul>-->
-<!--        </div>-->
-<!--    </nav>-->
     <nav class="nav navbar-light bg-light align-items-center">
         <div class="col">
         <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
@@ -97,7 +64,6 @@
             </div>
         </div>
     </nav>
-
 </div>
 <!--error, no user paths found-->
 <div class="row" th:switch="${user_paths}">
@@ -112,7 +78,7 @@
 <div class="row m-2 justify-content-center">
     <div class="col">
         <p class="text-center light-text">Displaying search results for file:</p>
-        <p th:text="${query.filePath}" class="h3 fw-bold auto-matcher text-center">file path</p>
+        <p th:text="${query.filePath}" class="h5 fw-bold auto-matcher text-center">file path</p>
     </div>
 </div>
 <!-- web search with custom phrase-->
@@ -190,7 +156,7 @@
     <table class="table table-dark table-sm table-striped table-borderless ">
         <!--        table head-->
         <thead>
-        <tr class="row m-0">
+        <tr class="row m-0 text-white-50">
             <th class="col-1 text-center">id</th>
             <th class="col-1"></th>
             <th class="col">title</th>
@@ -224,18 +190,19 @@
                     <p th:text="${result.description}" class="fs-7 fw-normal"></p>
                 </div>
             </td>
-            <td class="col-1 text-center" th:switch="${result.theMovieDbId == 0}">
-                <span th:case="${false}" th:text="${result.theMovieDbId}" class="fs-6 fw-bold">123435</span>
-                <span th:case="${true}" th:text="'-'" class="fs-6 fw-bold">123435</span>
+            <td class="col-1 text-center text-white-50 fs-6 fw-bold" th:switch="${result.theMovieDbId == 0}">
+                <span th:case="${false}" th:text="${result.theMovieDbId}">123435</span>
+                <span th:case="${true}" th:text="'-'">123435</span>
             </td>
-            <td class="col-1 text-center" th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
-                <span th:case="${false}" th:text="${result.imdbId}" class="fs-6 fw-bold">tt12345</span>
-                <span th:case="${true}" th:text="'-'" class="fs-6 fw-bold">tt12345</span>
+            <td class="col-1 text-center text-white-50 fs-6 fw-bold" th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
+                <span th:case="${false}" th:text="${result.imdbId}">tt12345</span>
+                <span th:case="${true}" th:text="'-'">tt12345</span>
             </td>
             <td class="col-2">
+                <!--                      th:object="${request_form}"-->
                 <form action="#"
                       th:action="@{/newlink}"
-                      th:object="${request_form}"
+                      th:object="${query_result}"
                       method="post"
                       id="selectresult"
                       class="d-flex flex-row">
@@ -252,7 +219,7 @@
                     <select name="mediatype"
                             id="mediatype"
                             class="form-select form-select-sm mx-2"
-                            th:object="${request_form}"
+                            th:object="${query_result}"
                             th:field="*{mediaType}">
                         <option th:each="media : ${T(util.MediaType).values()}"
                                 th:value="${media}" th:text="${media.displayValue}"
