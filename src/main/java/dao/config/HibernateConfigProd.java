@@ -52,8 +52,8 @@ public class HibernateConfigProd {
     private final Properties hibernateProperties() {
         Properties hibernateProperties = new Properties();
 //        hibernateProperties.getProperty()
-        hibernateProperties.setProperty("javax.persistence.schema-generation.database.action", "create");
-        hibernateProperties.setProperty("javax.persistence.schema-generation.create-script-source", "META-INF/sql/create.sql");
+        hibernateProperties.setProperty("jakarta.persistence.schema-generation.database.action", "create");
+        hibernateProperties.setProperty("jakarta.persistence.schema-generation.create-script-source", "META-INF/sql/create.sql");
         hibernateProperties.setProperty("dialect", "org.hibernate.dialect.H2Dialect");
         hibernateProperties.setProperty("hibernate.show_sql", "false");
         hibernateProperties.setProperty("format_sql", "true");

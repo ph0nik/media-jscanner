@@ -6,30 +6,35 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import util.MediaIdentity;
 
 import java.io.IOException;
-import java.util.Properties;
 
+@Component
 class RequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestService.class);
+    private PropertiesService propertiesService;
 
-    private final Properties networkProperties;
-
-    private RequestService(Properties networkProperties) {
-        this.networkProperties = networkProperties;
+    public RequestService(PropertiesService propertiesService) {
+        this.propertiesService = propertiesService;
     }
 
-    static RequestService getRequestService(Properties networkProperties) {
-        return new RequestService(networkProperties);
+    String tmdbMultiSearch(DeductedQuery deductedQuery) throws IOException {
+        LOG.info("[ tmdb_multisearch ] Creating request for multisearch...");
+        String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_multisearch")
+                .replace("<<query>>", deductedQuery.getPhrase());
+        LOG.info("[ tmdb_multisearch ] {}", apiRequest);
+        return tmdbApiGeneralRequest(apiRequest);
     }
 
     String tmdbApiTitleAndYear(DeductedQuery deductedQuery) throws IOException {
-        LOG.info("[ request service ] creating deducted query");
-        String apiRequest = networkProperties.getProperty("tmdb_movie_title_year")
+        LOG.info("[ request_service ] Creating request for title and year search...");
+        String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_movie_title_year")
                 .replace("<<query>>", deductedQuery.getPhrase())
                 .replace("<<year>>", deductedQuery.getYear());
+        LOG.info("[ request_service ] {}", apiRequest);
         return tmdbApiGeneralRequest(apiRequest);
     }
 
@@ -38,7 +43,7 @@ class RequestService {
      * */
     private String generateQuery(String phrase) {
         phrase = phrase.replaceAll("-", " ");
-        return networkProperties.getProperty("imdb_web_search")
+        return propertiesService.getNetworkProperties().getProperty("imdb_web_search")
                 .replace("<<query>>", phrase);
     }
 
@@ -54,9 +59,9 @@ class RequestService {
 //                .execute();
         // GET connection
         Connection.Response response = Jsoup.connect(queryFormatted)
-                .userAgent(networkProperties.getProperty("user_agent"))
-                .referrer(networkProperties.getProperty("referer"))
-                .header("origin", networkProperties.getProperty("origin"))
+                .userAgent(propertiesService.getNetworkProperties().getProperty("user_agent"))
+                .referrer(propertiesService.getNetworkProperties().getProperty("referer"))
+                .header("origin", propertiesService.getNetworkProperties().getProperty("origin"))
                 .ignoreHttpErrors(true) // try with ignore
                 .timeout(3000)
                 .execute();
@@ -78,11 +83,11 @@ class RequestService {
         }
         String apiRequest = "";
         if (mediaIdentity.equals(MediaIdentity.IMDB)) {
-            apiRequest = networkProperties.getProperty("tmdb_search_with_imdb")
+            apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_search_with_imdb")
                     .replace("<<imdb_id>>", queryResult.getImdbId());
         }
         if (mediaIdentity.equals(MediaIdentity.TMDB)) {
-            apiRequest = networkProperties.getProperty("tmdb_search_with_tmdb")
+            apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_search_with_tmdb")
                     .replace("<<tmdb_id>>", Integer.toString(queryResult.getTheMovieDbId()));
         }
         return tmdbApiGeneralRequest(apiRequest);
@@ -90,8 +95,8 @@ class RequestService {
 
     private String tmdbApiGeneralRequest(String apiRequest) throws IOException {
         Connection.Response response = Jsoup.connect(apiRequest)
-                .userAgent(networkProperties.getProperty("user_agent"))
-                .header("Authorization", "Bearer " + networkProperties.getProperty("api_key_v4"))
+                .userAgent(propertiesService.getNetworkProperties().getProperty("user_agent"))
+                .header("Authorization", "Bearer " + propertiesService.getNetworkProperties().getProperty("api_key_v4"))
                 .ignoreContentType(true)
                 .timeout(3000)
                 .execute();

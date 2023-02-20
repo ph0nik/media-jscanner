@@ -13,6 +13,8 @@ public interface MediaLinksService extends Pagination {
      * */
     List<MediaQuery> getMediaQueryList();
 
+    int getMediaQueryListSize();
+
     /*
      * For a given query perform online search for matching elements within given domain.
      * If first parameter is not empty it's going to be used as search phrase,

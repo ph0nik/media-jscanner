@@ -103,7 +103,6 @@ public class QueryController {
         return "query_list";
     }
 
-    // TODO add option to provide imdb identifier instead of searching titles
     @PostMapping("/search-query/")
     public String searchQuery(@RequestParam("search") String search,
                               Model model) {
@@ -172,7 +171,7 @@ public class QueryController {
 
     @PostMapping("/search-with-year/")
     public String searchTmdbWithYear(@RequestParam String custom, @RequestParam Optional<Integer> year, Model model) {
-        List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, MediaIdentity.IMDB, year.orElse(1000));
+        List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom, MediaIdentity.IMDB, year.orElse(0));
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query", mediaQueryService.getReferenceQuery());
         model.addAttribute("query_result", new QueryResult());

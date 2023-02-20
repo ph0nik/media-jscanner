@@ -4,6 +4,7 @@ import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import scanner.MediaFilesScanner;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 import util.TextExtractTools;
@@ -22,6 +23,7 @@ class MediaLinksServiceImplTest {
     private CleanerService cleanerService;
     private MediaQueryService mediaQueryService;
     private MediaLinksServiceImpl mediaLinksService;
+    private MediaFilesScanner mediaFilesScanner;
 
     private FileService fileService;
     @BeforeEach
@@ -29,8 +31,9 @@ class MediaLinksServiceImplTest {
         propertiesService = new PropertiesServiceImpl();
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
-        mediaQueryService = new MediaQueryService();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService, fileService);
+        mediaFilesScanner = new MediaFilesScanner(mediaTrackerDao, cleanerService);
+        mediaQueryService = new MediaQueryService(mediaTrackerDao, mediaFilesScanner, propertiesService);
+        mediaLinksService = new MediaLinksServiceImpl();
     }
 
     @Test

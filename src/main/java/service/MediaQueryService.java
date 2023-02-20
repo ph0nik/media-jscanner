@@ -5,7 +5,6 @@ import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import scanner.MediaFilesScanner;
@@ -27,14 +26,15 @@ public class MediaQueryService {
     private MediaQuery referenceQuery;
     private Map<Path, List<UUID>> mediaQueriesByRootMap = new HashMap<>();
 
-    @Autowired
-    @Qualifier("spring")
     private MediaTrackerDao mediaTrackerDao;
-    @Autowired
     private MediaFilesScanner mediaFilesScanner;
-
-    @Autowired
     private PropertiesService propertiesService;
+
+    public MediaQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao, MediaFilesScanner mediaFilesScanner, PropertiesService propertiesService) {
+        this.mediaTrackerDao = mediaTrackerDao;
+        this.mediaFilesScanner = mediaFilesScanner;
+        this.propertiesService = propertiesService;
+    }
 
     public MediaQuery getReferenceQuery() {
         return referenceQuery;
@@ -50,6 +50,7 @@ public class MediaQueryService {
         List<Path> candidates = mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
         mediaQueriesList = new LinkedList<>();
         candidates.forEach(c -> addQueryToQueue(c.toString()));
+        candidates = null;
     }
 
     public MediaQuery addQueryToQueue(String filepath) {
@@ -90,9 +91,8 @@ public class MediaQueryService {
     }
 
     void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
-        List<Path> targetFolderList = propertiesService.getTargetFolderList();
         mediaQueriesByRootMap = new HashMap<>();
-        mediaQueryList.forEach(mq -> groupByParentPath(mq, targetFolderList));
+        mediaQueryList.forEach(mq -> groupByParentPath(mq, propertiesService.getTargetFolderList()));
     }
 
     /*
@@ -105,7 +105,6 @@ public class MediaQueryService {
             uuids.add(mediaQuery.getQueryUuid());
             mediaQueriesByRootMap.put(parent, uuids);
         }
-
     }
 
     /*
@@ -117,7 +116,6 @@ public class MediaQueryService {
         if (mediaQueriesByRootMap.isEmpty() || uuids == null) return List.of();
         return uuids.stream()
                 .map(this::getQueryByUuid)
-                .peek(System.out::println)
                 // after creating link other files within the same folder are ignored, so they won't appear here
                 .filter(query -> query.getMultipart() == -1)
                 .collect(Collectors.toList());

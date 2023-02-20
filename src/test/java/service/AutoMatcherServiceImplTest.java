@@ -1,20 +1,23 @@
 package service;
 
+import com.google.common.io.Files;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import model.DeductedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import scanner.MediaFilesScanner;
 import util.CleanerService;
 import util.CleanerServiceImpl;
-import util.WindowsTrayMenu;
+import util.TextExtractTools;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URL;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,23 +29,24 @@ class AutoMatcherServiceImplTest {
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
     private MediaQueryService mediaQueryService;
-    private WindowsTrayMenu windowsTrayMenu;
+    private MediaFilesScanner mediaFilesScanner;
 
     private FileService fileService;
 
     @BeforeEach
-    void initAutoMatcher() {
+    public void initAutoMatcher() {
         mediaTrackerDao = new MediaTrackerDaoImpl();
+
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
-        mediaQueryService = new MediaQueryService();
-        windowsTrayMenu = new WindowsTrayMenu();
-        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService, cleanerService, mediaQueryService, fileService);
+        mediaFilesScanner = new MediaFilesScanner(mediaTrackerDao, cleanerService);
+        mediaQueryService = new MediaQueryService(mediaTrackerDao, mediaFilesScanner, propertiesService);
+        mediaLinksService = new MediaLinksServiceImpl();
         autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
     }
 
     @Test
-    void scanFilesInDirectory() {
+    public void scanFilesInDirectory() {
         File testPath = new File(".\\test-folder\\movies-target\\");
         assertEquals(true, testPath.exists());
         List<DeductedQuery> deductedQueryList = new ArrayList<>();
@@ -81,21 +85,17 @@ class AutoMatcherServiceImplTest {
     }
 
     @Test
-    void searchForExtrasElementsInPath() {
-        URL resourceAsStream = getClass().getClassLoader().getResource("max.txt");
-        File testList = new File(resourceAsStream.getPath());
-        try (
-                Scanner sc = new Scanner(testList)){
-            while (sc.hasNextLine()) {
-                String temp = sc.nextLine();
-                if (autoMatcherService.hasExtrasInName(temp)) {
-                    System.out.println(temp);
-                }
-            }
-        } catch (
-                FileNotFoundException e) {
-            e.printStackTrace();
-        }
+    void searchForExtrasElementsInPath() throws IOException {
+        String correctString = "Until.the.End.of.the.World.1991.720p.BluRay.x264-x0r[EXTRA-Deleted Scenes].mkv";
+        File file = Paths.get("src/test/resources/max.txt").toFile();
+        List<String> strings = Files.readLines(file, StandardCharsets.UTF_8);
+        List<String> collect = strings.stream()
+                .filter(TextExtractTools::hasExtrasInName)
+                .collect(Collectors.toList());
+        // check if filtered list has 2 elements
+        assertEquals(1, collect.size());
+        // check if filtered list contains proper element
+        assertTrue(collect.contains(correctString));
     }
 
 

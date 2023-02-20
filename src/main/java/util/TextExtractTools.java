@@ -67,7 +67,6 @@ public class TextExtractTools {
         Matcher matcher = p.matcher(imdbLink);
         if (matcher.find() && matcher.groupCount() > 0) return matcher.group(1);
         return "";
-
     }
     /*
      * Replaces all illegal characters within provided string with underscores
@@ -76,6 +75,27 @@ public class TextExtractTools {
         String illegalNames = "[#%&{}\\<>*?/$!\"+:@`|=]+";
         Pattern p = Pattern.compile(illegalNames);
         return p.matcher(title).replaceAll("_");
+    }
+
+    /*
+     * Checks if given path contains phrases that indicate bonus content
+     * */
+    public static boolean hasExtrasInName(String path) {
+        Path of = Path.of(path);
+        String regex = "(?i).+(interview|featurette|deleted)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(of.toString().toLowerCase());
+        return matcher.find();
+    }
+
+    /*
+     * Checks if given paths contains phrases "sample" or "trailer"
+     * */
+    public static boolean isSampleOrTrailer(String path) {
+        String regex = "(?i).+(sample|trailer)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(path);
+        return matcher.find();
     }
 
 }

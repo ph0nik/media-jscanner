@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import util.MediaIdentity;
 import util.MediaType;
+import util.TextExtractTools;
 import websocket.NotificationSender;
 import websocket.config.NotificationDispatcher;
 
@@ -27,8 +28,10 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     private static final Logger LOG = LoggerFactory.getLogger(AutoMatcherServiceImpl.class);
     private static final int REQUEST_WAIT = 500;
 
-    private final RequestService requestService;
-    private final ResponseParser responseParser;
+    @Autowired
+    private RequestService requestService;
+    @Autowired
+    private ResponseParser responseParser;
     @Autowired
     private MediaLinksService mediaLinksService;
 
@@ -47,8 +50,8 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
 
     public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
 //        this.mediaLinksService = mediaLinksService;
-        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
-        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
+//        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
+//        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
 
     @Async
@@ -68,7 +71,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             message = getMessage(mediaQueryList, mq, index++);
             sendNotification(message);
             if (!mediaLinksService.isMultipart(mq)) {
-                MediaType type = (hasExtrasInName(mq.getFilePath())) ? MediaType.EXTRAS : MediaType.MOVIE;
+                MediaType type = (TextExtractTools.hasExtrasInName(mq.getFilePath())) ? MediaType.EXTRAS : MediaType.MOVIE;
                 mq.setMediaType(type);
                 mediaQueryService.addQueryToProcess(mq);
                 List<LinkCreationResult> linksCreationResults = autoMatchSingleFile(Path.of(mq.getFilePath()));
@@ -144,24 +147,23 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     /*
      * Checks if given path contains phrases that indicate bonus content
      * */
-    boolean hasExtrasInName(String path) {
-        Path of = Path.of(path);
-        String regex = "(?i).+(interview|featurette|deleted)";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(of.toString());
-        return matcher.find();
-    }
+//    boolean hasExtrasInName(String path) {
+//        Path of = Path.of(path);
+//        String regex = "(?i).+(interview|featurette|deleted)";
+//        Pattern pattern = Pattern.compile(regex);
+//        Matcher matcher = pattern.matcher(of.toString());
+//        return matcher.find();
+//    }
 
-    /*
-     * Checks if given paths contains phrases "sample" or "trailer"
-     * */
-    boolean isSampleOrTrailer(String path) {
-        Path of = Path.of(path);
-        String regex = "(?i).+(sample|trailer)";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(of.toString());
-        return matcher.find();
-    }
+//    /*
+//     * Checks if given paths contains phrases "sample" or "trailer"
+//     * */
+//    boolean isSampleOrTrailer(String path) {
+//        String regex = "(?i).+(sample|trailer)";
+//        Pattern pattern = Pattern.compile(regex);
+//        Matcher matcher = pattern.matcher(path);
+//        return matcher.find();
+//    }
 
     /*
      * Extract movie title and production year from given path.
@@ -171,7 +173,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
     public DeductedQuery extractTitleAndYear(String path) {
         Path of = Path.of(path);
         Path fileName = of.getName(of.getNameCount() - 1);
-        if (isSampleOrTrailer(path)) return null;
+        if (TextExtractTools.isSampleOrTrailer(path)) return null;
         String regex = "\\b^.+?\\d{4}\\b";
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(fileName.toString());
@@ -200,7 +202,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         // search results - json
         LOG.info(response);
 
-        return responseParser.parseTmdbApiSearchResults(response, Path.of(deductedQuery.getPath()));
+        return responseParser.parseTmdbApiSearchResults(response, deductedQuery.getPath());
     }
 
     /*
@@ -208,7 +210,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
      * Any file containing special keywords is being marked as extra feature.
      * */
     private List<LinkCreationResult> createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
-        if (queryResults.size() == 1 && !isSampleOrTrailer(deductedQuery.getPath())) {
+        if (queryResults.size() == 1 && !TextExtractTools.isSampleOrTrailer(deductedQuery.getPath())) {
 //            MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
             return mediaLinksService.createFileLink(queryResults.get(0), MediaIdentity.TMDB);
         }

@@ -8,9 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Repository("spring")
@@ -47,14 +46,16 @@ public class SpringHibernateBootstrapDao implements MediaTrackerDao {
     public MediaLink removeLink(Long mediaLinkId) {
         MediaLink mediaLink = getLinkById(mediaLinkId);
         if (mediaLink == null) return null;
-        getCurrentSession().delete(mediaLink);
+//        getCurrentSession().delete(mediaLink);
+        getCurrentSession().remove(mediaLink);
         return mediaLink;
     }
 
     @Override
     public List<MediaLink> getAllMediaLinks() {
         String all = "FROM MediaLink";
-        TypedQuery<MediaLink> allQuery = getCurrentSession().createQuery(all, MediaLink.class);
+//        TypedQuery<MediaLink> allQuery = getCurrentSession().createQuery(all, MediaLink.class);
+        Query<MediaLink> allQuery = getCurrentSession().createQuery(all, MediaLink.class);
         return allQuery.getResultList();
     }
 
@@ -71,7 +72,8 @@ public class SpringHibernateBootstrapDao implements MediaTrackerDao {
     private List<MediaLink> findInPathLink(String pathName, String phrase) {
         String query = "%" + phrase.replaceAll("\\\\", "%") + "%";
         String select = "SELECT q FROM MediaLink q WHERE q." + pathName + " LIKE :path";
-        TypedQuery<MediaLink> find = getCurrentSession().createQuery(select, MediaLink.class);
+//        TypedQuery<MediaLink> find = getCurrentSession().createQuery(select, MediaLink.class);
+        Query<MediaLink> find = getCurrentSession().createQuery(select, MediaLink.class);
         find.setParameter("path", query);
         return find.getResultList();
     }
@@ -83,13 +85,4 @@ public class SpringHibernateBootstrapDao implements MediaTrackerDao {
         return query.getSingleResult();
     }
 
-//    @Override
-//    public List<MediaLink> getAllIgnoredMedia() {
-//        return null;
-//    }
-//
-//    @Override
-//    public List<MediaLink> searchInIgnoredMedia(String phrase) {
-//        return null;
-//    }
 }

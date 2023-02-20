@@ -2,7 +2,6 @@ package app.controller;
 
 import model.LinkCreationResult;
 import model.MediaLink;
-import model.MediaQuery;
 import model.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -42,19 +41,19 @@ public class LinksController {
         return errorNotificationService.getCurrentResult();
     }
 
-    @ModelAttribute("media_ignored")
-    public List<MediaLink> getAllIgnoredMedia() {
-        return mediaLinksService.getMediaIgnoredList();
-    }
+//    @ModelAttribute("media_ignored")
+//    public List<MediaLink> getAllIgnoredMedia() {
+//        return mediaLinksService.getMediaIgnoredList();
+//    }
 
     @ModelAttribute("user_paths")
     public boolean checkForUserProvidedPaths() {
         return propertiesService.checkUserPaths();
     }
 
-    @ModelAttribute("query_list")
-    public List<MediaQuery> getAllMediaQueries() {
-        return mediaLinksService.getMediaQueryList();
+    @ModelAttribute("query_list_size")
+    public int getAllMediaQueries() {
+        return mediaLinksService.getMediaQueryListSize();
     }
 
     @ModelAttribute("link_list")
@@ -106,6 +105,7 @@ public class LinksController {
         List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks().stream().sorted(comparator).collect(Collectors.toList());
         Page<MediaLink> paginatedLinks = mediaLinksService.findPaginatedLinks(PageRequest.of(currentPage - 1, pageSize), allMediaLinks);
         // TODO update all dead files on reload
+        // TODO show only missing files
         model.addAttribute("page", paginatedLinks);
         model.addAttribute("page_min", min);
         model.addAttribute("page_max", max);

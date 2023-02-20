@@ -15,7 +15,6 @@ import service.PropertiesService;
 import util.MediaFilter;
 import util.TrayMenu;
 
-import javax.annotation.PostConstruct;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,7 @@ public class TrackerController {
     /*
      * Initialize file watcher at startup
      * */
-    @PostConstruct
+//    @PostConstruct
     private void initTracker() {
         // Temporarily tracker turned off
 //        trackerExecutor.startTracker();
