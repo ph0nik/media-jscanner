@@ -3,11 +3,12 @@ package service;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
+import model.path.FilePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import scanner.MediaFilesScanner;
+import scanner.MoviesFileScanner;
 import util.MediaType;
 
 import java.nio.file.Path;
@@ -18,21 +19,17 @@ import java.util.stream.Collectors;
 public class MediaQueryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaQueryService.class);
-
     private List<MediaQuery> mediaQueriesList = new LinkedList<>();
-
     private List<MediaQuery> groupedQueriesToProcess;
-
     private MediaQuery referenceQuery;
     private Map<Path, List<UUID>> mediaQueriesByRootMap = new HashMap<>();
+    private final MediaTrackerDao mediaTrackerDao;
+    private final MoviesFileScanner moviesFileScanner;
+    private final PropertiesService propertiesService;
 
-    private MediaTrackerDao mediaTrackerDao;
-    private MediaFilesScanner mediaFilesScanner;
-    private PropertiesService propertiesService;
-
-    public MediaQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao, MediaFilesScanner mediaFilesScanner, PropertiesService propertiesService) {
+    public MediaQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao, MoviesFileScanner moviesFileScanner, PropertiesService propertiesService) {
         this.mediaTrackerDao = mediaTrackerDao;
-        this.mediaFilesScanner = mediaFilesScanner;
+        this.moviesFileScanner = moviesFileScanner;
         this.propertiesService = propertiesService;
     }
 
@@ -46,15 +43,44 @@ public class MediaQueryService {
 
     // scan given paths and gather all files matching criteria
     // except ones that are already ignored or already has links
-    public void scanForNewMediaQueries(List<Path> paths) {
-        List<Path> candidates = mediaFilesScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
-        mediaQueriesList = new LinkedList<>();
-        candidates.forEach(c -> addQueryToQueue(c.toString()));
-        candidates = null;
+    public void scanForNewMediaQueries() {
+//        List<Path> candidates = moviesFileScanner.scanMediaFolders(paths, mediaTrackerDao.getAllMediaLinks());
+//        mediaQueriesList = new LinkedList<>();
+//        candidates.forEach(c -> addQueryToQueue(c.toString()));
+//        candidates = null;
+        scanForNewMovies();
+        scanForNewSeries();
     }
 
-    public MediaQuery addQueryToQueue(String filepath) {
+    /*
+     * Scan for new movie files and add them to the queue
+     * */
+    void scanForNewMovies() {
+        if (mediaQueriesList != null) {
+            moviesFileScanner.scanMediaFolders(
+                            propertiesService.getTargetFolderListMovie(),
+                            mediaTrackerDao.getAllMediaLinks()
+                    )
+                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.MOVIE));
+        }
+    }
+
+    /*
+     * Scan for tv episodes and add new files to the queue
+     * */
+    void scanForNewSeries() {
+        if (mediaQueriesList != null) {
+            moviesFileScanner.scanMediaFolders(
+                            propertiesService.getTargetFolderListTv(),
+                            mediaTrackerDao.getAllMediaLinks()
+                    )
+                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.TV));
+        }
+    }
+
+    public MediaQuery addQueryToQueue(String filepath, MediaType mediaType) {
         MediaQuery mq = new MediaQuery(filepath);
+        mq.setMediaType(mediaType);
         mediaQueriesList.add(mq);
         groupByParentPathBatch(mediaQueriesList);
         return mq;
@@ -92,16 +118,18 @@ public class MediaQueryService {
 
     void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
         mediaQueriesByRootMap = new HashMap<>();
-        mediaQueryList.forEach(mq -> groupByParentPath(mq, propertiesService.getTargetFolderList()));
+        mediaQueryList.forEach(mq -> groupByParentPath(mq, propertiesService.getTargetFolderListMovie()));
     }
 
     /*
      * Group media query element ids by parent folder
      * */
-    void groupByParentPath(MediaQuery mediaQuery, List<Path> targetFolderList) {
+    void groupByParentPath(MediaQuery mediaQuery, List<FilePath> targetFolderList) {
         Path parent = Path.of(mediaQuery.getFilePath()).getParent();
-        if (targetFolderList.stream().noneMatch(target -> target.equals(parent))) {
-            List<UUID> uuids = (mediaQueriesByRootMap.get(parent) == null) ? new LinkedList<>() : mediaQueriesByRootMap.get(parent);
+        if (targetFolderList.stream().noneMatch(target -> target.getPath().equals(parent))) {
+            List<UUID> uuids = (mediaQueriesByRootMap.get(parent) == null)
+                    ? new LinkedList<>()
+                    : mediaQueriesByRootMap.get(parent);
             uuids.add(mediaQuery.getQueryUuid());
             mediaQueriesByRootMap.put(parent, uuids);
         }
@@ -139,8 +167,8 @@ public class MediaQueryService {
     }
 
     /*
-    * Adds single query to process list, it's called when new link is created
-    * */
+     * Adds single query to process list, it's called when new link is created
+     * */
     public List<MediaQuery> addQueryToProcess(MediaQuery mediaQuery) {
         if (mediaQuery.getMediaType() == null) mediaQuery.setMediaType(MediaType.MOVIE);
         groupedQueriesToProcess = List.of(mediaQuery);

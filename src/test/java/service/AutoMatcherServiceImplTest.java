@@ -6,7 +6,7 @@ import dao.MediaTrackerDaoImpl;
 import model.DeductedQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import scanner.MediaFilesScanner;
+import scanner.MoviesFileScanner;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 import util.TextExtractTools;
@@ -29,7 +29,7 @@ class AutoMatcherServiceImplTest {
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
     private MediaQueryService mediaQueryService;
-    private MediaFilesScanner mediaFilesScanner;
+    private MoviesFileScanner moviesFileScanner;
 
     private FileService fileService;
 
@@ -39,8 +39,8 @@ class AutoMatcherServiceImplTest {
 
         cleanerService = new CleanerServiceImpl();
         propertiesService = new PropertiesServiceImpl();
-        mediaFilesScanner = new MediaFilesScanner(mediaTrackerDao, cleanerService);
-        mediaQueryService = new MediaQueryService(mediaTrackerDao, mediaFilesScanner, propertiesService);
+        moviesFileScanner = new MoviesFileScanner();
+        mediaQueryService = new MediaQueryService(mediaTrackerDao, moviesFileScanner, propertiesService);
         mediaLinksService = new MediaLinksServiceImpl();
         autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
     }
@@ -63,7 +63,7 @@ class AutoMatcherServiceImplTest {
     }
 
     @Test
-    void extractTitleAndYearFromFileName_success() {
+    public void extractTitleAndYearFromFileName_success() {
         String testFile1 = "A Better Tomorrow 1986 720p BluRay DD5.1 x264-DON.mkv";
         DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
         assertEquals("A Better Tomorrow", deductedQuery.getPhrase());
@@ -71,21 +71,21 @@ class AutoMatcherServiceImplTest {
     }
 
     @Test
-    void extractTitleAndYearFromFileName_failure() {
+    public void extractTitleAndYearFromFileName_failure() {
         String testFile1 = "Computer Chess Andrew Bujalski.mp4";
         DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
         assertNull(deductedQuery);
     }
 
     @Test
-    void extractTitleAndYearFromEmptyFileName_failure() {
+    public void extractTitleAndYearFromEmptyFileName_failure() {
         String testFile1 = "";
         DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
         assertNull(deductedQuery);
     }
 
     @Test
-    void searchForExtrasElementsInPath() throws IOException {
+    public void searchForExtrasElementsInPath() throws IOException {
         String correctString = "Until.the.End.of.the.World.1991.720p.BluRay.x264-x0r[EXTRA-Deleted Scenes].mkv";
         File file = Paths.get("src/test/resources/max.txt").toFile();
         List<String> strings = Files.readLines(file, StandardCharsets.UTF_8);

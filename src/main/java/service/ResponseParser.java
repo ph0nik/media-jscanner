@@ -41,6 +41,7 @@ class ResponseParser {
      * */
     public List<QueryResult> parseWebSearchResults(String document, String filePath, MediaIdentity mediaIdentity) {
         // collection with unique objects
+        // TODO make return list empty if nothing found
         Set<QueryResult> queryResultSet = new TreeSet<>();
         Element linksBase = Jsoup.parse(document).getElementById("links");
 //        Optional<Element> links = Optional.ofNullable(Jsoup.parse(document).getElementById("links"));
@@ -50,9 +51,9 @@ class ResponseParser {
         long id = 0;
         for (Element el : linksChildren) {
             QueryResult qr = new QueryResult(filePath);
-            Elements result__title = el.getElementsByClass("result__title");
+            Elements resultTitle = el.getElementsByClass("result__title");
             // extract url
-            String url = result__title.select("a").attr("href");
+            String url = resultTitle.select("a").attr("href");
             // get the id
             String theMovieDbId = getTheMovieDbId(url, mediaIdentity);
             // check for valid imdb id, not greater than 9 characters, some search results return invalid identifier
@@ -67,7 +68,7 @@ class ResponseParser {
                 if (mediaIdentity.equals(MediaIdentity.IMDB))
                     qr.setImdbId(theMovieDbId);
                 // extract result__title text
-                String value = result__title.select("a[href]").text();
+                String value = resultTitle.select("a[href]").text();
                 qr.setTitle(value);
                 // extract description text
                 String result__snippet = el.getElementsByClass("result__snippet").select("a[href]").text();

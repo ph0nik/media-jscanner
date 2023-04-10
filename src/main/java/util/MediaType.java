@@ -1,7 +1,7 @@
 package util;
 
 public enum MediaType {
-    MOVIE("Movie"), EXTRAS("Extras");
+    MOVIE("Movie"), EXTRAS("Extras"), TV("Series");
 
     private final String displayValue;
 

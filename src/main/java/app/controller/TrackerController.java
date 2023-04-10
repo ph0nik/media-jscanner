@@ -16,9 +16,7 @@ import util.MediaFilter;
 import util.TrayMenu;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 public class TrackerController {
@@ -71,68 +69,54 @@ public class TrackerController {
     }
 
     /*
-     * Reload tracker manually
-     * */
-//    @GetMapping("/reload")
-//    public String reloadTracker() {
-//        trackerExecutor.stopTracker();
-//        trackerExecutor.startTracker();
-//        return "redirect:/config";
-//    }
-
-    /*
     * Returns configuration panel
     * */
     @GetMapping("/config")
     public String configuration(Model model) {
-        /*
-         * Compares actual paths from properties file with paths injected into file watcher.
-         * If they differ watcher needs to be restarted
-         * */
-//        boolean trackerPaths = trackerExecutor.compareTargetList(propertiesService.getTargetFolderList());
-//        /*
-//         * Returns true if file watcher is running
-//         * */
-//        boolean trackerStatus = trackerExecutor.trackerStatus();
-
-        Path linksFolder = propertiesService.getLinksFolder();
-        boolean linksPathValid = mediaLinksService.validatePath(linksFolder.toString());
-
-        List<Path> targetFolderList = propertiesService.getTargetFolderList();
-        Map<Path, Boolean> pathsValidated = new HashMap<>();
-        for (Path p : targetFolderList) {
-            pathsValidated.put(p, mediaLinksService.validatePath(p.toString()));
-        }
-        boolean userLinksPath = propertiesService.isUserLinksPath();
-        boolean userTargetPath = propertiesService.isUserTargetPath();
-
-//        model.addAttribute("tracker_status", trackerStatus);
-//        model.addAttribute("server_updated", trackerPaths);
-        model.addAttribute("chk_user_target", userTargetPath);
-        model.addAttribute("chk_user_links", userLinksPath);
-        model.addAttribute("links_folder", linksFolder);
-        model.addAttribute("target_folder_list", targetFolderList);
-        model.addAttribute("target_path_validated", pathsValidated);
-        model.addAttribute("links_path_validated", linksPathValid);
+        Path linksFolder = propertiesService.getLinksFolderMovie();
+        Path tvLinksPath = propertiesService.getLinksFolderTv();
+        model.addAttribute("links_folder_movie", linksFolder);
+        model.addAttribute("links_folder_tv", tvLinksPath);
+        model.addAttribute("target_folder_movie", propertiesService.getTargetFolderListMovie());
+        model.addAttribute("target_folder_tv", propertiesService.getTargetFolderListTv());
+        model.addAttribute("links_path_validated", mediaLinksService.validatePath(linksFolder.toString()));
         model.addAttribute("links_path_form", new LinksPathForm());
         return "config";
     }
 
     /*
-     * Delete target path from list
+     * Delete selected target path for movie
      * */
-    @PostMapping("/deletepath")
-    public String deletePath(@RequestParam String path, Model model) {
-        propertiesService.removeTargetPath(Path.of(path));
+    @PostMapping("/delete-path-movie")
+    public String deletePathMovie(@RequestParam String path, Model model) {
+        propertiesService.removeTargetPathMovie(Path.of(path));
         return "redirect:/config";
     }
 
     /*
-    * Add new target path
+    * Delete selected target path for tv
     * */
-    @PostMapping("/addtarget")
-    public String addPath(@RequestParam String path, Model model) {
-        propertiesService.setTargetPath(Path.of(path));
+    @PostMapping("/delete-path-tv")
+    public String deletePathTv(@RequestParam String path, Model model) {
+        propertiesService.removeTargetPathTv(Path.of(path));
+        return "redirect:/config";
+    }
+
+    /*
+    * Add new target path for movie
+    * */
+    @PostMapping("/add-target-movie")
+    public String addPathMovie(@RequestParam String path, Model model) {
+        propertiesService.addTargetPathMovie(Path.of(path));
+        return "redirect:/config";
+    }
+
+    /*
+    * Add new target path for tv
+    * */
+    @PostMapping("/add-target-tv")
+    public String addPathTv(@RequestParam String path, Model model) {
+        propertiesService.addTargetPathTv(Path.of(path));
         return "redirect:/config";
     }
 
@@ -143,7 +127,7 @@ public class TrackerController {
     public String addLinksPath(LinksPathForm linksPathForm, Model model) {
         Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
         if (linksPathForm.isMoveContent()) {
-            mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolder(), newLinksPath);
+            mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolderMovie(), newLinksPath);
         }
         propertiesService.setLinksPath(newLinksPath);
         return "redirect:/config";

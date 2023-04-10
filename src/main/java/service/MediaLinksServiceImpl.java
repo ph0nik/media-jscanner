@@ -79,7 +79,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
 
     @PostConstruct
     void refreshUserPaths() {
-        linksFolder = propertiesService.getLinksFolder();
+        linksFolder = propertiesService.getLinksFolderMovie();
 //        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
 //        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
     }
@@ -103,9 +103,15 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     @Override
     public List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity) {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
+        if (mediaQuery.getMediaType().equals(MediaType.MOVIE)) {
+
+        } else {
+
+        }
         // TODO make guards so that malformed input gets correct response
         List<QueryResult> webSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.WEB_SEARCH);
         List<QueryResult> tmdbSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API);
+        tmdbSearchResults.forEach(System.out::println);
         tmdbSearchResults.addAll(webSearchResults);
         lastRequest = new LastRequest(tmdbSearchResults, mediaQuery);
         return tmdbSearchResults;
@@ -439,16 +445,16 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     @Override
-    public MediaQuery moveBackToQueue(long mediaLinkId) {
+    public void moveBackToQueue(long mediaLinkId) {
         MediaLink mediaLink = mediaTrackerDao.removeLink(mediaLinkId);
         Path linkPath = Path.of(mediaLink.getLinkPath());
         // delete file
         cleanerService.deleteElement(linkPath);
         // remove folder if possible
 //        if (cleanerService.containsNoMediaFiles(linkPath.getParent())) cleanerService.deleteElement(linkPath.getParent());
-        MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
+        // TODO no need to explicitly add query back to the queue, just rescan at the end of this process
+//        MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
-        return mediaQuery;
     }
 
     @Override
@@ -473,11 +479,11 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     @Override
-    public MediaQuery unIgnoreMedia(long mediaIgnoreId) {
+    public void unIgnoreMedia(long mediaIgnoreId) {
         MediaLink mediaLink = mediaTrackerDao.removeLink(mediaIgnoreId);
-        MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
+//        MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
-        return mediaQuery;
+
     }
 
     /*
@@ -502,7 +508,9 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     // test
     @Override
     public void removeEmptyFolders() {
-        propertiesService.getTargetFolderList().forEach(cleanerService::clearEmptyFolders);
+        propertiesService.getTargetFolderListMovie().forEach(mp -> cleanerService.clearEmptyFolders(mp.getPath()));
+        propertiesService.getTargetFolderListTv().forEach(tvp -> cleanerService.clearEmptyFolders(tvp.getPath()));
+//        propertiesService.getTargetFolderListMovie().forEach(cleanerService::clearEmptyFolders);
     }
 
     @Override

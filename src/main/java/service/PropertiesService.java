@@ -1,5 +1,7 @@
 package service;
 
+import model.path.FilePath;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
@@ -18,24 +20,21 @@ public interface PropertiesService {
     /*
      * Returns list of folders to be watched.
      * */
-    public List<Path> getTargetFolderList();
+    public List<FilePath> getTargetFolderListMovie();
 
     /*
      * Returns folder where symlinks should be stored.
      * */
-    public Path getLinksFolder();
+    public Path getLinksFolderMovie();
+
+    List<FilePath> getTargetFolderListTv();
 
     /*
      * Add target folder path to path list.
      * */
-    public void setTargetPath(Path targetPath);
+    public void addTargetPathMovie(Path targetPath);
 
-
-    /*
-     * Remove target path from property file.
-     * */
-    public void removeTargetPath(Path targetPath);
-
+    public void addTargetPathTv(Path targetPath);
 
     /*
      * Set links path
@@ -43,5 +42,9 @@ public interface PropertiesService {
     public void setLinksPath(Path linksRoot);
 
 
+    void removeTargetPathMovie(Path of);
 
+    void removeTargetPathTv(Path of);
+
+    Path getLinksFolderTv();
 }

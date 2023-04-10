@@ -74,7 +74,7 @@ public interface MediaLinksService extends Pagination {
     /*
     * Remove link and add target path back to the queue
     * */
-    MediaQuery moveBackToQueue(long mediaLinkId);
+    void moveBackToQueue(long mediaLinkId);
 
     /*
     * Deletes original element of created link
@@ -86,7 +86,7 @@ public interface MediaLinksService extends Pagination {
     /*
     * Remove ignore flag and move back media file into the media queue.
     * */
-    MediaQuery unIgnoreMedia(long mediaIgnoreId);
+    void unIgnoreMedia(long mediaIgnoreId);
 
     /*
     * Returns list of existing media links

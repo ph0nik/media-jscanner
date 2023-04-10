@@ -204,7 +204,7 @@ public class QueryController {
 
     @GetMapping("/scan")
     public String scanFolders() {
-        mediaQueryService.scanForNewMediaQueries(propertiesService.getTargetFolderList());
+        mediaQueryService.scanForNewMediaQueries();
         return "redirect:/";
     }
 
@@ -216,6 +216,7 @@ public class QueryController {
 
     @GetMapping("/auto")
     public String autoMatch() {
+        // TODO secure in case of network problems, funky stuff with the files
         future = autoMatcherService.autoMatchFilesWithFuture();
         return "redirect:/";
     }

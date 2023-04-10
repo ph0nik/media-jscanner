@@ -185,7 +185,7 @@
                 </div>
                 <div th:case="${false}">
                     <span th:text="${result.title}" class="fs-6 fw-bold"></span>
-                    <span th:if="${!result.year.isEmpty()}" th:text="${'(' + result.year + ')'}"
+                    <span th:if="${result.year != null && !result.year.isEmpty()}" th:text="${'(' + result.year + ')'}"
                           class="fs-6 fw-bold"></span>
                     <p th:text="${result.description}" class="fs-7 fw-normal"></p>
                 </div>

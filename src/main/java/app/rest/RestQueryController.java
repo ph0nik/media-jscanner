@@ -55,7 +55,7 @@ public class RestQueryController {
 
     @GetMapping(value = "/refresh", produces = "application/json")
     public ModelAndView refreshQueries() {
-        mediaQueryService.scanForNewMediaQueries(propertiesService.getTargetFolderList());
+        mediaQueryService.scanForNewMediaQueries();
         return new ModelAndView("redirect:/rest/page=1");
     }
 }

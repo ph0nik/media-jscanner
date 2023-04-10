@@ -96,4 +96,11 @@ public class ResponseParserTest {
 
     }
 
+    @Test
+    public void parseWebSearchResults_error() {
+        String errorMessage = "If this error persists, please let us know: error-lite@duckduckgo.com";
+        List<QueryResult> some_path = responseParser.parseWebSearchResults(errorMessage, "some_path", MediaIdentity.IMDB);
+        System.out.println(some_path);
+    }
+
 }
