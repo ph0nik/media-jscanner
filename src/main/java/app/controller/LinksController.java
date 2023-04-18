@@ -1,6 +1,6 @@
 package app.controller;
 
-import model.LinkCreationResult;
+import model.OperationResult;
 import model.MediaLink;
 import model.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +71,9 @@ public class LinksController {
         // TODO pass exceptions info to user
         // get grouped queries that are marked only as part of the same title
         // TODO make this function for collection of media queries
-        List<LinkCreationResult> linkCreationResults = mediaLinksService.createFileLink(queryResult, mediaIdentity);
+        List<OperationResult> operationResults = mediaLinksService.createFileLink(queryResult, mediaIdentity);
         // TODO implement list of results
-        linkCreationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
+        operationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
         return "redirect:/query";
     }
 
@@ -132,9 +132,8 @@ public class LinksController {
 
     @PostMapping("/remove-link/{id}")
     public String newLink(@PathVariable("id") long id, Model model) {
-        // TODO when original is already deleted
         mediaLinksService.moveBackToQueue(id);
-        return "redirect:/";
+        return "redirect:/scan";
     }
 
     @PostMapping("/delete-original/{id}")

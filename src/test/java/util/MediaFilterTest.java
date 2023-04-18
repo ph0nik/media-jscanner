@@ -1,32 +1,39 @@
 package util;
 
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 class MediaFilterTest {
 
-    @Test
-    public void validExtension() {
-        Path path = Path.of("asd.mkv");
-        Assertions.assertTrue(MediaFilter.validateExtension(path.toString()));
+    private Path filePath;
 
+    @BeforeEach
+    void setUpFileSystem() {
+        FileSystem fileSystem = Jimfs.newFileSystem(Configuration.windows());
+        filePath = fileSystem.getPath("");
     }
 
     @Test
-    public void invalidExtension() {
-        Path path = Path.of("info.txt");
-        Assertions.assertFalse(MediaFilter.validateExtension(path.toString()));
+    public void validExtension() throws IOException {
+        String fileName = "asd.mkv";
+        Path file = Files.createFile(filePath.resolve(fileName));
+        Assertions.assertTrue(MediaFilter.validateExtension(file.toString()));
     }
 
-
-    public void checkForDir() throws IOException {
-        File file = new File("./test-folder/2");
-        Assertions.assertFalse(MediaFilter.checkForEmptyDirectory(file));
+    @Test
+    public void invalidExtension() throws IOException {
+        String fileName = "info.txt";
+        Path file = Files.createFile(filePath.resolve(fileName));
+        Assertions.assertFalse(MediaFilter.validateExtension(file.toString()));
     }
 
     @Test

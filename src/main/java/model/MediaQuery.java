@@ -12,16 +12,13 @@ public class MediaQuery {
     private long queryId;
     private UUID queryUuid;
     private String filePath;
-    /*
-    * -1 not multipart but grouped
-    * 0 default
-    * +1 multipart and grouped
-    * */
+
     private byte multipart;
     private MediaType mediaType;
 
-    public MediaQuery(String filePath) {
+    public MediaQuery(String filePath, MediaType mediaType) {
         this.filePath = filePath;
+        this.mediaType = mediaType;
         multipart = -1;
         queryUuid = UUID.randomUUID();
     }
@@ -38,6 +35,12 @@ public class MediaQuery {
         return multipart;
     }
 
+    /*
+     *
+     * -1 for grouped element but not part of reference media
+     * 0 default
+     * +1 multipart and grouped
+     * */
     public void setMultipart(byte multipart) {
         this.multipart = multipart;
     }

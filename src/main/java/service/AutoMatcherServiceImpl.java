@@ -74,7 +74,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
                 MediaType type = (TextExtractTools.hasExtrasInName(mq.getFilePath())) ? MediaType.EXTRAS : MediaType.MOVIE;
                 mq.setMediaType(type);
                 mediaQueryService.addQueryToProcess(mq);
-                List<LinkCreationResult> linksCreationResults = autoMatchSingleFile(Path.of(mq.getFilePath()));
+                List<OperationResult> linksCreationResults = autoMatchSingleFile(Path.of(mq.getFilePath()));
                 linksCreationResults.forEach(lcr -> mediaLinks.add(lcr.getMediaLink()));
 //                index = index + linksCreationResults.size();
             }
@@ -85,8 +85,8 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         return new AsyncResult<>(mediaLinks);
     }
 
-    public List<LinkCreationResult> autoMatchSingleFile(Path path) {
-        List<LinkCreationResult> linksWithBestMatches = List.of();
+    public List<OperationResult> autoMatchSingleFile(Path path) {
+        List<OperationResult> linksWithBestMatches = List.of();
         DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
         if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
             List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
@@ -209,7 +209,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
      * If results list have only one element use it for creating symbolic link.
      * Any file containing special keywords is being marked as extra feature.
      * */
-    private List<LinkCreationResult> createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
+    private List<OperationResult> createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
         if (queryResults.size() == 1 && !TextExtractTools.isSampleOrTrailer(deductedQuery.getPath())) {
 //            MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
             return mediaLinksService.createFileLink(queryResults.get(0), MediaIdentity.TMDB);

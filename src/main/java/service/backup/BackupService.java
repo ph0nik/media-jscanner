@@ -9,11 +9,11 @@ import java.util.List;
 public interface BackupService {
 
     /*
-    * Exports provided list of MediaLink objects as CSV file.
+    * Exports provided list of MediaLink objects as XML file.
     * Created filename is based of current date and time.
     * Returns filename.
     * */
-    public String exportRecords(List<MediaLink> mediaLinkList);
+    public String exportRecords(List<MediaLink> mediaLinkList); //TODO
 
     /*
     * Imports list of MediaLink objects from a file.

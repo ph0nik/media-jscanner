@@ -6,13 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,113 +18,68 @@ public class CleanerServiceImpl implements CleanerService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CleanerServiceImpl.class);
 
-    public void deleteEmptyFolders(Path root) {
-        try {
-            Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                        throws IOException {
-                    File[] files = dir.toFile().listFiles();
-                    if (files != null && files.length == 0) deleteElement(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
     /*
-     * Removes ignored elements that are connected with non-existing files
+     * Checks if given directory contains files with declared extensions.
+     * If no files match the criteria, path does not exist or path is not a folder returns true.
+     * Otherwise, returns false.
      * */
-//    @Override
-//    public void deleteInvalidIgnoredMedia(MediaTrackerDao dao) {
-//        List<MediaLink> mediaIgnoredList = dao.getAllMediaLinks().stream().filter(mi -> mi.getLinkPath().equals("ignore")).collect(Collectors.toList());
-//        int count = 0;
-////        mediaIgnoredList.stream().map(ml -> Files.exists(Path.of(ml.getOriginalPath())))
-//        for (MediaLink ml : mediaIgnoredList) {
-////            Files.exists(Path.of(ml.getOriginalPath()));
-////            File file = new File(ml.getOriginalPath());
-//            if (!Files.exists(Path.of(ml.getOriginalPath()))) {
-//                dao.removeLink(ml.getMediaId());
-//                count++;
-//                LOG.info("[ cleaner ] Invalid ignored media deleted: {}", ml);
-//            }
-//        }
-//        LOG.info("[ cleaner ] {} elements removed", count);
-//    }
-
     public boolean containsNoMediaFiles(Path targetPath) {
-        boolean result = false;
+        if (!Files.exists(targetPath) || !Files.isDirectory(targetPath)) {
+            LOG.error("[ media_check ] Non existing path or not a folder.");
+            return true;
+        }
         try (Stream<Path> stream = Files.walk(targetPath)) {
-            result = stream.noneMatch(MediaFilter::validateExtension);
+            return stream.noneMatch(MediaFilter::validateExtension);
         } catch (IOException e) {
             LOG.error("[ media_check ] Error: {}", e.getMessage());
         }
-        return result;
+        return false;
     }
 
+    /*
+     * With given path deletes every file and folder withing this path
+     * */
     @Override
-    public void deleteInvalidLink(MediaLink mediaLink, MediaTrackerDao dao) {
-        dao.removeLink(mediaLink.getMediaId());
-        LOG.info("[ link_delete ] Link with id: {} removed", mediaLink.getMediaId());
-        deleteElement(Path.of(mediaLink.getLinkPath()));
-        clearParentFolder(Path.of(mediaLink.getLinkPath()));
-    }
-
-    @Override
-    public boolean deleteElement(Path linkPath) {
-        boolean res = false;
+    public void deleteElements(Path linkPath) {
         try (Stream<Path> stream = Files.walk(linkPath)) {
-            res = stream.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .allMatch(f -> deleteResult(f, f.delete()));
+            stream.sorted(Comparator.reverseOrder())
+                    .forEachOrdered(this::deleteSingleFile);
+//                    .collect(Collectors.toMap(p -> p, this::deleteSingleFile));
         } catch (IOException exception) {
             LOG.error("[ delete_element ] Error: {}", exception.getMessage());
         }
-        return res;
+//        return Map.of();
     }
 
-    boolean deleteResult(File f, boolean b) {
+    @Override
+    public boolean deleteSingleFile(Path path) {
+        try {
+            return deleteResult(path, Files.deleteIfExists(path));
+        } catch (IOException e) {
+            LOG.error("[ delete_element ] File: {}, Error:{}", path, e.getMessage());
+        }
+        return false;
+    }
+
+    boolean deleteResult(Path f, boolean b) {
         if (b) LOG.info("[ element_delete ] File {} deleted successfully", f);
         else LOG.warn("[ element_delete ] File {} already in use", f);
         return b;
     }
 
     /*
-    * Deletes empty directories.
-    * Directory is considered empty if it contains no directory and no media files.
-    * */
+     * Deletes empty directories.
+     * Directory is considered empty if it contains no directory and no media files.
+     * */
     @Override
     public void clearEmptyFolders(Path root) {
-        try (Stream<Path> stream = Files.walk(root)) {
-            stream.sorted(Comparator.reverseOrder())
-                    .filter(Files::isDirectory)
-                    .filter(this::containsNoMediaFiles)
-                    .forEachOrdered(this::deleteElement);
-        } catch (IOException exception) {
-            LOG.error("[ delete_element ] Error: {}", exception.getMessage());
-        }
-    }
-
-    @Override
-    public void clearParentFolder(MediaLink mediaLink) {
-        clearParentFolder(Path.of(mediaLink.getLinkPath()).getParent());
-    }
-
-    @Override
-    public void clearParentFolder(Path parent) {
-        if (parent.toFile().isDirectory()) {
-            try (Stream<Path> s = Files.list(parent)) {
-                if (containsNoMediaFiles(parent) && s.noneMatch(Files::isDirectory)) {
-                    deleteElement(parent);
-                    LOG.info("[ cleaner ] No media files found, folder: {} deleted.", parent);
-                }
-            } catch (IOException e) {
-                LOG.error("[ cleaner ] {}", e.getMessage());
-            }
+        if (!Files.exists(root) || !Files.isDirectory(root)) {
+            LOG.error("[ clear_folder ] Element not found or not a folder: {} ", root);
+        } else if (Files.isDirectory(root) && containsNoMediaFiles(root)) {
+            LOG.info("[ clear_folder ] No media files found.");
+            deleteElements(root);
         } else {
-            LOG.error("[ cleaner ] Given path is not a folder: {}", parent);
+            LOG.info("[ clear_folder ] Folder contains media files.");
         }
     }
 
@@ -146,11 +97,5 @@ public class CleanerServiceImpl implements CleanerService {
         }
         LOG.info("[ clean_invalid_entries ] {} invalid entries deleted", counter);
         return counter;
-    }
-
-    public static void main(String[] args) {
-        String s = "G:\\Java\\media-jscanner\\test-folder\\movies-incoming\\";
-        CleanerServiceImpl cs = new CleanerServiceImpl();
-        cs.clearEmptyFolders(Path.of(s));
     }
 }

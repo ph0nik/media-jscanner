@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import scanner.MoviesFileScanner;
+import scanner.MediaFilesScanner;
 import util.MediaType;
 
 import java.nio.file.Path;
@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class MediaQueryService {
+public class MediaQueryService extends PaginationImpl{
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaQueryService.class);
     private List<MediaQuery> mediaQueriesList = new LinkedList<>();
@@ -24,10 +24,10 @@ public class MediaQueryService {
     private MediaQuery referenceQuery;
     private Map<Path, List<UUID>> mediaQueriesByRootMap = new HashMap<>();
     private final MediaTrackerDao mediaTrackerDao;
-    private final MoviesFileScanner moviesFileScanner;
+    private final MediaFilesScanner moviesFileScanner;
     private final PropertiesService propertiesService;
 
-    public MediaQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao, MoviesFileScanner moviesFileScanner, PropertiesService propertiesService) {
+    public MediaQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao, MediaFilesScanner moviesFileScanner, PropertiesService propertiesService) {
         this.mediaTrackerDao = mediaTrackerDao;
         this.moviesFileScanner = moviesFileScanner;
         this.propertiesService = propertiesService;
@@ -49,40 +49,49 @@ public class MediaQueryService {
 //        candidates.forEach(c -> addQueryToQueue(c.toString()));
 //        candidates = null;
         scanForNewMovies();
-        scanForNewSeries();
+        groupByParentPathBatch(mediaQueriesList);
     }
 
     /*
      * Scan for new movie files and add them to the queue
      * */
     void scanForNewMovies() {
-        if (mediaQueriesList != null) {
-            moviesFileScanner.scanMediaFolders(
-                            propertiesService.getTargetFolderListMovie(),
-                            mediaTrackerDao.getAllMediaLinks()
-                    )
-                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.MOVIE));
-        }
+        mediaQueriesList = moviesFileScanner.scanMediaFolders(
+                        propertiesService.getTargetFolderListMovie(),
+                        mediaTrackerDao.getAllMediaLinks()
+                )
+                .stream()
+                .map(this::createMovieQuery)
+                .collect(Collectors.toList());
+//                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.MOVIE));
     }
 
     /*
      * Scan for tv episodes and add new files to the queue
      * */
     void scanForNewSeries() {
-        if (mediaQueriesList != null) {
-            moviesFileScanner.scanMediaFolders(
-                            propertiesService.getTargetFolderListTv(),
-                            mediaTrackerDao.getAllMediaLinks()
-                    )
-                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.TV));
-        }
+        mediaQueriesList = moviesFileScanner.scanMediaFolders(
+                        propertiesService.getTargetFolderListTv(),
+                        mediaTrackerDao.getAllMediaLinks()
+                )
+                .stream()
+                .map(this::createTvQuery)
+                .collect(Collectors.toList());
+//                    .forEach(c -> addQueryToQueue(c.toString(), MediaType.TV));
+        // TODO map addQuery function
     }
 
-    public MediaQuery addQueryToQueue(String filepath, MediaType mediaType) {
-        MediaQuery mq = new MediaQuery(filepath);
+    MediaQuery createTvQuery(Path filePath) {
+        return createQuery(filePath.toString(), MediaType.TV);
+    }
+
+    MediaQuery createMovieQuery(Path filePath) {
+        return createQuery(filePath.toString(), MediaType.MOVIE);
+    }
+
+    public MediaQuery createQuery(String filepath, MediaType mediaType) {
+        MediaQuery mq = new MediaQuery(filepath, mediaType);
         mq.setMediaType(mediaType);
-        mediaQueriesList.add(mq);
-        groupByParentPathBatch(mediaQueriesList);
         return mq;
     }
 
@@ -150,9 +159,15 @@ public class MediaQueryService {
     }
 
     public List<MediaQuery> searchQuery(String search) {
+        String[] words = search.toLowerCase().split(" ");
         return mediaQueriesList.stream()
-                .filter(mq -> mq.getFilePath().toLowerCase().contains(search.toLowerCase()))
+                .filter(mq -> containsAllWords(words, mq.getFilePath()))
+//                .filter(mq -> mq.getFilePath().toLowerCase().contains(search.toLowerCase()))
                 .collect(Collectors.toList());
+    }
+
+    public boolean containsAllWords(String[] words, String filePath) {
+        return Arrays.stream(words).allMatch(filePath.toLowerCase()::contains);
     }
 
     /*
@@ -170,27 +185,25 @@ public class MediaQueryService {
      * Adds single query to process list, it's called when new link is created
      * */
     public List<MediaQuery> addQueryToProcess(MediaQuery mediaQuery) {
-        if (mediaQuery.getMediaType() == null) mediaQuery.setMediaType(MediaType.MOVIE);
+        // MediaType is never null
+//        if (mediaQuery.getMediaType() == null) mediaQuery.setMediaType(MediaType.MOVIE);
         groupedQueriesToProcess = List.of(mediaQuery);
         return List.copyOf(groupedQueriesToProcess);
     }
 
-    public List<MediaQuery> addQueriesToProcess(List<MultiPartElement> mediaQueryList) {
+    public List<MediaQuery> addQueriesToProcess(List<MultiPartElement> multiPartElementsList) {
         groupedQueriesToProcess = new LinkedList<>();
-        int count = 0;
-        for (MediaQuery current : mediaQueriesList) {
-            for (MultiPartElement mpe : mediaQueryList) {
-                if (mpe.getFilePath().equals(current.getFilePath()) && mpe.getMultipartSwitch() != 0) {
-                    current.setMultipart(mpe.getPartNumber());
-                    current.setMediaType(mpe.getMediaType());
-                    groupedQueriesToProcess.add(current);
-                    count++;
+        for (MediaQuery mq : mediaQueriesList) {
+            for (MultiPartElement mpe : multiPartElementsList) {
+                if (mpe.getFilePath().equals(mq.getFilePath()) && mpe.getMultipartSwitch()) {
+                    mq.setMultipart(mpe.getPartNumber());
+                    mq.setMediaType(mpe.getMediaType());
+                    groupedQueriesToProcess.add(mq);
                 }
             }
         }
-        LOG.info("[ query_service ] Grouped {} elements", count);
-        // if none selected add reference query to queue
-        if (count == 0) {
+        LOG.info("[ query_service ] Grouped {} elements", groupedQueriesToProcess.size());
+        if (groupedQueriesToProcess.size() == 0) {
             LOG.info("[ query_service ] No queries marked, adding reference to the queue");
             addQueryToProcess(referenceQuery);
         }
@@ -198,25 +211,26 @@ public class MediaQueryService {
     }
 
     /*
-     * Returns query with given id
+     * Returns query with given id or null if no such query is found
      * */
     public MediaQuery getQueryById(Long id) {
-        Optional<MediaQuery> first = mediaQueriesList
+        return mediaQueriesList
                 .stream()
                 .filter(x -> x.getQueryId() == id)
-                .findFirst();
-        return first.orElse(null);
+                .findFirst()
+                .orElse(null);
+//        return first.orElse(null);
     }
 
     /*
      * Returns query with given file path
      * */
     public MediaQuery findQueryByFilePath(String filepath) {
-        Optional<MediaQuery> first = mediaQueriesList
+        return mediaQueriesList
                 .stream()
                 .filter(x -> x.getFilePath().equals(filepath))
-                .findFirst();
-        return first.orElse(null);
+                .findFirst()
+                .orElse(null);
     }
 
 }

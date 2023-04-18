@@ -5,21 +5,20 @@ import util.MediaType;
 public class MultiPartElement {
 
     private String filePath;
-    // TODO change this to boolean, true for part, false for different
-    private byte multipartSwitch;
+    private boolean multipartSwitch;
     private byte partNumber;
     private MediaType mediaType;
 
     public MultiPartElement() {
         partNumber = 0;
-        multipartSwitch = 0;
+        multipartSwitch = false;
     }
 
-    public byte getMultipartSwitch() {
+    public boolean getMultipartSwitch() {
         return multipartSwitch;
     }
 
-    public void setMultipartSwitch(byte multipartSwitch) {
+    public void setMultipartSwitch(boolean multipartSwitch) {
         this.multipartSwitch = multipartSwitch;
     }
 

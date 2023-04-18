@@ -1,19 +1,19 @@
 package service;
 
-import model.LinkCreationResult;
+import model.OperationResult;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ErrorNotificationService {
 
-    private LinkCreationResult linkCreationResult;
+    private OperationResult operationResult;
 
-    public void setLinkCreationResult(LinkCreationResult linkCreationResult) {
-        this.linkCreationResult = linkCreationResult;
+    public void setLinkCreationResult(OperationResult operationResult) {
+        this.operationResult = operationResult;
     }
 
     public String getCurrentResult() {
-        if (linkCreationResult == null || linkCreationResult.isCreationStatus()) return "OK";
-        return linkCreationResult.getCreationMessage();
+        if (operationResult == null || operationResult.isCreationStatus()) return "OK";
+        return operationResult.getCreationMessage();
     }
 }

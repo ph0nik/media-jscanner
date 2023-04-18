@@ -1,15 +1,19 @@
 package model;
 
-public class LinkCreationResult {
+public class OperationResult {
 
     private boolean creationStatus;
     private String creationMessage;
     private MediaLink mediaLink;
 
-    public LinkCreationResult(boolean creationStatus, String creationMessage, MediaLink mediaLink) {
+    public OperationResult(boolean creationStatus, String creationMessage, MediaLink mediaLink) {
+        this(creationStatus, creationMessage);
+        this.mediaLink = mediaLink;
+    }
+
+    public OperationResult(boolean creationStatus, String creationMessage) {
         this.creationMessage = creationMessage;
         this.creationStatus = creationStatus;
-        this.mediaLink = mediaLink;
     }
 
     public String getCreationMessage() {

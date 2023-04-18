@@ -88,7 +88,9 @@ public class QueryController {
         int min = currentPage * pageSize - pageSize + 1;
         int max = currentPage * pageSize;
 
-        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(currentPage - 1, pageSize), mediaLinksService.getMediaQueryList());
+        Page<MediaQuery> paginatedQueries = mediaQueryService.findPaginatedQueries(
+                PageRequest.of(currentPage - 1, pageSize),
+                mediaQueryService.getCurrentMediaQueries());
 
 //        Get Auto Matcher status
         // 1 * 20 - max, min - 1 * 20 - 20 + 1
@@ -108,8 +110,11 @@ public class QueryController {
                               Model model) {
         int min = 1;
         int max = sessionPageSize;
+        // TODO move media query list to service and single object instance
         List<MediaQuery> mediaQueries = mediaQueryService.searchQuery(search);
-        Page<MediaQuery> paginatedQueries = mediaLinksService.findPaginatedQueries(PageRequest.of(0, sessionPageSize), mediaQueries);
+        Page<MediaQuery> paginatedQueries = mediaQueryService.findPaginatedQueries(
+                PageRequest.of(0, sessionPageSize),
+                mediaQueries);
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
         model.addAttribute("future", autoMatcherStatus);
@@ -208,11 +213,11 @@ public class QueryController {
         return "redirect:/";
     }
 
-    @GetMapping("/clear-folders/")
-    public String clearEmptyFolders(Model model) {
-        mediaLinksService.removeEmptyFolders();
-        return "redirect:/";
-    }
+//    @GetMapping("/clear-folders/")
+//    public String clearEmptyFolders(Model model) {
+//        mediaLinksService.removeEmptyFolders();
+//        return "redirect:/";
+//    }
 
     @GetMapping("/auto")
     public String autoMatch() {

@@ -1,7 +1,7 @@
 package service;
 
 import model.DeductedQuery;
-import model.LinkCreationResult;
+import model.OperationResult;
 import model.MediaLink;
 
 import java.nio.file.Path;
@@ -23,7 +23,7 @@ public interface AutoMatcherService {
 
     Future<List<MediaLink>> autoMatchFilesWithFuture();
 
-    List<LinkCreationResult> autoMatchSingleFile(Path path);
+    List<OperationResult> autoMatchSingleFile(Path path);
 
 
         // regex - "\b^.+\d{4}\b"

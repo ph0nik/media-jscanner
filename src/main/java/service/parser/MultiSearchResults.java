@@ -8,4 +8,6 @@ public class MultiSearchResults {
     private int page;
 
 
+
+
 }

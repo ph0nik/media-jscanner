@@ -76,7 +76,8 @@ class RequestService {
         if (queryResult == null) {
             LOG.error("[ request_service ] tmdbApiRequest error, query result is null");
             return "";
-        } else if (queryResult.getImdbId() == null && queryResult.getTheMovieDbId() <= 0) {
+        }
+        if (queryResult.getImdbId() == null && queryResult.getTheMovieDbId() <= 0) {
             LOG.error("[ request_service ] tmdbApiRequest error, no identifier found; getImdbId() = {}, getTheMovieDbId() = {}",
                     queryResult.getImdbId(), queryResult.getTheMovieDbId());
             return "";

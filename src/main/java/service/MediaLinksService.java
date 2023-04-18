@@ -44,13 +44,9 @@ public interface MediaLinksService extends Pagination {
     /*
      * Create symlink with specified query result and link properties
      * */
-//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity, MediaType mediaType);
+    List<OperationResult> createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity);
 
-    List<LinkCreationResult> createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity);
-
-//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaType mediaType, int partNumber);
-
-//    LinkCreationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaQuery mediaQuery);
+    OperationResult createHardLinkWithDirectories(MediaLink mediaLink);
 
     /*
     * Flag media query element as ignored.

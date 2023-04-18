@@ -11,10 +11,10 @@ public class MediaTransferData {
     private MediaType mediaType;
     private int partNumber;
 
-    private LinkCreationResult linkCreationResult;
+    private OperationResult operationResult;
 
-    public LinkCreationResult getLinkCreationResult() {
-        return linkCreationResult;
+    public OperationResult getLinkCreationResult() {
+        return operationResult;
     }
 
     public int getPartNumber() {
@@ -25,8 +25,8 @@ public class MediaTransferData {
         this.partNumber = partNumber;
     }
 
-    public void setLinkCreationResult(LinkCreationResult linkCreationResult) {
-        this.linkCreationResult = linkCreationResult;
+    public void setLinkCreationResult(OperationResult operationResult) {
+        this.operationResult = operationResult;
     }
 
     public MediaType getMediaType() {
@@ -78,7 +78,7 @@ public class MediaTransferData {
                 ", tmdbId=" + tmdbId +
                 ", mediaType=" + mediaType +
                 ", partNumber=" + partNumber +
-                ", linkCreationResult=" + linkCreationResult +
+                ", linkCreationResult=" + operationResult +
                 '}';
     }
 }

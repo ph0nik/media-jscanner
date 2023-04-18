@@ -52,4 +52,14 @@ public class TextExtractToolsTest {
         assertEquals("", imdbIdFromLink);
     }
 
+    @Test
+    void checkCorrectNumberOfSpaces() {
+        String fileName = "E:\\Filmy HD\\The.Strange.Vice.of.Mrs.Wardh.1971.RERIP.720p.BluRay.x264\\The.Strange.Vice.of.Mrs.Wardh.1971.RERIP.720p.BluRay.x264.mkv";
+        String special = TextExtractTools.checkForSpecialDescriptor(fileName);
+        String group = TextExtractTools.getGroupName(fileName);
+        String specialWithGroup = (special + " " + group).trim();
+        specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : " - [" + specialWithGroup + "]";
+        assertEquals(" - [720p x264]", specialWithGroup);
+    }
+
 }

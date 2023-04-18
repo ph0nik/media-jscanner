@@ -14,6 +14,7 @@ import service.parser.MovieItem;
 import service.parser.MovieResults;
 import service.parser.TvItem;
 import util.MediaIdentity;
+import util.MediaType;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -97,17 +98,13 @@ class ResponseParser {
                     String mediaType = jo.getAsJsonObject().get("media_type").getAsString();
                     if (mediaType.equals("tv")) {
                         TvItem tvItem = new Gson().fromJson(jo.toString(), TvItem.class);
-                        System.out.println(tvItem);
                         queryResult = parseTvItem(tvItem, new QueryResult(path));
                     }
                     if (mediaType.equals("movie")) {
                         MovieItem movieItem = new Gson().fromJson(jo.toString(), MovieItem.class);
-                        System.out.println(movieItem);
                         queryResult = parseMovieItem(movieItem, new QueryResult(path));
                     }
                     if (queryResult != null) {
-
-                        System.out.println(queryResult);
                         queryResults.add(queryResult);
                     }
                 }
@@ -174,6 +171,7 @@ class ResponseParser {
         queryResult.setTheMovieDbId(movieItem.getId());
         queryResult.setTitle(movieItem.getTitle());
         queryResult.setDescription(movieItem.getDescription());
+        queryResult.setMediaType(MediaType.MOVIE);
         String queryYear = (movieItem.getDate().length() >= 4) ? movieItem.getDate().substring(0, 4) : movieItem.getDate();
         queryResult.setYear(queryYear);
         String posterPath = (movieItem.getPoster() == null) ? "" : propertiesService.getNetworkProperties().getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
@@ -187,6 +185,7 @@ class ResponseParser {
     QueryResult parseTvItem(TvItem tvItem, QueryResult queryResult) {
         queryResult.setTheMovieDbId(tvItem.getId());
         queryResult.setTitle(tvItem.getTitle());
+        queryResult.setMediaType(MediaType.TV);
         queryResult.setDescription(tvItem.getDescription());
         String queryYear = (tvItem.getDate().length() >= 4) ? tvItem.getDate().substring(0, 4) : tvItem.getDate();
         queryResult.setYear(queryYear);
@@ -195,23 +194,28 @@ class ResponseParser {
         return queryResult;
     }
 
-    public QueryResult parseTmdbApiWithImdbId(String jsonString, QueryResult queryResult) {
+    public QueryResult parseTmdbApiWithImdbId(String jsonString, QueryResult incomingQueryResult) {
         if (jsonString == null) {
             LOG.error("[ json_parser ] Input is null");
-            return queryResult;
+            return incomingQueryResult;
         }
         try {
-            FindResults movieResults = new Gson().fromJson(jsonString, FindResults.class);
-            if (!movieResults.getMovieResults().isEmpty()) {
-                MovieItem movieItem = movieResults.getMovieResults().iterator().next();
-                return parseMovieItem(movieItem, queryResult);
-            }
-            TvItem tvItem = movieResults.getTvResults().iterator().next();
-            return parseTvItem(tvItem, queryResult);
+            FindResults findResults = new Gson().fromJson(jsonString, FindResults.class);
+            Optional<QueryResult> queryResultMovie = findResults
+                    .getMovieResults()
+                    .stream()
+                    .findFirst()
+                    .map(r -> parseMovieItem(r, incomingQueryResult));
+            Optional<QueryResult> queryResultTv = findResults
+                    .getTvResults()
+                    .stream()
+                    .findFirst()
+                    .map(tv -> parseTvItem(tv, incomingQueryResult));
+            return queryResultMovie.orElse(queryResultTv.orElse(incomingQueryResult));
         } catch (JsonSyntaxException ex) {
             LOG.error("[ json_parser ] Not a json object, {}", ex.getMessage());
         }
-        return queryResult;
+        return incomingQueryResult;
     }
 
     /*
@@ -232,6 +236,26 @@ class ResponseParser {
             LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
         }
         return mediaTransferData;
+    }
+
+    /*
+    * Same as above but with query result object TODO
+    * */
+    public QueryResult parseDetailsRequestByTmdbId(QueryResult queryResult, String responseJson) throws JsonParseException {
+        if (responseJson == null) {
+            LOG.error("[ json_parser ] Input is null");
+            return queryResult;
+        }
+        try {
+            MovieItem movieItem = new Gson().fromJson(responseJson, MovieItem.class);
+            System.out.println(movieItem);
+            queryResult.setTitle(movieItem.getTitle());
+            queryResult.setImdbId(movieItem.getImdbId());
+            queryResult.setYear(String.valueOf(LocalDate.parse(movieItem.getDate()).getYear()));
+        } catch (JsonSyntaxException ex) {
+            LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());
+        }
+        return queryResult;
     }
 
     /*

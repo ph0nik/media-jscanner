@@ -135,7 +135,7 @@
                     th:each="mpe, item : *{multiPartElementList}">
                     <td class="col">
                         <div class="form-check d-flex justify-content-end">
-                            <input class="form-check-input query-select" type="checkbox" value="-1"
+                            <input class="form-check-input query-select" type="checkbox" value="false"
                                    name="element-check"
                                    th:field="*{multiPartElementList[__${item.index}__].multipartSwitch}">
                             <input class="form-check-input" type="hidden" value="0"
