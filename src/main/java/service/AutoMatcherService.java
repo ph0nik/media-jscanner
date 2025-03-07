@@ -1,8 +1,7 @@
 package service;
 
-import model.DeductedQuery;
-import model.OperationResult;
 import model.MediaLink;
+import service.exceptions.NetworkException;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -16,16 +15,8 @@ public interface AutoMatcherService {
     // perform tmdb search and get results
     // if list contains only one element apply this single result
 
-    // test
-    // Quantum of Solace [2008].MULTi.2160p.UHD.BluRay.REMUX.HEVC.DTS-HD.MA.5.1-presa
-    // 1917.2019.MULTi.2160p.UHD.BluRay.REMUX.HDR10+.HEVC.TrueHD.ATMOS.7.1
-    DeductedQuery extractTitleAndYear(String path);
+    Future<List<MediaLink>> autoMatchFilesWithFuture() throws NetworkException;
 
-    Future<List<MediaLink>> autoMatchFilesWithFuture();
-
-    List<OperationResult> autoMatchSingleFile(Path path);
-
-
-        // regex - "\b^.+\d{4}\b"
+    int autoMatchSingleFile(Path path) throws NetworkException;
 
 }

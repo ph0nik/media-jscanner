@@ -19,12 +19,12 @@
             <ul th:switch="${user_paths}" class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!--                                new files-->
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
                         <!-- show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list.size()}"
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
                               class="badge bg-primary rounded-pill"></span>
                         <!-- for no links -->
-                        <span th:case="${false}" th:text="${query_list.size()}"
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>

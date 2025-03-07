@@ -11,31 +11,30 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class MoviesFileScanner implements MediaFilesScanner {
 
     public static final Logger LOG = LoggerFactory.getLogger(MoviesFileScanner.class);
-    private List<MediaLink> allMediaLinks;
 
-    public MoviesFileScanner() {
+    public List<Path> scanMediaFolders(List<FilePath> sourcePaths, List<MediaLink> existingMediaLinks) {
+//        this.allMediaLinks = existingMediaLinks;
+//        List<Path> candidateFilesList = new LinkedList<>();
+        return sourcePaths.stream()
+                .flatMap(p -> scanFolderTree(p.getPath(), existingMediaLinks).stream())
+                .collect(Collectors.toList());
+//        for (FilePath p : sourcePaths) {
+//            candidateFilesList.addAll(scanFolderTree(p.getPath(), existingMediaLinks));
+//        }
+//        return candidateFilesList;
     }
 
-    public List<Path> scanMediaFolders(List<FilePath> paths, List<MediaLink> allMediaLinks) {
-        this.allMediaLinks = allMediaLinks;
-        List<Path> candidateFilesList = new LinkedList<>();
-        for (FilePath p : paths) {
-            candidateFilesList.addAll(scanFolderTree(p.getPath()));
-        }
-        return candidateFilesList;
-    }
-
-    List<Path> scanFolderTree(Path root) {
-        NewFileLister newMoviesFiles = new NewFileLister(allMediaLinks);
+    List<Path> scanFolderTree(Path root, List<MediaLink> existingMediaLinks) {
+        NewFileLister newMoviesFiles = new NewFileLister(existingMediaLinks);
         try {
-            LOG.info("[ scan ] Movie scanner started...");
+            LOG.info("[ scan ] Scanning folder: {}", root);
             Files.walkFileTree(root, newMoviesFiles);
         } catch (IOException e) {
             LOG.error("[ scan ] Error: {}", e.getMessage());
@@ -44,7 +43,7 @@ public class MoviesFileScanner implements MediaFilesScanner {
     }
 
     // write file list for test
-    public void extractQueryList(List<Path> candidateFilesList) throws IOException {
+    public void extractQueryList(List<Path> candidateFilesList) {
         Path targetFile = Path.of("R:\\!_out.txt");
         try (BufferedWriter writer = Files.newBufferedWriter(targetFile, StandardCharsets.UTF_8)) {
             for (Path p : candidateFilesList) {

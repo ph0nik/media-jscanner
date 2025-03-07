@@ -18,8 +18,8 @@ import java.util.List;
 @Component("hibernate")
 public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
 
-    private static final String IGNORE_PATH = "ignored";
     private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
+    private final String ignorePath = "ignored";
 
     public MediaTrackerDaoImpl() {
     }

@@ -1,6 +1,8 @@
 package service;
 
 import model.path.FilePath;
+import service.exceptions.ConfigurationException;
+import service.exceptions.NoApiKeyException;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -10,6 +12,10 @@ public interface PropertiesService {
 
 
     public Properties getNetworkProperties();
+
+//    public Properties getApiToken(Properties networkProperties);
+
+    boolean checkApiToken();
 
     public boolean isUserTargetPath();
 
@@ -26,25 +32,28 @@ public interface PropertiesService {
      * Returns folder where symlinks should be stored.
      * */
     public Path getLinksFolderMovie();
-
     List<FilePath> getTargetFolderListTv();
-
     /*
      * Add target folder path to path list.
      * */
-    public void addTargetPathMovie(Path targetPath);
+    public PropertiesService addTargetPathMovie(Path targetPath) throws NoApiKeyException, ConfigurationException;
 
-    public void addTargetPathTv(Path targetPath);
+    public PropertiesService addTargetPathTv(Path targetPath) throws NoApiKeyException, ConfigurationException;
 
     /*
      * Set links path
      * */
-    public void setLinksPath(Path linksRoot);
+    public void setLinksPathMovie(Path linksRoot) throws NoApiKeyException, ConfigurationException;
 
 
-    void removeTargetPathMovie(Path of);
+    void removeTargetPathMovie(Path of) throws NoApiKeyException, ConfigurationException;
 
-    void removeTargetPathTv(Path of);
+    void removeTargetPathTv(Path of) throws NoApiKeyException, ConfigurationException;
 
     Path getLinksFolderTv();
+
+    /*
+    * Set tv links path
+    * */
+    void setLinksPathTv(Path linksRoot) throws NoApiKeyException, ConfigurationException;
 }

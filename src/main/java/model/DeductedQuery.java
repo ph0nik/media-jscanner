@@ -3,10 +3,10 @@ package model;
 public class DeductedQuery {
 
     private String phrase;
-    private String year;
+    private int year;
     private String path;
 
-    public DeductedQuery(String phrase, String year, String path) {
+    public DeductedQuery(String phrase, int year, String path) {
         this.phrase = phrase;
         this.year = year;
         this.path = path;
@@ -28,11 +28,11 @@ public class DeductedQuery {
         this.phrase = phrase;
     }
 
-    public String getYear() {
+    public int getYear() {
         return year;
     }
 
-    public void setYear(String year) {
+    public void setYear(int year) {
         this.year = year;
     }
 

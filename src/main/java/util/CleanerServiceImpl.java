@@ -62,8 +62,8 @@ public class CleanerServiceImpl implements CleanerService {
     }
 
     boolean deleteResult(Path f, boolean b) {
-        if (b) LOG.info("[ element_delete ] File {} deleted successfully", f);
-        else LOG.warn("[ element_delete ] File {} already in use", f);
+        if (b) LOG.info("[ element_delete ] File deleted: {}", f);
+        else LOG.warn("[ element_delete ] File in use: {}", f);
         return b;
     }
 

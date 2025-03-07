@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvBindByName;
 import service.backup.model.CsvBean;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "media_link")
@@ -81,6 +82,19 @@ public class MediaLink extends CsvBean {
 
     public void setTheMovieDbId(int theMovieDbId) {
         this.theMovieDbId = theMovieDbId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MediaLink mediaLink = (MediaLink) o;
+        return mediaId == mediaLink.mediaId && theMovieDbId == mediaLink.theMovieDbId && originalPresent == mediaLink.originalPresent && linkPath.equals(mediaLink.linkPath) && originalPath.equals(mediaLink.originalPath) && imdbId.equals(mediaLink.imdbId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mediaId, linkPath, originalPath, theMovieDbId, imdbId, originalPresent);
     }
 
     @Override

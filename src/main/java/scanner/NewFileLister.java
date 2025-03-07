@@ -13,8 +13,8 @@ import java.util.List;
 
 public class NewFileLister implements FileVisitor<Path> {
 
-    private List<MediaLink> existingMediaLinks;
-    private List<Path> candidateFilesList;
+    private final List<MediaLink> existingMediaLinks;
+    private final List<Path> candidateFilesList;
 
     public NewFileLister(List<MediaLink> existingMediaLinksList) {
         existingMediaLinks = existingMediaLinksList;
@@ -29,30 +29,30 @@ public class NewFileLister implements FileVisitor<Path> {
      * Checks if given path matches any paths already in database
      * */
     boolean containsPath(Path path) {
-        return existingMediaLinks.stream().anyMatch(x -> x.getOriginalPath().equals(path.toString()));
+        return existingMediaLinks.stream()
+                .anyMatch(x -> x.getOriginalPath().equals(path.toString()));
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         if (MediaFilter.validateExtension(file) && !containsPath(file)) {
             candidateFilesList.add(file);
-//            LOG.info("[ file_walk ] new path: {}", file);
         }
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 }

@@ -1,95 +1,72 @@
 package service;
 
-import com.google.gson.JsonParseException;
 import dao.MediaTrackerDao;
 import model.*;
-import org.jsoup.HttpStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import service.exceptions.NetworkException;
+import service.query.MediaQueryService;
+import service.query.TvQueryService;
 import util.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksService {
-
+public class MediaLinksServiceImpl implements MediaLinksService {
     private static final Logger LOG = LoggerFactory.getLogger(MediaLinksServiceImpl.class);
-    private static final String WHITESPACE = " ";
-    private static final MediaIdentity LINK_IDENTIFIER = MediaIdentity.IMDB;
     private static final int DEFAULT_YEAR_VALUE = 0; // 1000
-//    private Path link2sFolder;
-    private int queryListSize = 0;
-    private LastRequest lastRequest = null;
-    //    private MediaTrackerDao mediaTrackerDao;
-//    private CleanerService cleanerService;
-//    private MediaQueryService mediaQueryService;
-//    private PropertiesService propertiesService;
-//    private FileService fileService;
-//    private ResponseParser responseParser;
-//    private RequestService requestService;
-//
-//    @Autowired
-//    public MediaLinksServiceImpl(@Qualifier("spring") MediaTrackerDao dao, PropertiesService propertiesService,
-//                                 CleanerService cleanerService, MediaQueryService mediaQueryService, FileService fs) {
-////        super(dao, mediaQueryService);
-//        this.fileService = fs;
-////        this.queryListSize = 0;
-//        this.mediaQueryService = mediaQueryService;
-//        this.cleanerService = cleanerService;
-//        this.propertiesService = propertiesService;
-//        refreshUserPaths();
-//        mediaTrackerDao = dao;
-////        lastRequest = null;
-//        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
-//        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
-//    }
-    @Autowired
-    @Qualifier("spring")
-    private MediaTrackerDao mediaTrackerDao;
-    @Autowired
-    private CleanerService cleanerService;
-    @Autowired
-    private MediaQueryService mediaQueryService;
-    @Autowired
-    private PropertiesService propertiesService;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private ResponseParser responseParser;
-    @Autowired
-    private RequestService requestService;
+    private final MediaTrackerDao mediaTrackerDao;
+    private final CleanerService cleanerService;
+    private final PropertiesService propertiesService;
+    private final FileService fileService;
+    private final ResponseParser responseParser;
+    private final RequestService requestService;
+    private final Pagination<MediaLink> pagination;
+    private final MediaIdentity linkIdentifier = MediaIdentity.IMDB;
+    private LastRequest lastRequest;
+    private QueryResult currentQueryResult;
+    private List<MediaLink> currentMediaLinks = new LinkedList<>();
 
-    public MediaLinksServiceImpl() {}
-
-//    @PostConstruct
-//    void refreshUserPaths() {
-////        linksFolder = propertiesService.getLinksFolderMovie();
-////        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
-////        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
-//    }
-
-    @Override
-    public List<MediaQuery> getMediaQueryList() {
-        queryListSize = mediaQueryService.getCurrentMediaQueries().size();
-        return mediaQueryService.getCurrentMediaQueries();
+    public MediaLinksServiceImpl(@Qualifier("spring") MediaTrackerDao dao,
+                                 PropertiesService propertiesService,
+                                 CleanerService cleanerService,
+                                 FileService fs,
+                                 Pagination<MediaLink> pagination,
+                                 RequestService requestService,
+                                 ResponseParser responseParser) {
+        this.mediaTrackerDao = dao;
+        this.propertiesService = propertiesService;
+        this.cleanerService = cleanerService;
+        this.fileService = fs;
+        this.pagination = pagination;
+        this.requestService = requestService;
+        this.responseParser = responseParser;
     }
 
     @Override
-    public int getMediaQueryListSize() {
-        return queryListSize;
+    public Page<MediaLink> getPageableLinks(Pageable pageable, List<MediaLink> mediaLinkList) {
+        return pagination.getPage(pageable, mediaLinkList);
+    }
+
+    public QueryResult getCurrentQueryResult() {
+        return currentQueryResult;
+    }
+
+    public void setCurrentQueryResult(QueryResult currentQueryResult) {
+        this.currentQueryResult = currentQueryResult;
     }
 
     /*
@@ -98,24 +75,50 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
      * On connection error it returns query result elements with error description.
      * */
     @Override
-    public List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity) {
+    public List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity,
+                                               MediaQueryService mediaQueryService)
+            throws NetworkException {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
-        List<QueryResult> webSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.WEB_SEARCH);
-        List<QueryResult> tmdbSearchResults = generalSearchRequest(customQuery, mediaQuery, mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API);
-        tmdbSearchResults.addAll(webSearchResults);
-        lastRequest = new LastRequest(tmdbSearchResults, mediaQuery);
-        return tmdbSearchResults;
+        List<QueryResult> combinedSearchResults = List.of();
+        if (mediaQuery.getMediaType() == MediaType.MOVIE) {
+            List<QueryResult> webSearchResults = generalSearchRequest(customQuery, mediaQuery,
+                    mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.WEB_SEARCH);
+            combinedSearchResults = generalSearchRequest(customQuery, mediaQuery,
+                    mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API);
+            combinedSearchResults.addAll(webSearchResults);
+        }
+        if (mediaQuery.getMediaType() == MediaType.TV) {
+            List<QueryResult> webSearchResults = generalSearchRequest(customQuery, mediaQuery,
+                    mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.WEB_SEARCH);
+            combinedSearchResults = generalSearchRequest(customQuery, mediaQuery,
+                    mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API_TV);
+            combinedSearchResults.addAll(webSearchResults);
+        }
+        lastRequest = new LastRequest(combinedSearchResults, mediaQuery);
+        return combinedSearchResults;
     }
 
     @Override
-    public List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaIdentity mediaIdentity, int year) {
+    public List<QueryResult> searchTmdbWithTitleAndYear(String customQuery,
+                                                        MediaIdentity mediaIdentity,
+                                                        int year,
+                                                        MediaQueryService mediaQueryService)
+            throws NetworkException {
         LOG.info("[ search_with_year ] {} | {} | {}", customQuery, mediaIdentity, year);
-        return generalSearchRequest(customQuery, mediaQueryService.getReferenceQuery(),
-                mediaIdentity, year, SearchType.TMDB_API);
+        MediaQuery referenceQuery = mediaQueryService.getReferenceQuery();
+        if (referenceQuery.getMediaType() == MediaType.MOVIE) {
+            return generalSearchRequest(customQuery, referenceQuery,
+                    mediaIdentity, year, SearchType.TMDB_API);
+        }
+        return generalSearchRequest(customQuery, referenceQuery,
+                mediaIdentity, year, SearchType.TMDB_API_TV_YEAR);
     }
 
     @Override
-    public List<QueryResult> searchWithImdbId(String imdbLink, MediaIdentity mediaIdentity) {
+    public List<QueryResult> searchWithImdbId(String imdbLink,
+                                              MediaIdentity mediaIdentity,
+                                              MediaQueryService mediaQueryService)
+            throws NetworkException {
         String imdbId = TextExtractTools.getImdbIdFromLink(imdbLink);
         LOG.info("[ search_with_imdb_id ] {}", imdbId);
         return generalSearchRequest(imdbId, mediaQueryService.getReferenceQuery(),
@@ -127,71 +130,107 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
      * If any of requests throws exception, an error information is returned as QueryResult object to client.
      * */
     List<QueryResult> generalSearchRequest(String customQuery, MediaQuery mediaQuery,
-                                           MediaIdentity mediaIdentity, int year, SearchType searchType) {
+                                           MediaIdentity mediaIdentity, int year, SearchType searchType)
+            throws NetworkException {
         String query = (customQuery.isEmpty()) ? mediaQuery.getQuery() : customQuery;
+        String filePath = mediaQuery.getFilePath();
         try {
             String searchResultsJson;
-            if (searchType == SearchType.TMDB_API) {
-                searchResultsJson = requestService.tmdbApiTitleAndYear(
-                        new DeductedQuery(query, String.valueOf(year), mediaQuery.getFilePath()));
-                // TODO multisearch results for tmdb request
-//                searchResults = requestService.tmdbMultiSearch(deductedQuery);
-//                queryResults = responseParser.parseTmdbApiSearchResults(searchResults, filePath);
-                return responseParser.parseTmdbApiSearchResults(searchResultsJson, mediaQuery.getFilePath());
+            if (searchType == SearchType.TMDB_API) { // title and year search with tmdb
+                searchResultsJson = requestService.tmdbApiTitleAndYearMovie(query, year);
+                return responseParser.parseTmdbApiMovieResults(searchResultsJson, filePath);
             }
-            if (searchType == SearchType.TMDB_API_IMDB_ID) {
-                QueryResult queryResult = new QueryResult(mediaQuery.getFilePath());
+            if (searchType == SearchType.TMDB_API_IMDB_ID) { // imdb id search with tmdb
+                QueryResult queryResult = new QueryResult(filePath);
                 queryResult.setImdbId(customQuery);
                 searchResultsJson = requestService.tmdbApiRequestWithSpecifiedId(queryResult, mediaIdentity);
-                return List.of(responseParser.parseTmdbApiWithImdbId(searchResultsJson, queryResult));
+                return responseParser.parseTmdbApiWithImdbId(searchResultsJson, queryResult);
             }
-            searchResultsJson = requestService.webSearchRequest(query);
-            return responseParser.parseWebSearchResults(searchResultsJson, mediaQuery.getFilePath(), mediaIdentity);
-        } catch (HttpStatusException e) {
-            QueryResult errorQuery = createErrorResponse(mediaQuery.getFilePath(),
-                    e.getUrl(),
-                    "Connection error: " + e.getStatusCode());
-            LOG.error("[ general_search ] Connection error: {} @ {}", e.getStatusCode(), e.getUrl());
-            return List.of(errorQuery);
-        } catch (UnknownHostException e) {
-            String errorMessage = "[ general_search ] Host not found: " + e.getMessage();
-            QueryResult errorQuery = createErrorResponse(mediaQuery.getFilePath(),
-                    e.getMessage(),
-                    errorMessage);
-            LOG.error(errorMessage);
-            return List.of(errorQuery);
+            if (searchType == SearchType.TMDB_API_TV) { // initial search for tv
+                searchResultsJson = requestService.tmdbApiTvRequest(
+                        TextExtractTools.extractTitleFromTvElement(query));
+                return responseParser.parseTmdbApiTvResults(searchResultsJson, filePath);
+            }
+            if (searchType == SearchType.TMDB_API_TV_YEAR) { // search with title and year for tv
+                searchResultsJson = requestService.tmdbApiTitleAndYearTv(query, year);
+                return responseParser.parseTmdbApiTvResults(searchResultsJson, filePath);
+            }
+            searchResultsJson = requestService.webSearchRequest(query); // web search with phrase
+            if (mediaQuery.getMediaType() == MediaType.TV) {
+                return responseParser.parseTvWebResults(searchResultsJson, filePath);
+            }
+            return responseParser.parseMovieWebResults(searchResultsJson, filePath);
+//        }
+//        catch (HttpStatusException e) {
+//            LOG.error("[ general_search ] Connection error: {} @ {}", e.getStatusCode(), e.getUrl());
+//        }
+//        catch (UnknownHostException e) {
+//            String errorMessage = "[ general_search ] Host not found: " + e.getMessage();
+//            LOG.error(errorMessage);
         } catch (IOException e) {
             String errorMessage = "[ general_search ] IO Exception: " + e.getMessage();
-            QueryResult errorQuery = createErrorResponse(mediaQuery.getFilePath(),
-                    e.getMessage(),
-                    errorMessage);
             LOG.error(errorMessage);
-            return List.of(errorQuery);
         }
+        return new LinkedList<>();
     }
 
-    QueryResult createErrorResponse(String originalPath, String errorMessage, String errorDescription) {
-        QueryResult errorQuery = new QueryResult(originalPath);
-        errorQuery = fillNullEntries(errorQuery);
-        errorQuery.setTheMovieDbId(-1);
-        errorQuery.setTitle(errorMessage);
-        errorQuery.setDescription(errorDescription);
-        return errorQuery;
+    // TODO create new service for getting info only, extend it with media query service
+    @Override
+    public QueryResult getTvDetails(QueryResult queryResult, int seasonNumber) throws NetworkException {
+//        int seasonNumber = TextExtractTools.extractSeasonNumber(queryResult.getOriginalPath());
+//        LOG.info("[ episode_list ] Seasons extracted: {}", seasonNumber);
+
+        if (queryResult.getTheMovieDbId() == 0) { // if no tmdb id found send request with imdb id
+            LOG.info("[ episode_list ] No tmdb id found, sending request with imdb id: {}", queryResult.getImdbId());
+            String responseJson = requestService.tmdbApiRequestWithSpecifiedId(queryResult, MediaIdentity.IMDB);
+            List<QueryResult> queryResults = responseParser.parseTmdbApiWithImdbId(responseJson, queryResult);
+            queryResult = queryResults.stream().findFirst().orElse(null);
+        }
+        if (queryResult != null) {
+            LOG.info("[ episode_list ] Found matching episodes.");
+            String response = requestService.tmdbGetSeasonDetails(queryResult);
+            queryResult = responseParser.parseTvDetail(queryResult, response, seasonNumber);
+            // if episodecount == 0 thore ex for incorrect season
+        }
+        setCurrentQueryResult(queryResult);
+        return queryResult;
     }
 
     /*
-     * Checks for every nullable object parameter and fills it with empty string
+     * Based on query result and season number create media links for grouped media queries
      * */
-    QueryResult fillNullEntries(QueryResult queryResult) {
-        if (queryResult.getUrl() == null) queryResult.setUrl("");
-        if (queryResult.getOriginalPath() == null) queryResult.setOriginalPath("");
-        if (queryResult.getImdbId() == null) queryResult.setImdbId("");
-        if (queryResult.getDescription() == null) queryResult.setDescription("");
-        if (queryResult.getTitle() == null) queryResult.setTitle("");
-        if (queryResult.getPoster() == null) queryResult.setPoster("");
-        if (queryResult.getYear() == null) queryResult.setYear("");
-        return queryResult;
+    @Override
+    public List<MediaLink> createMediaLinksTv(QueryResult queryResult, int seasonNumber,
+                                              TvQueryService tvQueryService) throws FileNotFoundException {
+        List<MediaQuery> groupedQueries = tvQueryService.getGroupedQueriesWithChild(queryResult.getOriginalPath());
+        List<MediaLink> mediaLinks = new LinkedList<>();
+        fileService.setLinksRootFolder(propertiesService.getLinksFolderTv());
+        int index = 1;
+        for (MediaQuery mq : groupedQueries) {
+            queryResult.setOriginalPath(mq.getFilePath());
+            Path tvEpisodePath = fileService.createTvEpisodePath(queryResult, seasonNumber, index++, MediaIdentity.IMDB);
+            MediaLink mediaLink = new MediaLink();
+            mediaLink.setOriginalPath(mq.getFilePath());
+            mediaLink.setLinkPath(tvEpisodePath.toString());
+            mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
+            mediaLink.setImdbId(queryResult.getImdbId());
+            mediaLinks.add(mediaLink);
+        }
+        return mediaLinks;
     }
+
+    @Override
+    public void setCurrentMediaLinks(List<MediaLink> mediaLinks) {
+        currentMediaLinks = mediaLinks;
+    }
+
+//    public List<MediaLink> editExistingMediaLinksTv(MediaLinkDto mediaLinkDto) {
+//        List<TvMediaLinkDto> mediaLinkDtos = mediaLinkDto.getMediaLinkDtos();
+//        for (TvMediaLinkDto tvMediaLinkDto : mediaLinkDtos) {
+//            MediaLink mediaLink = tvMediaLinkDto.getMediaLink();
+//
+//        }
+//    }
 
     @Override
     public LastRequest getLatestMediaQueryRequest() {
@@ -199,28 +238,35 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     @Override
-    public List<OperationResult> createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity) {
-        return mediaQueryService.getProcessList()
-                .stream()
-                .map(mq -> createFileLink(queryResult, mediaIdentity, mq))
-                .collect(Collectors.toList());
+    public int createFileLink(QueryResult queryResult,
+                                                MediaIdentity mediaIdentity,
+                                                MediaQueryService mediaQueryService)
+            throws NetworkException {
+        int processed = 0;
+        for (MediaQuery mq : mediaQueryService.getProcessList()) {
+            createFileLink(queryResult, mediaIdentity, mq, mediaQueryService);
+            processed++;
+        }
+        return processed;
+        // TODO custom model with ok/error response
     }
 
     // TODO separate elements of the process, get the data and return list of medialinks with given
     // results, then process list and create actual links
-    OperationResult createFileLink(QueryResult queryResult, MediaIdentity mediaIdentifier, MediaQuery mediaQuery) {
+    OperationResult createFileLink(QueryResult queryResult,
+                                   MediaIdentity mediaIdentifier,
+                                   MediaQuery mediaQuery,
+                                   MediaQueryService mediaQueryService)
+            throws NetworkException {
         // naming pattern -> Film (2018) [tmdbid-65567]
         // send request to themoviedb api with given query result
-        // TODO temporary, probably merge query result and media transfer data objects
-//        queryResult.setOriginalPath(mediaQuery.getFilePath());
-        MediaTransferData mediaTransferData = new MediaTransferData();
-        mediaTransferData.setMediaType(mediaQuery.getMediaType());
-        mediaTransferData.setPartNumber(mediaQuery.getMultipart());
+        queryResult.setMultipart(mediaQuery.getMultipart());
+        queryResult.setMediaType(mediaQuery.getMediaType());
+        queryResult.setOriginalPath(mediaQuery.getFilePath());
         OperationResult operationResult;
-        mediaTransferData = getSelectionDetails(mediaTransferData, queryResult, mediaIdentifier);
+        queryResult = getSelectionDetails(queryResult, mediaIdentifier);
         try {
-            // TODO break here into multiple modules
-            MediaLink mediaLink = createFilePaths(queryResult, mediaTransferData);
+            MediaLink mediaLink = createFilePaths(queryResult);
             operationResult = createHardLinkWithDirectories(mediaLink);
             if (operationResult.isCreationStatus() && !linkRecordExist(mediaLink)) {
                 mediaTrackerDao.addNewLink(mediaLink);
@@ -241,88 +287,37 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
                                 ml.getOriginalPath().equals(mediaLink.getOriginalPath()));
     }
 
-    MediaLink createFilePaths(QueryResult queryResult, MediaTransferData mediaTransferData) throws FileNotFoundException {
+    MediaLink createFilePaths(QueryResult queryResult) throws FileNotFoundException {
         Path originalPath = Path.of(queryResult.getOriginalPath());
         Path linkPath = Path.of("");
         fileService.setLinksRootFolder(propertiesService.getLinksFolderMovie());
-        if (mediaTransferData.getMediaType() == MediaType.MOVIE) {
-            linkPath = fileService.createMovieLinkPath(queryResult, mediaTransferData, LINK_IDENTIFIER);
+        if (queryResult.getMediaType() == MediaType.MOVIE) {
+            linkPath = fileService.createMovieLinkPath(queryResult, linkIdentifier);
         }
-        if (mediaTransferData.getMediaType() == MediaType.EXTRAS) {
-            linkPath = fileService.createExtrasLinkPath(queryResult, mediaTransferData, LINK_IDENTIFIER);
+        if (queryResult.getMediaType() == MediaType.EXTRAS) {
+            linkPath = fileService.createExtrasLinkPath(queryResult, linkIdentifier);
         }
         MediaLink mediaLink = new MediaLink();
         mediaLink.setOriginalPath(originalPath.toString());
         mediaLink.setLinkPath(linkPath.toString());
-        mediaLink.setTheMovieDbId(mediaTransferData.getTmdbId());
-        mediaLink.setImdbId(mediaTransferData.getImdbId());
+        mediaLink.setTheMovieDbId(queryResult.getTheMovieDbId());
+        mediaLink.setImdbId(queryResult.getImdbId());
         return mediaLink;
     }
 
-    MediaTransferData getSelectionDetails(MediaTransferData mediaTransferData, QueryResult queryResult, MediaIdentity mediaIdentifier) {
-        MediaLink mediaLink = new MediaLink();
-        String response;
-        try {
-            response = requestService.tmdbApiRequestWithSpecifiedId(queryResult, mediaIdentifier);
-            LOG.info("[ link ] extracting json data...");
-            LOG.info("[ link ] {}", queryResult);
-            if (mediaIdentifier == MediaIdentity.TMDB) {
-                mediaTransferData = responseParser.parseDetailsRequestByTmdbId(mediaTransferData, response);
-                mediaTransferData.setTmdbId(queryResult.getTheMovieDbId());
-            }
-            if (mediaIdentifier == MediaIdentity.IMDB) {
-                mediaTransferData = responseParser.parseDetailsRequestByExternalId(mediaTransferData, response);
-                mediaTransferData.setImdbId(queryResult.getImdbId());
-            }
-        } catch (HttpStatusException e) {
-            LOG.error("[ link ] {}", e.getMessage());
-            String message = e.getStatusCode() + " : " + e.getMessage();
-            mediaTransferData.setLinkCreationResult(new OperationResult(false, message, mediaLink));
-        } catch (IOException | JsonParseException e) {
-            LOG.error("[ link ] {}", e.getMessage());
-            mediaTransferData.setLinkCreationResult(new OperationResult(false, e.getMessage(), mediaLink));
-        } finally {
-            response = null;
+    QueryResult getSelectionDetails(QueryResult queryResult, MediaIdentity mediaIdentifier)
+            throws NetworkException {
+        String response = requestService.tmdbApiRequestWithSpecifiedId(queryResult, mediaIdentifier);
+        LOG.info("[ link ] extracting json data...");
+        LOG.info("[ link ] {}", queryResult);
+        if (mediaIdentifier == MediaIdentity.TMDB) {
+            queryResult = responseParser.parseDetailsRequestByTmdbId(queryResult, response);
         }
-        if (mediaTransferData.getTitle() == null || mediaTransferData.getTitle().isEmpty()) {
-            String resultMessage = "Unable to create link, MediaData object is empty";
-            LOG.error("[ link ] {}", resultMessage);
-            mediaTransferData.setLinkCreationResult(new OperationResult(false, resultMessage, mediaLink));
+        if (mediaIdentifier == MediaIdentity.IMDB) {
+            queryResult = responseParser.parseDetailsRequestByExternalId(queryResult, response);
         }
-        return mediaTransferData;
+        return queryResult;
     }
-//    QueryResult getSelectionDetails(QueryResult queryResult, MediaIdentity mediaIdentifier) {
-//        MediaLink mediaLink = new MediaLink();
-//        String response;
-//        try {
-//            response = requestService.tmdbApiRequestWithSpecifiedId(queryResult, mediaIdentifier);
-//            LOG.info("[ link ] extracting json data...");
-//            LOG.info("[ link ] {}", queryResult);
-//            if (mediaIdentifier == MediaIdentity.TMDB) {
-//                mediaTransferData = responseParser.parseDetailsRequestByTmdbId(mediaTransferData, response);
-//                mediaTransferData.setTmdbId(queryResult.getTheMovieDbId());
-//            }
-//            if (mediaIdentifier == MediaIdentity.IMDB) {
-//                mediaTransferData = responseParser.parseDetailsRequestByExternalId(mediaTransferData, response);
-//                mediaTransferData.setImdbId(queryResult.getImdbId());
-//            }
-//        } catch (HttpStatusException e) {
-//            LOG.error("[ link ] {}", e.getMessage());
-//            String message = e.getStatusCode() + " : " + e.getMessage();
-//            mediaTransferData.setLinkCreationResult(new OperationResult(false, message, mediaLink));
-//        } catch (IOException | JsonParseException e) {
-//            LOG.error("[ link ] {}", e.getMessage());
-//            mediaTransferData.setLinkCreationResult(new OperationResult(false, e.getMessage(), mediaLink));
-//        } finally {
-//            response = null;
-//        }
-//        if (mediaTransferData.getTitle() == null || mediaTransferData.getTitle().isEmpty()) {
-//            String resultMessage = "Unable to create link, MediaData object is empty";
-//            LOG.error("[ link ] {}", resultMessage);
-//            mediaTransferData.setLinkCreationResult(new OperationResult(false, resultMessage, mediaLink));
-//        }
-//        return mediaTransferData;
-//    }
 
     @Override
     public OperationResult createHardLinkWithDirectories(MediaLink mediaLink) {
@@ -341,34 +336,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
      *           existingLink - boolean value representing current state of link, for existing links
      *           use true to invert and recreate original, source file.
      * */
-    OperationResult createHardLinkWithDirectories(MediaLink mediaLink, boolean existingLink) {
-        LOG.info("[ link ] {}", mediaLink);
-        Path linkPath = (existingLink) ? Path.of(mediaLink.getOriginalPath()) : Path.of(mediaLink.getLinkPath());
-//        Path parentLinkPath = linkPath.getRoot().resolve(linkPath.subpath(0, linkPath.getNameCount() - 1));
-        Path parentLinkPath = linkPath.getParent();
-        if (!Files.exists(Path.of(mediaLink.getOriginalPath()))) {
-            return new OperationResult(false, "no original", mediaLink);
-        }
-        try {
-            if (!Files.exists(parentLinkPath)) {
-                Files.createDirectories(parentLinkPath);
-                LOG.info("[ link ] creating folder...: {}", parentLinkPath);
-            }
-            LOG.info("[ link ] creating link...");
-            Path target = (existingLink) ? Path.of(mediaLink.getLinkPath()) : Path.of(mediaLink.getOriginalPath());
-            Path link = (existingLink) ? Path.of(mediaLink.getOriginalPath()) : Path.of(mediaLink.getLinkPath());
-            Files.createLink(link, target);
-            LOG.info("[ link ] link created: {} => {}", mediaLink.getLinkPath(), mediaLink.getOriginalPath());
-            return new OperationResult(true, "New link added", mediaLink);
-        } catch (FileAlreadyExistsException e) {
-            LOG.error("[ link ] Link already exists: {}", e.getMessage());
-            return new OperationResult(true, "File already exists: " + e.getMessage(), mediaLink);
-        } catch (IOException | SecurityException e) {
-            LOG.error(e.getMessage());
-            return new OperationResult(false, e.getMessage(), mediaLink);
-        }
-    }
-
     public OperationResult createHardLinkWithDirectories(Path linkPath, Path incomingPath) {
         Path parentLinkPath = linkPath.getParent();
         if (!Files.exists(incomingPath)) {
@@ -394,7 +361,7 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     }
 
     @Override
-    public MediaLink ignoreMediaFile() {
+    public MediaLink ignoreMediaFile(MediaQueryService mediaQueryService) {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
         MediaLink mediaIgnored = new MediaLink();
         mediaIgnored.setOriginalPath(mediaQuery.getFilePath());
@@ -444,14 +411,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
                 .collect(Collectors.toList());
     }
 
-    boolean linkContains(MediaLink mediaLink, String[] strings) {
-        return Arrays.stream(strings).allMatch(str ->
-                mediaLink.getOriginalPath().toLowerCase().contains(str) ||
-                        mediaLink.getLinkPath().toLowerCase().contains(str)
-        );
-    }
-
-
     @Override
     public List<MediaLink> searchMediaIgnoredList(String query) {
         return searchMediaLinks(query, true);
@@ -481,12 +440,15 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
      * Remove link record if neither original nor link file exists.
      * */
     void clearInvalidLinks() {
+        // TODO add log info about deleted links
         getMediaLinks().stream()
                 .filter(ml -> !ml.isOriginalPresent())
-                .filter(ml -> !validatePath(ml.getLinkPath()))
+                .filter(ml -> !fileService.validatePath(ml.getLinkPath()))
                 .forEach(ml -> mediaTrackerDao.removeLink(ml.getMediaId()));
     }
 
+    // TODO rescan existing links to update link status
+    // TODO when scanning for new files show creation date (last modified) and file size
     @Override
     public void moveBackToQueue(long mediaLinkId) {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
@@ -497,13 +459,10 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
             operationResult.setMediaLink(mediaLink);
         }
         mediaTrackerDao.removeLink(mediaLinkId); // remove from db
-        cleanerService.clearEmptyFolders(Path.of(mediaLink.getLinkPath()).getParent()); // clear parent folder
+        Path elementToBeRemoved = Path.of(mediaLink.getLinkPath());
+        cleanerService.deleteSingleFile(elementToBeRemoved);
+        cleanerService.clearEmptyFolders(elementToBeRemoved.getParent()); // clear parent folder
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
-    }
-
-    List<MediaLink> getLinksBySharedFolder(MediaLink mediaLink) {
-        Path linkParent = Path.of(mediaLink.getLinkPath()).getParent();
-        return mediaTrackerDao.findInLinkPathLink(linkParent.toString());
     }
 
     @Override
@@ -530,7 +489,6 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
     @Override
     public void unIgnoreMedia(long mediaIgnoreId) {
         MediaLink mediaLink = mediaTrackerDao.removeLink(mediaIgnoreId);
-//        MediaQuery mediaQuery = mediaQueryService.addQueryToQueue(mediaLink.getOriginalPath());
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
 
     }
@@ -539,27 +497,11 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
      * Checks if original path of given media link exists and updates boolean value if needed.
      * */
     MediaLink validateLink(MediaLink mediaLink) {
-        if (!validatePath(mediaLink.getOriginalPath()) && mediaLink.isOriginalPresent()) {
+        if (!fileService.validatePath(mediaLink.getOriginalPath()) && mediaLink.isOriginalPresent()) {
             mediaLink.setOriginalPresent(false);
             mediaTrackerDao.updateLink(mediaLink);
         }
         return mediaLink;
-    }
-
-    /*
-     * Checks whether given path of file or directory exists
-     * */
-    @Override
-    public boolean validatePath(String path) {
-        return Path.of(path).toFile().exists();
-    }
-
-    // test
-    @Override
-    public void removeEmptyFolders() {
-        propertiesService.getTargetFolderListMovie().forEach(mp -> cleanerService.clearEmptyFolders(mp.getPath()));
-        propertiesService.getTargetFolderListTv().forEach(tvp -> cleanerService.clearEmptyFolders(tvp.getPath()));
-//        propertiesService.getTargetFolderListMovie().forEach(cleanerService::clearEmptyFolders);
     }
 
     @Override
@@ -597,13 +539,4 @@ public class MediaLinksServiceImpl extends PaginationImpl implements MediaLinksS
             }
         }
     }
-
-    /*
-     * Returns true if more than one media file belongs to the same directory at the same level
-     * */
-    @Override
-    public boolean isMultipart(MediaQuery mediaQuery) {
-        return mediaQueryService.getGroupedQueries(mediaQuery.getQueryUuid()).size() > 1;
-    }
-
 }

@@ -16,23 +16,34 @@
 </head>
 <body class="container-fluid">
 
-<div class="row bg-light justify-content-between" id="top">
-    <div class="col-auto">
-        <nav class="nav navbar-light bg-light">
+<div class="row" id="top">
+    <!--    top menu-->
+    <nav class="nav navbar-light bg-light align-items-center">
+        <div class="col">
             <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
-                <span class="navbar-brand navbar-brand h1">media-jscanner</span>
+                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list_size > 0}" class="nav-link" href="/query">new files
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
                         <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_size}"
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
                               class="badge bg-primary rounded-pill"></span>
                         <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_size}"
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link active" href="/links">links
+                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_tv.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_tv.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link active" th:href="${tab_links}">links
                         <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -41,49 +52,52 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+                <!--ignored-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/ignored">ignored</a>
+                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
+                        ignored
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/config">config</a>
+                    <a class="nav-link" th:href="${tab_config}">settings</a>
                 </li>
             </ul>
-
-        </nav>
-    </div>
-    <!--        <div class="col"></div>-->
-<!--    <div class="col-auto">-->
-        <!--scan folders-->
-        <div class="col-auto d-flex justify-content-center m-2">
-            <form action="#"
-                  th:action="@{/scan}"
-                  method="get">
-                <input type="hidden">
-                <button class="btn btn-success" type="submit">
-                    <span class="m-2">Refresh</span>
-                    <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
-            </form>
         </div>
-<!--    </div>-->
-
+        <div class="col"></div>
+        <div class="col-2">
+            <!--scan folders-->
+            <div class="col d-flex justify-content-center p-1">
+                <form action="#"
+                      th:action="@{__${movie_scan}__}"
+                      method="get">
+                    <input type="hidden">
+                    <button class="btn btn-success" type="submit">
+                        <span class="m-2">Refresh</span>
+                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
+                </form>
+            </div>
+        </div>
+    </nav>
 </div>
 <!--error, no user paths found-->
-<div th:if="${!user_paths}" class="row justify-content-center">
-    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
-        User provided paths not found! Please, add proper paths in config tab.
+<div class="row">
+    <div class="col-4">
+        <h2 class="col text-secondary">Links</h2>
+    </div>
+    <div class="col-auto">
+        <div th:if="${!user_paths}" class="row justify-content-center">
+            <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+                User provided paths not found! Please, add proper paths in config tab.
+            </div>
+        </div>
     </div>
 </div>
-<!--<div class="row" th:switch="${user_paths}">-->
-<!--    <div th:case="${false}" class="col-auto">-->
-<!--        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">-->
-<!--            <p class="text-danger text-center">You can set up folders in the <code><b><u>config</u></b></code>-->
-<!--                tab</p>-->
-<!--        </div>-->
-
-<!--    </div>-->
-<!--</div>-->
 <!--page selection-->
-<div class="row justify-content-between m-2">
+<div class="row justify-content-between">
     <div class="col-2">
         <nav aria-label="...">
             <ul class="justify-content-start pagination pagination-sm">
@@ -111,13 +125,13 @@
     <div class="col-4">
         <form class="d-flex"
               action="#"
-              th:action="@{/search-link/}"
+              th:action="@{__${link_search}__}"
               method="post">
             <div class="input-group input-group-sm">
                 <input type="search" class="form-control" placeholder="Search links..."
                        aria-label="queries search"
                        aria-describedby="button-addon2" name="search" id="search">
-                <button class="btn btn-primary btn-sm" type="submit" id="button-addon2">Search</button>
+                <button class="btn btn-light btn-sm" type="submit" id="button-addon2">Search</button>
             </div>
         </form>
     </div>
@@ -144,46 +158,40 @@
     </div>
 </div>
 <!--table-->
-<div class="row m-2">
+<div class="row">
     <table class="table table-dark table-hover table-sm table-striped table-borderless">
         <!--        table head-->
         <thead>
-        <tr class="row m-0 text-white-50">
-            <th class="col-1 text-center">id</th>
-            <th class="col">
+        <tr class="text-white-50 align-middle">
+            <th scope="col" width="5%" class="text-center">id</th>
+            <th scope="col" width="70%" class="">
                 <a href="/links?sort=target">target</a>
                 <span>|</span>
                 <a href="/links?sort=link">link</a>
             </th>
-            <th class="col-1 text-center">
-                tmdb
-            </th>
-            <th class="col-1 text-center">
-                imdb
-            </th>
+            <th scope="col" class="text-center">tmdb</th>
+            <th scope="col" class="text-center">imdb</th>
             <!--invalid links button-->
-            <th class="col-2 text-start">
-                <div class="row">
-                    <form class="d-flex"
-                          action="#"
-                          th:action="@{/clear-links/}"
-                          method="get">
-                        <button class="btn btn-dark btn-sm" type="submit" id="clear-links">
-                            <i class="fa-regular fa-trash-can m-2"></i>Clear invalid links
-                        </button>
-                    </form>
-                </div>
+            <th scope="col" class="">
+                <form class="d-flex"
+                      action="#"
+                      th:action="@{__${link_clear}__}"
+                      method="get">
+                    <button class="btn btn-dark btn-sm" type="submit" id="clear-links">
+                        <i class="fa-regular fa-trash-can m-2"></i>Clear invalid links
+                    </button>
+                </form>
             </th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
-        <tr class="row m-0 pt-1" th:each="link, iter : ${page.getContent()}">
-            <td class="col-1 text-center">
+        <tr th:each="link, iter : ${page.getContent()}">
+            <td scope="row" class="text-center">
                 <span th:text="${link.mediaId}"></span>
             </td>
             <!--            paths-->
-            <td class="col">
+            <td>
                 <div class="flex" th:if="${link.originalPresent}">
                     <i class="fa-solid text-success fa-check"></i>
                     <span th:text="${link.originalPath}" class="fs-6 fw-bold text-muted">
@@ -195,6 +203,7 @@
                         original not present
                     </span>
                 </div>
+                <hr class="hr" />
                 <div class="flex">
                     <i class="fa-solid fa-link"></i>
                     <span th:text="${link.linkPath}" class="fs-6 fw-normal">
@@ -202,19 +211,19 @@
                 </div>
             </td>
             <!--            tmdb id-->
-            <td class="col-1 text-center">
-                <span th:text="${link.theMovieDbId}" class="fs-6 fw-bold font-monospace">tmdbi_id</span>
+            <td class="fs-6 fw-bold font-monospace text-center">
+                <span th:text="${link.theMovieDbId}">tmdbi_id</span>
             </td>
             <!--            imdb id-->
-            <td class="col-1 text-center">
-                <span th:text="${link.imdbId}" class="fs-6 fw-bold font-monospace">imdb_id</span>
+            <td class="fs-6 fw-bold font-monospace text-center">
+                <span th:text="${link.imdbId}">imdb_id</span>
             </td>
             <!--            remove orignal file-->
-            <td class="col-2 text-start">
-                <div class="row">
+            <td>
+
                     <form th:if="${link.originalPresent}"
                           action="#"
-                          th:action="@{/delete-original/{id}(id=${link.mediaId})}"
+                          th:action="@{__${link_delete_org}__{id}(id=${link.mediaId})}"
                           method="post">
                         <button class="btn btn-link link-danger btn-sm" type="submit"><i class="fa-solid fa-xmark"></i>
                             Delete source
@@ -222,31 +231,31 @@
                     </form>
                     <form th:if="${!link.originalPresent}"
                           action="#"
-                          th:action="@{/restore-original/{id}(id=${link.mediaId})}"
+                          th:action="@{__${link_restore_org}__{id}(id=${link.mediaId})}"
                           method="post">
                         <button class="btn btn-link link-primary btn-sm" type="submit"><i
                                 class="fa-solid fa-trash-arrow-up"></i> Restore source
                         </button>
                     </form>
-                </div>
-                <div class="row">
+
                     <!--test-->
                     <!--                    <a href="#" th:href="@{/remove-link/(id=${link.mediaId})}" class="link-warning btn-sm"><i class="fa-solid fa-arrow-rotate-left"></i> Undo link</a>-->
                     <form action="#"
-                          th:action="@{/remove-link/{id}(id=${link.mediaId})}"
+                          th:action="@{__${link_remove}__}"
                           method="post">
+                        <input type="hidden" th:value="${link.mediaId}" name="id">
                         <button class="btn btn-link btn-sm link-warning" type="submit"><i
                                 class="fa-solid fa-arrow-rotate-left"></i> Undo link
                         </button>
                     </form>
-                </div>
+
             </td>
         </tr>
         </tbody>
     </table>
 </div>
 <!--page selection-->
-<div class="row m-2 justify-content-between">
+<div class="row justify-content-between">
     <div class="col-2">
         <nav aria-label="...">
             <ul class="pagination pagination-sm">

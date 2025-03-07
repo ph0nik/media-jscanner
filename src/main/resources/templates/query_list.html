@@ -20,86 +20,36 @@
 <body class="container-fluid">
 <div class="row" id="top">
     <!--    top menu-->
-<!--    <nav class="nav navbar-expand-lg navbar-light bg-light nav-tabs align-items-center">-->
-<!--        <div class="container-fluid pt-1">-->
-<!--            <span class="navbar-brand fs-6">media-jscanner</span>-->
-<!--            <div class="collapse navbar-collapse">-->
-<!--                <ul class="navbar-nav me-auto mb-2 mb-lg-0">-->
-<!--                    &lt;!&ndash;                new files&ndash;&gt;-->
-<!--                    <li class="nav-item px-2">-->
-<!--                        <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files-->
-<!--                            &lt;!&ndash; show if any new files are in the queue &ndash;&gt;-->
-<!--                            <span th:case="${true}" th:text="${query_list.size()}"-->
-<!--                                  class="badge bg-primary rounded-pill"></span>-->
-<!--                            &lt;!&ndash; for no links &ndash;&gt;-->
-<!--                            <span th:case="${false}" th:text="${query_list.size()}"-->
-<!--                                  class="badge bg-secondary rounded-pill"></span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    &lt;!&ndash;                links&ndash;&gt;-->
-<!--                    <li class="nav-item px-2">-->
-<!--                        <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links-->
-<!--                            &lt;!&ndash; show if any new files are in the queue &ndash;&gt;-->
-<!--                            <span th:case="${true}" th:text="${link_list.size()}"-->
-<!--                                  class="badge bg-primary rounded-pill"></span>-->
-<!--                            &lt;!&ndash; for no links &ndash;&gt;-->
-<!--                            <span th:case="${false}" th:text="${link_list.size()}"-->
-<!--                                  class="badge bg-secondary rounded-pill"></span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    &lt;!&ndash;                stubs&ndash;&gt;-->
-<!--&lt;!&ndash;                    <li class="nav-item px-2">&ndash;&gt;-->
-<!--&lt;!&ndash;                        <a class="nav-link" href="/stubs">stubs</a>&ndash;&gt;-->
-<!--&lt;!&ndash;                    </li>&ndash;&gt;-->
-<!--                    &lt;!&ndash;                ignored&ndash;&gt;-->
-<!--                    <li class="nav-item px-2">-->
-<!--                        <a th:switch="${media_ignored.size() > 0}" class="nav-link" href="/ignored">ignored-->
-<!--                            &lt;!&ndash; show if any new files are in the queue &ndash;&gt;-->
-<!--                            <span th:case="${true}" th:text="${media_ignored.size()}"-->
-<!--                                  class="badge bg-primary rounded-pill"></span>-->
-<!--                            &lt;!&ndash; for no links &ndash;&gt;-->
-<!--                            <span th:case="${false}" th:text="${media_ignored.size()}"-->
-<!--                                  class="badge bg-secondary rounded-pill"></span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    &lt;!&ndash;                config&ndash;&gt;-->
-<!--                    <li class="nav-item px-2">-->
-<!--                        <a class="nav-link" href="/config">config</a>-->
-<!--                    </li>-->
-<!--                </ul>-->
-
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="col-2">-->
-<!--            &lt;!&ndash;scan folders&ndash;&gt;-->
-<!--            <div class="col d-flex justify-content-center">-->
-<!--                <form action="#"-->
-<!--                      th:action="@{/scan}"-->
-<!--                      method="get">-->
-<!--                    <input type="hidden">-->
-<!--                    <button class="btn btn-success" type="submit">-->
-<!--                        <span class="m-2">Refresh</span>-->
-<!--                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>-->
-<!--                </form>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </nav>-->
     <nav class="nav navbar-light bg-light align-items-center">
         <div class="col">
             <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
                 <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
+                <!--movies-->
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link active" th:href="${tab_movie}">movies
                         <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list.size()}"
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
                               class="badge bg-primary rounded-pill"></span>
                         <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list.size()}"
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+                <!--tv-->
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_tv.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_tv.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <!--links-->
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">
+                        links
                         <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -108,11 +58,19 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+                <!--ignored-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/ignored">ignored</a>
+                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
+                        ignored
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
                 </li>
+                <!--config-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/config">config</a>
+                    <a class="nav-link" th:href="${tab_config}">settings</a>
                 </li>
             </ul>
         </div>
@@ -121,7 +79,7 @@
             <!--scan folders-->
             <div class="col d-flex justify-content-center p-1">
                 <form action="#"
-                      th:action="@{/scan}"
+                      th:action="@{__${movie_scan}__}"
                       method="get">
                     <input type="hidden">
                     <button class="btn btn-success" type="submit">
@@ -137,7 +95,7 @@
     <!--match button-->
     <div th:switch="${future}" class="col-1 align-self-center p-2">
         <form action="#"
-              th:action="@{/auto}"
+              th:action="@{__${movie_auto}__}"
               method="get">
             <input type="hidden">
             <button th:case="${true}" class="btn btn-primary btn-sm" type="submit">
@@ -181,37 +139,43 @@
         </div>
     </div>
 </div>
-<!--error, no user paths found-->
-<div class="row" th:switch="${user_paths}">
-    <div th:case="${false}" class="col-8 offset-md-2">
-        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <span class="text-danger text-center"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
-                User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
-                tab</span>
-        </div>
+<div class="row">
+    <div class="col-4">
+        <h2 class="col text-secondary">Movies</h2>
     </div>
 </div>
-<!--TODO operation results-->
-<!--<span th:text="${error}"></span>-->
+<!--error, no user paths found-->
+<div th:if="${!user_paths}" class="row justify-content-center">
+    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+        User provided paths not found! Please, add proper paths in config tab.
+    </div>
+
+</div>
+<!--error, token not found-->
+<div th:if="${!api_token}" class="row justify-content-center">
+    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+        TheMovieDb api token is not found, enter your v4 token in the data\token.api file.
+    </div>
+</div>
 <!--page selection-->
-<div class="row justify-content-between m-2">
+<div class="row justify-content-between">
     <div class="col-2">
         <nav aria-label="...">
             <ul class="pagination pagination-sm">
                 <li class="page-item disabled" aria-current="page">
                     <span class="page-link"
-                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list.size()}"></span>
+                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list_movie.size()}"></span>
                 </li>
                 <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                     <a th:if="${page.getNumber() > 0}"
-                       th:href="@{/(size=${page.size}, page=${page.getNumber()})}"
+                       th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber()})}"
                        class="page-link">< Previous</a>
                     <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
                 </li>
-
                 <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
                     <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
-                       th:href="@{/(size=${page.size}, page=${page.getNumber() + 2})}"
+
+                       th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber() + 2})}"
                        class="page-link">Next ></a>
                     <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
                           class="page-link disabled">Next ></span>
@@ -223,12 +187,12 @@
     <div class="col-4">
         <form class="d-flex"
               action="#"
-              th:action="@{/search-query/}"
+              th:action="@{__${movie_search}__}"
               method="post">
             <div class="input-group input-group-sm">
                 <input type="search" class="form-control" placeholder="Find in queries..."
                        aria-label="queries search" aria-describedby="button-addon2" name="search" id="search">
-                <button class="btn btn-primary btn-sm" type="submit" id="button-addon2">Search</button>
+                <button class="btn btn-light btn-sm" type="submit" id="button-addon2">Search</button>
             </div>
         </form>
     </div>
@@ -242,70 +206,73 @@
                     </span>
                 </li>
                 <li th:class="${page.size != 25 ? 'page-item' : 'page-item disabled'}">
-                    <a class="page-link" href="#" th:href="@{/(size=25, page=1)}">25</a>
+                    <a class="page-link" href="#" th:href="@{__${tab_movie}__/(size=25, page=1)}">25</a>
                 </li>
                 <li th:class="${page.size != 50 ? 'page-item' : 'page-item disabled'}">
-                    <a class="page-link" href="#" th:href="@{/(size=50, page=1)}">50</a>
+                    <a class="page-link" href="#" th:href="@{__${tab_movie}__/(size=50, page=1)}">50</a>
                 </li>
                 <li th:class="${page.size != 100 ? 'page-item' : 'page-item disabled'}">
-                    <a class="page-link" href="#" th:href="@{/(size=100, page=1)}">100</a>
+                    <a class="page-link" href="#" th:href="@{__${tab_movie}__/(size=100, page=1)}">100</a>
                 </li>
             </ul>
         </nav>
     </div>
 </div>
 <!-- Paginated Queue -->
-<div class="row m-2">
+<div class="row">
     <table class="table table-dark table-striped table-hover table-sm table-borderless">
         <thead class="query-table-title">
-        <tr class="row m-0 text-white-50">
-            <th class="col-1 text-center">#</th>
-            <th class="col-1"></th>
-            <th class="col">filepath</th>
-            <th class="col-1 text-center"></th>
+        <tr class="text-white-50">
+            <th scope="col" width="5%" class="text-center">#</th>
+            <th scope="col" width="3%"></th>
+            <th scope="col">filepath</th>
+            <th scope="col" width="5%" class="text-center"></th>
         </tr>
         </thead>
         <tbody>
-        <tr class="row m-0 pt-1" th:each="query, iter : ${page.getContent()}">
+        <tr th:each="query, iter : ${page.getContent()}">
             <!--            id-->
-            <td class="col-1 text-center table-row"
-                th:text="${page.getNumber() * page.getSize() + iter.index + 1}">aqweqwe
+            <td scope="row" class="text-center table-row"
+                th:text="${page.getNumber() * page.getSize() + iter.index + 1}">12
             </td>
             <!--select button-->
-            <td class="col-1 text-end" th:switch="${future}">
+            <td th:switch="${future}">
                 <form action="#"
-                      th:action="@{/select-query/{id}(id=${query.queryId})}"
-                      method="post">
+                      th:action="@{__${movie_select}__}"
+                      method="post"
+                      class="text-end">
                     <input type="hidden" value="" name="custom">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">
-
-                    <button th:case="${true}" class="btn btn-primary btn-sm" type="submit">
-                        select</button>
-                    <button th:case="${false}" class="btn btn-secondary btn-sm" type="submit" disabled>select
+                    <button th:case="${true}" class="btn btn-outline-light btn-sm" type="submit">
+                        select
+                    </button>
+                    <button th:case="${false}" class="btn btn-outline-secondary btn-sm" type="submit" disabled>select
                     </button>
                 </form>
             </td>
             <!--            path + description-->
-            <td class="col">
+            <td>
                 <div class="flex">
                     <i class="fa-solid fa-folder light-text"></i>
                     <span th:text="${query.getParentPath() + '\'}"
-                          class="fs-7 fw-normal table-row">
+                          class="fs-7 fw-normal text-secondary">
                             folder path</span>
-                </div>
-                <div class="flex pt-1">
-                    <i class="fa-regular fa-file light-text"></i>
-                        <span th:text="${query.getFileName()}"
-                              class="fs-6 fw-bold table-row">
+                    <span th:text="${query.getFileName()}"
+                          class="fs-6 fw-bold">
                             file name</span>
                 </div>
+                <!--                <div class="flex pt-1">-->
+                <!--                    <i class="fa-regular fa-file light-text"></i>-->
+                <!--                        <span th:text="${query.getFileName()}"-->
+                <!--                              class="fs-6 fw-bold table-row">-->
+                <!--                            file name</span>-->
+                <!--                </div>-->
             </td>
             <!--            ignore-->
-            <td class="col-1 text-start" th:switch="${future}">
+            <td th:switch="${future}">
                 <form action="#"
-                      th:action="@{/add-ignore/{id}(id=${query.queryId})}"
+                      th:action="@{__${movie_new_ignore}__}"
                       method="post">
-                    <input type="hidden" value="" name="custom">
                     <input type="hidden" th:value="${query.queryUuid}" name="uuid">
                     <button th:case="${true}" class="btn btn-secondary btn-sm" type="submit">ignore</button>
                     <button th:case="${false}" class="btn btn-secondary btn-sm" type="submit" disabled>ignore
@@ -317,23 +284,23 @@
     </table>
 </div>
 <!--page selection-->
-<div class="row m-2 justify-content-between">
+<div class="row justify-content-between">
     <div class="col">
         <nav aria-label="...">
-            <ul class="pagination pagination-sm">
+            <ul class="pagination pagination-sm pagination-dark">
                 <li class="page-item disabled" aria-current="page">
                     <span class="page-link"
-                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list.size()}"></span>
+                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list_movie.size()}"></span>
                 </li>
                 <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                     <a th:if="${page.getNumber() > 0}"
-                       th:href="@{/(size=${page.size}, page=${page.getNumber()})}"
+                       th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber()})}"
                        class="page-link">< Previous</a>
                     <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
                 </li>
                 <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
                     <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
-                       th:href="@{/(size=${page.size}, page=${page.getNumber() + 2})}"
+                       th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber() + 2})}"
                        class="page-link">Next ></a>
                     <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
                           class="page-link disabled">Next ></span>

@@ -1,0 +1,1246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!--[if IE 6]><html class="ie6" xmlns="http://www.w3.org/1999/xhtml"><![endif]-->
+<!--[if IE 7]><html class="lt-ie8 lt-ie9" xmlns="http://www.w3.org/1999/xhtml"><![endif]-->
+<!--[if IE 8]><html class="lt-ie9" xmlns="http://www.w3.org/1999/xhtml"><![endif]-->
+<!--[if gt IE 8]><!--><html xmlns="http://www.w3.org/1999/xhtml"><!--<![endif]-->
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=1" />
+  <meta name="referrer" content="origin" />
+  <meta name="HandheldFriendly" content="true" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>The Man in the High Castle S02E01 720p WEBRip X264 DEFLATE site:www.imdb.com/title at DuckDuckGo</title>
+  <link title="DuckDuckGo (HTML)" type="application/opensearchdescription+xml" rel="search" href="//duckduckgo.com/opensearch_html_v2.xml" />
+  <link href="//duckduckgo.com/favicon.ico" rel="shortcut icon" />
+  <link rel="icon" href="//duckduckgo.com/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="//duckduckgo.com/assets/logo_icon128.v101.png"/>
+  <link rel="image_src" href="//duckduckgo.com/assets/logo_homepage.normal.v101.png"/>
+  <link type="text/css" media="handheld, all" href="//duckduckgo.com/h2147.css" rel="stylesheet" />
+</head>
+
+<body class="body--html">
+  <a name="top" id="top"></a>
+
+  <form action="/html/" method="post">
+    <input type="text" name="state_hidden" id="state_hidden" />
+  </form>
+
+  <div>
+    <div class="site-wrapper-border"></div>
+
+    <div id="header" class="header cw header--html">
+        <a title="DuckDuckGo" href="/html/" class="header__logo-wrap"></a>
+
+
+    <form name="x" class="header__form" action="/html/" method="post">
+
+      <div class="search search--header">
+          <input name="q" autocomplete="off" class="search__input" id="search_form_input_homepage" type="text" value="The Man in the High Castle S02E01 720p WEBRip X264 DEFLATE site:www.imdb.com/title" />
+          <input name="b" id="search_button_homepage" class="search__button search__button--html" value="" title="Search" alt="Search" type="submit" />
+      </div>
+
+
+
+
+
+      <input name="kp" value="-2" type="hidden">
+
+
+
+    <div class="frm__select">
+      <select name="kl">
+
+        <option value="" >All Regions</option>
+
+        <option value="ar-es" >Argentina</option>
+
+        <option value="au-en" >Australia</option>
+
+        <option value="at-de" >Austria</option>
+
+        <option value="be-fr" >Belgium (fr)</option>
+
+        <option value="be-nl" >Belgium (nl)</option>
+
+        <option value="br-pt" >Brazil</option>
+
+        <option value="bg-bg" >Bulgaria</option>
+
+        <option value="ca-en" >Canada (en)</option>
+
+        <option value="ca-fr" >Canada (fr)</option>
+
+        <option value="ct-ca" >Catalonia</option>
+
+        <option value="cl-es" >Chile</option>
+
+        <option value="cn-zh" >China</option>
+
+        <option value="co-es" >Colombia</option>
+
+        <option value="hr-hr" >Croatia</option>
+
+        <option value="cz-cs" >Czech Republic</option>
+
+        <option value="dk-da" >Denmark</option>
+
+        <option value="ee-et" >Estonia</option>
+
+        <option value="fi-fi" >Finland</option>
+
+        <option value="fr-fr" >France</option>
+
+        <option value="de-de" >Germany</option>
+
+        <option value="gr-el" >Greece</option>
+
+        <option value="hk-tzh" >Hong Kong</option>
+
+        <option value="hu-hu" >Hungary</option>
+
+        <option value="in-en" >India (en)</option>
+
+        <option value="id-en" >Indonesia (en)</option>
+
+        <option value="ie-en" >Ireland</option>
+
+        <option value="il-en" >Israel (en)</option>
+
+        <option value="it-it" >Italy</option>
+
+        <option value="jp-jp" >Japan</option>
+
+        <option value="kr-kr" >Korea</option>
+
+        <option value="lv-lv" >Latvia</option>
+
+        <option value="lt-lt" >Lithuania</option>
+
+        <option value="my-en" >Malaysia (en)</option>
+
+        <option value="mx-es" >Mexico</option>
+
+        <option value="nl-nl" >Netherlands</option>
+
+        <option value="nz-en" >New Zealand</option>
+
+        <option value="no-no" >Norway</option>
+
+        <option value="pk-en" >Pakistan (en)</option>
+
+        <option value="pe-es" >Peru</option>
+
+        <option value="ph-en" >Philippines (en)</option>
+
+        <option value="pl-pl" >Poland</option>
+
+        <option value="pt-pt" >Portugal</option>
+
+        <option value="ro-ro" >Romania</option>
+
+        <option value="ru-ru" >Russia</option>
+
+        <option value="xa-ar" >Saudi Arabia</option>
+
+        <option value="sg-en" >Singapore</option>
+
+        <option value="sk-sk" >Slovakia</option>
+
+        <option value="sl-sl" >Slovenia</option>
+
+        <option value="za-en" >South Africa</option>
+
+        <option value="es-ca" >Spain (ca)</option>
+
+        <option value="es-es" >Spain (es)</option>
+
+        <option value="se-sv" >Sweden</option>
+
+        <option value="ch-de" >Switzerland (de)</option>
+
+        <option value="ch-fr" >Switzerland (fr)</option>
+
+        <option value="tw-tzh" >Taiwan</option>
+
+        <option value="th-en" >Thailand (en)</option>
+
+        <option value="tr-tr" >Turkey</option>
+
+        <option value="us-en" selected>US (English)</option>
+
+        <option value="us-es" >US (Spanish)</option>
+
+        <option value="ua-uk" >Ukraine</option>
+
+        <option value="uk-en" >United Kingdom</option>
+
+        <option value="vn-en" >Vietnam (en)</option>
+
+      </select>
+    </div>
+
+    <div class="frm__select frm__select--last">
+      <select class="" name="df">
+
+        <option value="" selected>Any Time</option>
+
+        <option value="d" >Past Day</option>
+
+        <option value="w" >Past Week</option>
+
+        <option value="m" >Past Month</option>
+
+        <option value="y" >Past Year</option>
+
+      </select>
+    </div>
+
+    </form>
+
+    </div>
+
+
+
+
+
+<!-- Web results are present -->
+
+  <div>
+  <div class="serp__results">
+  <div id="links" class="results">
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/episodes?season=2">The Man in the High Castle - Season 2 - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/episodes?season=2">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/episodes?season=2">
+                  www.imdb.com/title/tt1740299/episodes?season=2
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/episodes?season=2">S2, Ep2 16 Dec. 2016 The Road Less Traveled 7.9 (1,853) Rate After narrowly escaping death, Juliana discovers a family secret that could have global implications - and leads her to make a life-changing decision.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/">The Man in the High Castle (TV Series 2015-2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/">
+                  www.imdb.com/title/tt1740299/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/"><b>In</b> a dystopian America dominated by Nazi Germany and Imperial Japan, a young woman discovers a mysterious film that may hold the key to toppling the totalitarian regimes. Creator Frank Spotnitz Stars Alexa Davalos Luke Kleintank Rufus Sewell See production, box office &amp; company info Watch on Prime Video S1-4 included with Prime Add to Watchlist</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt8856422/">&quot;The Man in the High Castle&quot; No Masters but Ourselves (TV ... - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt8856422/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt8856422/">
+                  www.imdb.com/title/tt8856422/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt8856422/">No Masters but Ourselves: Directed by Richard Heus. With Alexa Davalos, Joel de la Fuente, Jason O&#x27;Mara, Brennan Brown. The BCR launches a massive assault across the JPS, and Kido finds the fate of the Empire in his hands. Childan becomes a captive of the Kempeitai. Helen resolves to support her husband by re-entering public life. Juliana and Wyatt arrive in New York to plan a daring new ...</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt0001740299/episodes/?season=2">The Man in the High Castle - Season 2 - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt0001740299/episodes/?season=2">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt0001740299/episodes/?season=2">
+                  www.imdb.com/title/tt0001740299/episodes/?season=2
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt0001740299/episodes/?season=2">S2, Ep2 16 Dec. 2016 The Road Less Traveled 8.0 (1,775) Rate After narrowly escaping death, Juliana discovers a family secret that could have global implications - and leads her to make a life-changing decision.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt8792366/">&quot;The Man in the High Castle&quot; The Box (TV Episode 2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt8792366/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt8792366/">
+                  www.imdb.com/title/tt8792366/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt8792366/"><b>The</b> Box: Directed by John Fawcett. With Alexa Davalos, Joel de la Fuente, Jason O&#x27;Mara, Brennan Brown. Wyatt&#x27;s rebels and the BCR join forces to attack Tokyo&#x27;s elite at Childan&#x27;s auction; Helen comes back to the Reich to protect her children; Kido gets an unexpected call from the Yakuza; Smith sends an assassin to kill Juliana.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/episodes?year=2018">The Man in the High Castle - Episodes - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/episodes?year=2018">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/episodes?year=2018">
+                  www.imdb.com/title/tt1740299/episodes?year=2018
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/episodes?year=2018"><b>The</b> <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (2015-2019) Episode List Season: OR Year: 2018 S3, Ep1 5 Oct. 2018 Now More Than Ever, We Care About You 7.6 (1,510) Rate Juliana Crain makes a new acquaintance in the Neutral Zone - an Irish fixer named Wyatt - and soon finds herself on the run and seeking Tagomi&#x27;s aid. The Japanese test an atomic bomb.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt4603034/">&quot;The Man in the High Castle&quot; Sunrise (TV Episode 2015) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt4603034/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt4603034/">
+                  www.imdb.com/title/tt4603034/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt4603034/">Sunrise: Directed by Daniel Percival. With Alexa Davalos, Rupert Evans, Luke Kleintank, DJ Qualls. Frank&#x27;s fate hangs in the balance as he is held captive by the Kempeitai. Meanwhile, Juliana makes contact with a mysterious <b>man</b> who gives her a clue about the films, and Obergruppenführer Smith is surprised by an unfortunate turn of events.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt8735940/">&quot;The Man in the High Castle&quot; Hexagram 64 (TV Episode 2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt8735940/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt8735940/">
+                  www.imdb.com/title/tt8735940/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt8735940/">Hexagram 64: Directed by Daniel Percival. With Alexa Davalos, Joel de la Fuente, Jason O&#x27;Mara, Brennan Brown. Juliana Crain finds herself in a new world; in the wake of an attack on Trade Minister Tagomi, Chief Inspector Kido starts a crackdown against the suspected culprits -- the Black Communist Rebellion.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/fullcredits">The Man in the High Castle (TV Series 2015-2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/fullcredits">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/fullcredits">
+                  www.imdb.com/title/tt1740299/fullcredits
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/fullcredits"><b>The</b> <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (TV Series 2015-2019) - Full Cast &amp; Crew - IMDb The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (TV Series 2015-2019) cast and crew credits, including actors, actresses, directors, writers and more. Menu Movies</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/episodes?season=1">The Man in the High Castle - Season 1 - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/episodes?season=1">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/episodes?season=1">
+                  www.imdb.com/title/tt1740299/episodes?season=1
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/episodes?season=1">Joe Blake, a resistance fighter, leaves German New York with cargo for neutral Colorado. In Japanese San Francisco, Juliana Crane receives footage of the Allies winning the war and a bus ticket to Colorado from her sister. There, she meets Joe. Joe reveals a dark secret. S1, Ep2 23 Oct. 2015 Sunrise 8.0 (3,186) Rate</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/mediaindex">The Man in the High Castle (TV Series 2015-2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/mediaindex">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/mediaindex">
+                  www.imdb.com/title/tt1740299/mediaindex
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/mediaindex"><b>The</b> <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (TV Series 2015-2019) photos, including production stills, premiere photos and other event photos, publicity photos, behind-<b>the</b>-scenes, and more. Menu. Movies. Release Calendar Top 250 Movies Most Popular Movies Browse Movies by Genre Top Box Office Showtimes &amp; Tickets Movie News India Movie Spotlight.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/videogallery/">The Man in the High Castle (TV Series 2015-2019) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/videogallery/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/videogallery/">
+                  www.imdb.com/title/tt1740299/videogallery/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/videogallery/"><b>The</b> <b>Man</b> <b>In</b> <b>The</b> <b>High</b> <b>Castle</b>: Fight For The World You Want. The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b>. <b>The</b> <b>Man</b> <b>In</b> <b>The</b> <b>High</b> <b>Castle</b>: Season 3 Official Trailer. The <b>Man</b> <b>In</b> <b>The</b> <b>High</b> <b>Castle</b>: Visuals. The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b>: Season 2. The <b>Man</b> <b>In</b> <b>The</b> <b>High</b> <b>Castle</b>: Season 4 Teaser. The <b>Man</b> <b>In</b> <b>The</b> <b>High</b> <b>Castle</b>.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt5833860/">&quot;The Man in the High Castle&quot; Duck and Cover (TV Episode 2016) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt5833860/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt5833860/">
+                  www.imdb.com/title/tt5833860/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt5833860/">Duck and Cover: Directed by John Fawcett. With Alexa Davalos, Rupert Evans, Luke Kleintank, DJ Qualls. Joe learns a truth about his past that makes him question everything. The rift between Frank and Ed widens as Frank is drawn further into the Resistance. In order to assure her safety, Juliana must betray someone close to her.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/episodes?year=2019">The Man in the High Castle - Episodes - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/episodes?year=2019">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/episodes?year=2019">
+                  www.imdb.com/title/tt1740299/episodes?year=2019
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/episodes?year=2019">2019. S4, Ep1. 15 Nov. 2019. Hexagram 64. 7.3 (1,303) Rate. Juliana Crain finds herself in a new world; in the wake of an attack on Trade Minister Tagomi, Chief Inspector Kido starts a crackdown against the suspected culprits -- the Black Communist Rebellion. S4, Ep2. 15 Nov. 2019.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt1740299/mediaviewer/rm398297089/">The Man in the High Castle (2015) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt1740299/mediaviewer/rm398297089/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt1740299/mediaviewer/rm398297089/">
+                  www.imdb.com/title/tt1740299/mediaviewer/rm398297089/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt1740299/mediaviewer/rm398297089/">292 of 721. The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (2015) The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b> (2015) Titles The <b>Man</b> <b>in</b> <b>the</b> <b>High</b> <b>Castle</b>. Countries United Arab Emirates, Canada, Ecuador, Egypt, Hong Kong, Indonesia, Israel, India, South Korea, Philippines, Poland, Singapore, Thailand, Turkey, Taiwan, United States, South Africa.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt4747886/fullcredits">&quot;The Man in the High Castle&quot; The New Normal (TV Episode 2015) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt4747886/fullcredits">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt4747886/fullcredits">
+                  www.imdb.com/title/tt4747886/fullcredits
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt4747886/fullcredits">visual effects artist. Bruce Turner. ... visual effects producer: zoic studios. Alexandra Jane Vahlbruch. ... visual effects coordinator: camera department, Zoic Studios. Brent Veal.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt4518590/">&quot;The Man in the High Castle&quot; The New World (TV Episode 2015) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt4518590/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt4518590/">
+                  www.imdb.com/title/tt4518590/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt4518590/"><b>The</b> New World: Directed by David Semel. With Alexa Davalos, Rupert Evans, Luke Kleintank, DJ Qualls. Joe Blake, a resistance fighter, leaves German New York with cargo for neutral Colorado. In Japanese San Francisco, Juliana Crane receives footage of the Allies winning the war and a bus ticket to Colorado from her sister. There, she meets Joe.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt5880462/">&quot;The Man in the High Castle&quot; Kintsugi (TV Episode 2016) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt5880462/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt5880462/">
+                  www.imdb.com/title/tt5880462/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt5880462/">Nicole introduces Joe to an unexpected side of Berlin, that leads him down a new path. On her new mission, Juliana inserts herself into the Smith&#x27;s inner circle. Tagomi is finally reunited with his family, only to be faced with the prospect of losing them again. Director Paul Holahan Writers Philip K. Dick (based on the book by) Frank Spotnitz</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt4723648/">&quot;The Man in the High Castle&quot; Revelations (TV Episode 2015) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt4723648/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt4723648/">
+                  www.imdb.com/title/tt4723648/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt4723648/">Director Michael Rymer Writers Philip K. Dick (based on the book by) Frank Spotnitz Thomas Schnauz Stars Alexa Davalos Rupert Evans Luke Kleintank See production, box office &amp; company info Watch on Prime Video included with Prime Add to Watchlist 7 User reviews 15 Critic reviews Photos 21 Top cast Edit Alexa Davalos Juliana Crain Rupert Evans</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+            <div class="result results_links results_links_deep web-result ">
+
+
+          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
+
+          <h2 class="result__title">
+
+            <a rel="nofollow" class="result__a" href="https://www.imdb.com/title/tt5880476/">&quot;The Man in the High Castle&quot; Land O&#x27; Smiles (TV Episode 2016) - IMDb</a>
+
+          </h2>
+
+
+
+            <div class="result__extras">
+                <div class="result__extras__url">
+                  <span class="result__icon">
+
+                      <a rel="nofollow" href="https://www.imdb.com/title/tt5880476/">
+                        <img class="result__icon__img" width="16" height="16" alt=""
+                          src="//external-content.duckduckgo.com/ip3/www.imdb.com.ico" name="i15" />
+                      </a>
+
+                  </span>
+
+                  <a class="result__url" href="https://www.imdb.com/title/tt5880476/">
+                  www.imdb.com/title/tt5880476/
+                  </a>
+
+
+
+                </div>
+            </div>
+
+
+                  <a class="result__snippet" href="https://www.imdb.com/title/tt5880476/">Land O&#x27; Smiles: Directed by Karyn Kusama. With Alexa Davalos, Rupert Evans, Luke Kleintank, DJ Qualls. As Juliana worms closer to the Smiths, she discovers a dangerous secret. Childan and Ed get themselves in a sticky situation as they try to settle the Yakuza debt. On a Resistance mission, Frank uncovers a Japanese plan that could realize his worst nightmare.</a>
+
+
+            <div class="clear"></div>
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+                <div class="nav-link">
+        <form action="/html/" method="post">
+          <input type="submit" class='btn btn--alt' value="Next" />
+          <input type="hidden" name="q" value="The Man in the High Castle S02E01 720p WEBRip X264 DEFLATE site:www.imdb.com/title" />
+          <input type="hidden" name="s" value="20" />
+          <input type="hidden" name="nextParams" value="" />
+          <input type="hidden" name="v" value="l" />
+          <input type="hidden" name="o" value="json" />
+          <input type="hidden" name="dc" value="21" />
+          <input type="hidden" name="api" value="d.js" />
+          <input type="hidden" name="vqd" value="4-164492979781412562836503533093744606066" />
+
+
+
+
+          <input name="kl" value="us-en" type="hidden" />
+
+
+          <input name="kp" value="-2" type="hidden" />
+
+
+
+        </form>
+                </div>
+
+
+
+
+        <div class=" feedback-btn">
+            <a rel="nofollow" href="//duckduckgo.com/feedback.html" target="_new">Feedback</a>
+        </div>
+        <div class="clear"></div>
+  </div>
+  </div> <!-- links wrapper //-->
+
+
+
+    </div>
+  </div>
+
+    <div id="bottom_spacing2"></div>
+
+
+      <img src="//duckduckgo.com/t/sl_h"/>
+
+</body>
+</html>

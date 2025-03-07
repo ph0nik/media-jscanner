@@ -1,0 +1,315 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+
+<head>
+    <title>media-jscanner | tv query list</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../static/css/all.css" rel="stylesheet">
+    <link th:href="@{/css/all.css}" rel="stylesheet"/>
+    <link href="../static/style.css" rel="stylesheet">
+    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" th:src="@{/js/sockjs.js}"></script>
+    <script type="text/javascript" th:src="@{/js/stomp.js}"></script>
+    <script type="text/javascript" th:src="@{/js/script.js}"></script>
+</head>
+<body class="container-fluid">
+<div class="row" id="top">
+    <!--    top menu-->
+    <nav class="nav navbar-light bg-light align-items-center">
+        <div class="col">
+            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
+                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
+                <li class="nav-item px-2">
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${query_list_tv.size()>0}" class="nav-link active" th:href="${tab_tv}">tv
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_tv.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_tv.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${link_list.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${link_list.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <!--ignored-->
+                <li class="nav-item px-2">
+                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
+                        ignored
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a class="nav-link" th:href="${tab_config}">settings</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col"></div>
+        <div class="col-2">
+            <!--scan folders-->
+            <div class="col d-flex justify-content-center p-1">
+                <form action="#"
+                      th:action="@{__${movie_scan}__}"
+                      method="get">
+                    <input type="hidden">
+                    <button class="btn btn-success" type="submit">
+                        <span class="m-2">Refresh</span>
+                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</div>
+<!-- Auto matcher-->
+<div class="row m-2 auto-matcher">
+    <!--match button-->
+    <div th:switch="${future}" class="col-1 align-self-center p-2">
+        <form action="#"
+              th:action="@{__${movie_auto}__}"
+              method="get">
+            <input type="hidden">
+            <button th:case="${true}" class="btn btn-primary btn-sm" type="submit">
+                <span class="m-2">Match</span>
+                <i class="fa-solid fa-puzzle-piece fa-lg"></i>
+            </button>
+            <button th:case="${false}" class="btn btn-secondary btn-sm" type="submit" disabled>
+                <span class="m-2">Match</span>
+                <i class="fa-solid fa-puzzle-piece fa-lg"></i>
+            </button>
+        </form>
+    </div>
+    <!--info & progress bar-->
+    <div class="col justify-content-start">
+        <!--    scanning file: [1/123] name-->
+        <div th:switch="${future}" class="row">
+            <div th:case="${false}" class="col-2">
+                <span th:id="spinner" class="spinner-border spinner-border-sm" role="status"></span>
+                <span>scanning file:</span>
+            </div>
+            <div th:case="${true}" class="col-1">
+                        <span th:id="spinner" class="spinner-border spinner-border-sm visually-hidden"
+                              role="status"></span>
+                <span>ready!</span>
+            </div>
+            <div class="col text-nowrap">
+                <span>[</span>
+                <span id="currentElementNumber">-</span>
+                <span>/</span>
+                <span id="totalElements">-</span>
+                <span>]</span>
+                <span class="fst-italic" id="currentFile">none</span>
+            </div>
+        </div>
+        <div class="col-12">
+            <!--    progress bar-->
+            <div class="progress">
+                <div class="progress-bar" id="progress" role="progressbar" style="width: 0%" aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--error, no user paths found-->
+<div class="row">
+    <div class="col-4">
+        <h2 class="col text-secondary">Tv</h2>
+    </div>
+    <div class="col-auto">
+        <div th:if="${!user_paths}" class="row justify-content-center">
+            <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+                User provided paths not found! Please, add proper paths in config tab.
+            </div>
+        </div>
+    </div>
+</div>
+<!--page selection-->
+<div class="row justify-content-between">
+    <div class="col-2">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm">
+                <li class="page-item disabled" aria-current="page">
+                    <span class="page-link"
+                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list_tv.size()}"></span>
+                </li>
+                <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
+                    <a th:if="${page.getNumber() > 0}"
+                       th:href="@{__${tab_tv}__/(size=${page.size}, page=${page.getNumber()})}"
+                       class="page-link">< Previous</a>
+                    <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
+                </li>
+                <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
+                    <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
+
+                       th:href="@{__${tab_tv}__/(size=${page.size}, page=${page.getNumber() + 2})}"
+                       class="page-link">Next ></a>
+                    <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
+                          class="page-link disabled">Next ></span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <!--search box-->
+    <div class="col-4">
+        <form class="d-flex"
+              action="#"
+              th:action="@{__${tv_search}__}"
+              method="post">
+            <div class="input-group input-group-sm">
+                <input type="search" class="form-control" placeholder="Find in queries..."
+                       aria-label="queries search" aria-describedby="button-addon2" name="search" id="search">
+                <button class="btn btn-primary btn-sm" type="submit" id="button-addon2">Search</button>
+            </div>
+        </form>
+    </div>
+    <!--number of shown elements-->
+    <div class="col-3">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm float-end">
+                <li class="page-item disabled" aria-current="page">
+                    <span class="page-link">
+                        Items per page:
+                    </span>
+                </li>
+                <li th:class="${page.size != 25 ? 'page-item' : 'page-item disabled'}">
+                    <a class="page-link" href="#" th:href="@{__@{tab_tv}__/(size=25, page=1)}">25</a>
+                </li>
+                <li th:class="${page.size != 50 ? 'page-item' : 'page-item disabled'}">
+                    <a class="page-link" href="#" th:href="@{__@{tab_tv}__/(size=50, page=1)}">50</a>
+                </li>
+                <li th:class="${page.size != 100 ? 'page-item' : 'page-item disabled'}">
+                    <a class="page-link" href="#" th:href="@{__@{tab_tv}__/(size=100, page=1)}">100</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<!-- Paginated Queue -->
+<div class="row">
+    <table class="table table-dark table-striped table-hover table-sm table-borderless">
+        <thead class="query-table-title">
+        <tr class="text-white-50">
+            <th scope="col" width="5%" class="text-center">#</th>
+            <th scope="col" width="3%"></th>
+            <th scope="col" class=>filepath</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="query, iter : ${page.getContent()}">
+            <!--            id-->
+            <td class="text-center table-row"
+                th:text="${page.getNumber() * page.getSize() + iter.index + 1}">
+            </td>
+            <!--select button-->
+            <td class="text-end" th:switch="${future}">
+                <form action="#"
+                      th:action="@{__${tv_select}__}"
+                      method="post">
+                    <input type="hidden" th:value="${query.getFilePath()}" name="path">
+
+                    <button th:case="${true}" class="btn btn-primary btn-sm" type="submit">
+                        select</button>
+                    <button th:case="${false}" class="btn btn-secondary btn-sm" type="submit" disabled>select
+                    </button>
+                </form>
+            </td>
+            <!--            path + description-->
+            <td>
+                <div class="flex">
+                    <i class="fa-solid fa-folder fs-5 light-text"></i>
+                    <span th:text="${query.getFilePath() + '\'}"
+                          class="fs-7 fw-normal table-row">
+
+                        </span>
+
+<!--                    <a href="#" class="link-light fs-6 fw-normal table-row text-decoration-none">-->
+<!--                        Seriale/!nowosci/Columbo.Sezon 01/columbo/Columbo.S00E02.Pilot.Okup.za.niezywego.czlowieka.PL.DVDRip.XviD.avi-->
+
+<!--                    </a>-->
+<!--                    <span>-->
+<!--                        [... 22 elements]-->
+<!--                    </span>-->
+                </div>
+            </td>
+            <!--            ignore-->
+<!--            <td class="col-1 text-start" th:switch="${future}">-->
+<!--                <form action="#"-->
+<!--                      th:action="@{__${tv_new_ignore}__}"-->
+<!--                      method="post">-->
+<!--                    <input type="hidden" th:value="${query.queryUuid}" name="uuid">-->
+<!--                    <button th:case="${true}" class="btn btn-secondary btn-sm" type="submit">ignore</button>-->
+<!--                    <button th:case="${false}" class="btn btn-secondary btn-sm" type="submit" disabled>ignore-->
+<!--                    </button>-->
+<!--                </form>-->
+<!--            </td>-->
+        </tr>
+        </tbody>
+    </table>
+</div>
+<!--page selection-->
+<div class="row justify-content-between">
+    <div class="col">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm">
+                <li class="page-item disabled" aria-current="page">
+                    <span class="page-link"
+                          th:text="${page_min + ' - ' + page_max + ' of ' + query_list_tv.size()}"></span>
+                </li>
+                <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
+                    <a th:if="${page.getNumber() > 0}"
+                       th:href="@{__${tab_tv}__/(size=${page.size}, page=${page.getNumber()})}"
+                       class="page-link">< Previous</a>
+                    <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
+                </li>
+                <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
+                    <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
+
+                       th:href="@{__${tab_tv}__/(size=${page.size}, page=${page.getNumber() + 2})}"
+                       class="page-link">Next ></a>
+                    <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
+                          class="page-link disabled">Next ></span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <!--back to the top-->
+    <div class="col-2">
+        <nav aria-label="...">
+            <ul class="pagination pagination-sm float-end">
+                <li class="page-item" aria-current="page">
+                    <a class="page-link" href="#top">back to the top
+                        <i class="fa-solid fa-arrow-turn-up"></i></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+</body>
+</html>

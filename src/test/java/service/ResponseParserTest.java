@@ -5,9 +5,11 @@ import model.QueryResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import service.exceptions.ConfigurationException;
+import service.exceptions.NoApiKeyException;
 import service.parser.MovieItem;
 import service.parser.MovieResults;
-import util.MediaIdentity;
+import util.MediaType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,18 +20,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ResponseParserTest {
-
     static String tmdbSearchResults;
     static Path multiSearch;
     static PropertiesService propertiesService;
     static ResponseParser responseParser;
+    private static String testToken = "test_token";
 
     @BeforeAll
-    public static void loadTestFile() throws IOException {
+    public static void loadTestFile() throws IOException, NoApiKeyException, ConfigurationException {
         Path tmdbSearch = Paths.get("src/test/resources/json_tmdb_search_string.json");
         multiSearch = Paths.get("src/test/resources/json-multisearch.txt");
         tmdbSearchResults = Files.readString(tmdbSearch);
-        propertiesService = new PropertiesServiceImpl();
+        propertiesService = new PropertiesServiceImpl(testToken);
         responseParser = new ResponseParser(propertiesService);
     }
 
@@ -49,30 +51,36 @@ public class ResponseParserTest {
     }
 
     @Test
-    @DisplayName("Try to parse malformed jason file")
-    public void deserializeMalformedJson() {
-        // malformed json object
-        String wrongJson = "{'some':'strangely','formatted':'json'";
-        List<QueryResult> results = responseParser.parseTmdbApiSearchResults(wrongJson, "random_path");
-        assertEquals(1, results.size());
+    @DisplayName("Try to parse wrong type json file")
+    public void deserializeJson_wrongJson() {
         // different type json object
-        wrongJson = "{'some':'strangely','formatted':'json'}";
-        results = responseParser.parseTmdbApiSearchResults(wrongJson, "random_path");
-        assertEquals(1, results.size());
+        String wrongJson = "{'some':'strangely','formatted':'json'}";
+        List<QueryResult> results = responseParser.parseTmdbApiMovieResults(wrongJson, "random_path");
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Try to parse malformed json file")
+    public void deserializeJson_malformedJson() {
+        // malformed json object
+        String wrongJson = "{'some':'strangely'\\\\\n\n,'formatted':'json'";
+        List<QueryResult> results = responseParser.parseTmdbApiMovieResults(wrongJson, "random_path");
+        assertTrue(results.isEmpty());
     }
 
     @Test
     @DisplayName("Try to parse empty json object")
-    public void parseTmdbApiSearchResultsWithEmptyJson() {
-        List<QueryResult> queryResults = new ResponseParser(propertiesService).parseTmdbApiSearchResults("", "");
+    public void deserializeJson_emptyJson() {
+        List<QueryResult> queryResults = responseParser.parseTmdbApiMovieResults("", "");
         assertNotNull(queryResults);
-        assertFalse(queryResults.isEmpty());
+        assertTrue(queryResults.isEmpty());
     }
 
     @Test
     @DisplayName("Try to parse empty web search results")
     public void parseWebResultsEmpty() {
-        List<QueryResult> queryResults = new ResponseParser(propertiesService).parseWebSearchResults("", "", MediaIdentity.IMDB);
+        List<QueryResult> queryResults = responseParser.parseWebSearchResults(
+                "", "", MediaType.MOVIE);
         assertNotNull(queryResults);
         assertFalse(queryResults.isEmpty());
     }
@@ -81,8 +89,7 @@ public class ResponseParserTest {
     @DisplayName("Try to parse correct multi search json object")
     public void readAndParseMultiSearchJson_correct() throws IOException {
         String s = Files.readString(multiSearch);
-        List<QueryResult> results = responseParser.multiSearchResultsParser(s, "some_path");
-        results.forEach(System.out::println);
+        List<QueryResult> results = responseParser.parseMultiSearchResults(s, "some_path");
         assertFalse(results.isEmpty());
     }
 
@@ -90,7 +97,7 @@ public class ResponseParserTest {
     @DisplayName("Try to parse incorrect multi search json object")
     public void readAndParseMultiSearchJson_wrong() {
         String wrong = "{'page':1,'not_the_results':[]}";
-        List<QueryResult> results = responseParser.multiSearchResultsParser(wrong, "some_path");
+        List<QueryResult> results = responseParser.parseMultiSearchResults(wrong, "some_path");
         assertTrue(results.isEmpty());
     }
 
@@ -98,24 +105,24 @@ public class ResponseParserTest {
     @DisplayName("Try to parse malformed json object")
     public void readAndParseMultiSearchJson_invalid() {
         String invalid = "{'some':'malformed':'object']";
-        List<QueryResult> results = responseParser.multiSearchResultsParser(invalid, "some_path");
+        List<QueryResult> results = responseParser.parseMultiSearchResults(invalid, "some_path");
         assertTrue(results.isEmpty());
     }
 
     @Test
     @DisplayName("Try to parse null json object")
     public void readAndParseMultiSearchJson_null() {
-        List<QueryResult> results = responseParser.multiSearchResultsParser(null, "some_path");
+        List<QueryResult> results = responseParser.parseMultiSearchResults(null, "some_path");
         assertTrue(results.isEmpty());
     }
 
     @Test
     public void parseWebSearchResults_error() {
         String errorMessage = "If this error persists, please let us know: error-lite@duckduckgo.com";
-        List<QueryResult> some_path = responseParser.parseWebSearchResults(errorMessage, "some_path", MediaIdentity.IMDB);
+        List<QueryResult> some_path = responseParser.parseWebSearchResults(
+                errorMessage, "some_path", MediaType.MOVIE);
         System.out.println(some_path);
     }
-
 
     @Test
     @DisplayName("Parse json imdb id search results")
@@ -128,8 +135,18 @@ public class ResponseParserTest {
         qr.setDescription("Movie description");
         qr.setYear("1990");
         qr.setPoster("Poster path");
-        QueryResult newQueryResult = responseParser.parseTmdbApiWithImdbId(stringJson, qr);
-        assertFalse(qr.getTheMovieDbId() != newQueryResult.getTheMovieDbId());
+        List<QueryResult> newQueryResult = responseParser.parseTmdbApiWithImdbId(stringJson, qr);
+        assertFalse(qr.getTheMovieDbId() != newQueryResult.get(0).getTheMovieDbId());
+    }
+
+    @Test
+    @DisplayName("Parse web search results for tv series")
+    void parseWebSearchTvResult() throws IOException {
+        Path tmdbSearch = Paths.get("src/test/resources/web_search_tv_results.txt");
+        String stringHtml = Files.readString(tmdbSearch);
+        String filePath = "The.Man.in.the.High.Castle.S02E01.720p.WEBRip.X264-DEFLATE.mkv";
+        List<QueryResult> queryResults = responseParser.parseWebSearchResults(
+                stringHtml, filePath, MediaType.TV);
     }
 
 }

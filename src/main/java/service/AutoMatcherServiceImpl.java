@@ -4,59 +4,54 @@ import model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
+import service.exceptions.NetworkException;
+import service.query.MediaQueryService;
 import util.MediaIdentity;
 import util.MediaType;
 import util.TextExtractTools;
 import websocket.NotificationSender;
 import websocket.config.NotificationDispatcher;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus> implements AutoMatcherService {
-
+public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus>
+        implements AutoMatcherService {
     private static final Logger LOG = LoggerFactory.getLogger(AutoMatcherServiceImpl.class);
-    private static final int REQUEST_WAIT = 500;
-
-    @Autowired
-    private RequestService requestService;
-    @Autowired
-    private ResponseParser responseParser;
-    @Autowired
-    private MediaLinksService mediaLinksService;
-
-    @Autowired
-    private MediaQueryService mediaQueryService;
-
+    private static final int REQUEST_DELAY = 500;
+    private final RequestService requestService;
+    private final ResponseParser responseParser;
+    private final MediaLinksService mediaLinksService;
+    private final MediaQueryService movieQueryService;
     @Autowired
     private NotificationDispatcher dispatcher;
 
-//    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
+    public AutoMatcherServiceImpl(RequestService requestService, ResponseParser responseParser,
+                                  MediaLinksService mediaLinksService,
+                                  @Qualifier("movieQuery") MediaQueryService mediaQueryService) {
+        this.requestService = requestService;
+        this.responseParser = responseParser;
+        this.mediaLinksService = mediaLinksService;
+        this.movieQueryService = mediaQueryService;
+    }
+//                                  PropertiesService propertiesService, MediaLinksService mediaLinksService) {
 //        this.mediaLinksService = mediaLinksService;
 //        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
 //        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
 //    }
 
-
-    public AutoMatcherServiceImpl(PropertiesService propertiesService, MediaLinksService mediaLinksService) {
-//        this.mediaLinksService = mediaLinksService;
-//        responseParser = ResponseParser.getResponseParser(propertiesService.getNetworkProperties());
-//        requestService = RequestService.getRequestService(propertiesService.getNetworkProperties());
-    }
-
     @Async
-    public Future<List<MediaLink>> autoMatchFilesWithFuture() {
-        List<MediaQuery> mediaQueryList = mediaLinksService.getMediaQueryList();
+    public Future<List<MediaLink>> autoMatchFilesWithFuture() throws NetworkException {
+        List<MediaQuery> mediaQueryList = movieQueryService.getCurrentMediaQueries();
         List<MediaLink> mediaLinks = new LinkedList<>();
         AutoMatcherStatus message;
         int index = 0;
@@ -70,13 +65,14 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         for (MediaQuery mq : mediaQueryList) {
             message = getMessage(mediaQueryList, mq, index++);
             sendNotification(message);
-            if (!mediaLinksService.isMultipart(mq)) {
+            if (!movieQueryService.isMultipart(mq)) {
                 MediaType type = (TextExtractTools.hasExtrasInName(mq.getFilePath())) ? MediaType.EXTRAS : MediaType.MOVIE;
                 mq.setMediaType(type);
-                mediaQueryService.addQueryToProcess(mq);
-                List<OperationResult> linksCreationResults = autoMatchSingleFile(Path.of(mq.getFilePath()));
-                linksCreationResults.forEach(lcr -> mediaLinks.add(lcr.getMediaLink()));
+                movieQueryService.addQueryToProcess(mq);
+                int linksCreationResults = autoMatchSingleFile(Path.of(mq.getFilePath()));
+//                linksCreationResults.forEach(lcr -> mediaLinks.add(lcr.getMediaLink()));
 //                index = index + linksCreationResults.size();
+                // TODO generete final view of all new links, org -> link
             }
         }
         message = getFinalMessage(mediaQueryList, index);
@@ -85,19 +81,19 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         return new AsyncResult<>(mediaLinks);
     }
 
-    public List<OperationResult> autoMatchSingleFile(Path path) {
-        List<OperationResult> linksWithBestMatches = List.of();
-        DeductedQuery deductedQuery = extractTitleAndYear(path.toString());
-        if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != null) {
+    public int autoMatchSingleFile(Path path) throws NetworkException {
+//        List<OperationResult> linksWithBestMatches = List.of();
+        DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(path.toString());
+        if (deductedQuery != null && deductedQuery.getPhrase() != null && deductedQuery.getYear() != 0) {
             List<QueryResult> queryResults = searchWithDeductedQuery(deductedQuery);
-            linksWithBestMatches = createLinksWithBestMatches(queryResults, deductedQuery);
+            createLinksWithBestMatches(queryResults, deductedQuery);
             try {
-                TimeUnit.MILLISECONDS.sleep(REQUEST_WAIT);
+                TimeUnit.MILLISECONDS.sleep(REQUEST_DELAY);
             } catch (InterruptedException e) {
                 LOG.error("[ auto_matcher ]: {} - {}", path, e.getMessage());
             }
         }
-        return linksWithBestMatches;
+        return 0;
     }
 
     AutoMatcherStatus getMessage(List<MediaQuery> mediaQueryList, MediaQuery currentQuery, int queryIndex) {
@@ -166,55 +162,30 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
 //    }
 
     /*
-     * Extract movie title and production year from given path.
-     * Files containing keyword sample or trailer are being ignored.
-     * */
-    @Override
-    public DeductedQuery extractTitleAndYear(String path) {
-        Path of = Path.of(path);
-        Path fileName = of.getName(of.getNameCount() - 1);
-        if (TextExtractTools.isSampleOrTrailer(path)) return null;
-        String regex = "\\b^.+?\\d{4}\\b";
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(fileName.toString());
-        if (m.find()) {
-            String group = m.group();
-            String filtered = replaceIllegalCharacters(group);
-            int i = filtered.length() - 4;
-            String year = filtered.substring(i);
-            String title = filtered.substring(0, i).trim();
-            return new DeductedQuery(title, year, path);
-        }
-        return null;
-    }
-
-    /*
      * Search for movie with given title and year.
      * Returns query result list.
      * */
-    private List<QueryResult> searchWithDeductedQuery(DeductedQuery deductedQuery) {
+    private List<QueryResult> searchWithDeductedQuery(DeductedQuery deductedQuery) throws NetworkException {
         String response = null;
-        try {
-            response = requestService.tmdbApiTitleAndYear(deductedQuery);
-        } catch (IOException e) {
-            LOG.error("[ auto_match ] Response error: {}", e.getMessage());
-        }
+        response = requestService.tmdbApiTitleAndYearMovie(deductedQuery.getPhrase(), deductedQuery.getYear());
         // search results - json
         LOG.info(response);
 
-        return responseParser.parseTmdbApiSearchResults(response, deductedQuery.getPath());
+        return responseParser.parseTmdbApiMovieResults(response, deductedQuery.getPath());
     }
 
     /*
      * If results list have only one element use it for creating symbolic link.
      * Any file containing special keywords is being marked as extra feature.
      * */
-    private List<OperationResult> createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) {
+    private int createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) throws NetworkException {
         if (queryResults.size() == 1 && !TextExtractTools.isSampleOrTrailer(deductedQuery.getPath())) {
 //            MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
-            return mediaLinksService.createFileLink(queryResults.get(0), MediaIdentity.TMDB);
+            return mediaLinksService.createFileLink(queryResults.get(0),
+                    MediaIdentity.TMDB,
+                    movieQueryService);
         }
-        return List.of();
+        return 0;
     }
 
     private String replaceIllegalCharacters(String title) {

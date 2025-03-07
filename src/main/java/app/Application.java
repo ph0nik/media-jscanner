@@ -11,9 +11,6 @@ public class Application {
         SpringApplicationBuilder builder = new SpringApplicationBuilder(Application.class);
         builder.headless(false);
         builder.run(args);
-
-
 //        SpringApplication.run(Application.class, args);
-
     }
 }

@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class QueryResult implements Comparable<QueryResult> {
-
     private Long id;
     private MediaType mediaType;
     private String title;
@@ -18,10 +17,9 @@ public class QueryResult implements Comparable<QueryResult> {
     private UUID queryId;
     private String poster;
     private String year;
-
     private byte multipart;
 
-    public QueryResult() {};
+    public QueryResult() {}
 
     public QueryResult(String path) {
         this.originalPath = path;

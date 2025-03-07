@@ -1,40 +1,50 @@
 package service;
 
-import model.*;
+import model.LastRequest;
+import model.MediaLink;
+import model.OperationResult;
+import model.QueryResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import service.exceptions.NetworkException;
+import service.query.MediaQueryService;
+import service.query.TvQueryService;
 import util.MediaIdentity;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface MediaLinksService extends Pagination {
-
-    /*
-     * Get list of all queries from db
-     * */
-    List<MediaQuery> getMediaQueryList();
-
-    int getMediaQueryListSize();
-
-    /*
-     * For a given query perform online search for matching elements within given domain.
-     * If first parameter is not empty it's going to be used as search phrase,
-     * otherwise query from MediaQuery object is being used.
-     * Returns List of QueryResult or null in case of exception.
-     * */
-//    List<QueryResult> executeMediaQuery(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity);
+public interface MediaLinksService {
 
     /*
      * Executes media query search using web search engine and web api search engine.
      * Return results or empty list if nothing was found.
      * On connection error it returns query result elements with error description.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity);
+    List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity,
+                                        MediaQueryService mediaQueryService) throws NetworkException;
 
-//    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaQuery mediaQuery, MediaIdentity mediaIdentity, int year);
+    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery,
+                                                 MediaIdentity mediaIdentity,
+                                                 int year,
+                                                 MediaQueryService mediaQueryService) throws NetworkException;
 
-    List<QueryResult> searchTmdbWithTitleAndYear(String customQuery, MediaIdentity mediaIdentity, int year);
+    List<QueryResult> searchWithImdbId(String imdbId,
+                                       MediaIdentity mediaIdentity,
+                                       MediaQueryService mediaQueryService) throws NetworkException;
 
-    List<QueryResult> searchWithImdbId(String imdbId, MediaIdentity mediaIdentity);
+
+    // TODO create new service for getting info only, extend it with media query service
+    QueryResult getTvDetails(QueryResult queryResult, int seasonNumber) throws NetworkException;
+
+    /*
+    * Based on query result and season number create media links for grouped media queries
+    * */
+    List<MediaLink> createMediaLinksTv(QueryResult queryResult, int seasonNumber,
+                                       TvQueryService tvQueryService) throws FileNotFoundException;
+
+    void setCurrentMediaLinks(List<MediaLink> mediaLinks);
 
     /*
     * Returns results of latest request
@@ -44,7 +54,9 @@ public interface MediaLinksService extends Pagination {
     /*
      * Create symlink with specified query result and link properties
      * */
-    List<OperationResult> createFileLink(QueryResult queryResult, MediaIdentity mediaIdentity);
+    int createFileLink(QueryResult queryResult,
+                                         MediaIdentity mediaIdentity,
+                                         MediaQueryService mediaQueryService) throws NetworkException;
 
     OperationResult createHardLinkWithDirectories(MediaLink mediaLink);
 
@@ -53,7 +65,7 @@ public interface MediaLinksService extends Pagination {
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    MediaLink ignoreMediaFile();
+    MediaLink ignoreMediaFile(MediaQueryService mediaQueryService);
 
     /*
     * Filter all ignored results with given query
@@ -89,24 +101,12 @@ public interface MediaLinksService extends Pagination {
     * */
     List<MediaLink> getMediaLinks();
 
-
+    Page<MediaLink> getPageableLinks(Pageable pageable, List<MediaLink> mediaQueryList);
 
     List<MediaLink> searchMediaLinks(String search);
-
-    /*
-    * Checks if given path exists
-    * */
-    boolean validatePath(String path);
-
-    void removeEmptyFolders();
 
     void removeEmptyFolders(String path);
 
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 
-
-    /*
-    * Returns true if more than one media file belongs to the same directory at the same level
-    * */
-    boolean isMultipart(MediaQuery mediaQuery);
 }

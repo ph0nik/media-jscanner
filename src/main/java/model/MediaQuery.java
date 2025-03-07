@@ -8,11 +8,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class MediaQuery {
-
     private long queryId;
     private UUID queryUuid;
     private String filePath;
-
     private byte multipart;
     private MediaType mediaType;
 
@@ -36,7 +34,7 @@ public class MediaQuery {
     }
 
     /*
-     *
+     *TODO
      * -1 for grouped element but not part of reference media
      * 0 default
      * +1 multipart and grouped
@@ -72,8 +70,8 @@ public class MediaQuery {
     }
 
     public String getQuery() {
-        Path path = Path.of(filePath);
-        String fileName = path.getName(path.getNameCount() - 1).toString();
+        String fileName = Path.of(filePath).getFileName().toString();
+//        String fileName = path.getName(path.getNameCount() - 1).toString(); TODO
         String sub = fileName.substring(0, fileName.lastIndexOf("."));
         return sub.replace(".", " ");
     }
@@ -91,12 +89,12 @@ public class MediaQuery {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MediaQuery that = (MediaQuery) o;
-        return filePath.equals(that.filePath);
+        return multipart == that.multipart && queryUuid.equals(that.queryUuid) && filePath.equals(that.filePath) && mediaType == that.mediaType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(filePath);
+        return Objects.hash(queryUuid, filePath, multipart, mediaType);
     }
 
     @Override
@@ -109,4 +107,5 @@ public class MediaQuery {
                 ", mediaType=" + mediaType +
                 '}';
     }
+
 }

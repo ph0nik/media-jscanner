@@ -4,7 +4,7 @@
 //import dao.MediaTrackerDaoImpl;
 //import service.MediaLinksService;
 //import service.MediaLinksServiceImpl;
-//import service.MediaQueryService;
+//import service.query.MediaQueryService;
 //import service.PropertiesServiceImpl;
 //import ui.MainMenu;
 //import util.CleanerService;

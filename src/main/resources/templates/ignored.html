@@ -23,17 +23,27 @@
             <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
                 <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size()>0}" class="nav-link" href="/query">new files
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
                         <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list.size()}"
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
                               class="badge bg-primary rounded-pill"></span>
                         <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list.size()}"
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_tv.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_tv.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links
                         <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -42,11 +52,18 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+                <!--ignored-->
                 <li class="nav-item px-2">
-                    <a class="nav-link active" href="/ignored">ignored</a>
+                    <a th:switch="${media_ignored.size()>0}" class="nav-link active" th:href="${tab_ignored}">
+                        ignored
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/config">config</a>
+                    <a class="nav-link" th:href="${tab_config}">settings</a>
                 </li>
             </ul>
         </div>
@@ -55,7 +72,7 @@
             <!--scan folders-->
             <div class="col d-flex justify-content-center p-1">
                 <form action="#"
-                      th:action="@{/scan}"
+                      th:action="@{__${movie_scan}__}"
                       method="get">
                     <input type="hidden">
                     <button class="btn btn-success" type="submit">
@@ -67,78 +84,80 @@
     </nav>
 </div>
 <!--error, no user paths found-->
-<div class="row" th:switch="${user_paths}">
-    <div th:case="${false}" class="col-8 offset-md-2">
-        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <p class="text-danger text-center">User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
-                tab</p>
+<div class="row">
+    <div class="col-4">
+        <h2 class="col text-secondary">Ignored</h2>
+    </div>
+    <div class="col-auto">
+        <div th:if="${!user_paths}" class="row justify-content-center">
+            <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+                User provided paths not found! Please, add proper paths in config tab.
+            </div>
         </div>
     </div>
 </div>
 <!--search ignored-->
-<div class="row justify-content-center m-2">
+<div class="row justify-content-center">
+    <div class="col-2"></div>
     <div class="col-4">
         <form class="d-flex"
               action="#"
-              th:action="@{/search-ignore/}"
+              th:action="@{__${ignore_search}__}"
               method="post">
             <div class="input-group input-group-sm">
                 <input type="search" class="form-control" placeholder="Find in ignored media..."
                        aria-label="ignored search"
                        aria-describedby="button-addon2" name="search" id="search">
-                <button class="btn btn-primary btn-sm" type="submit" id="button-addon2">Search</button>
+                <button class="btn btn-light btn-sm" type="submit" id="button-addon2">Search</button>
             </div>
         </form>
     </div>
+    <div class="col-3"></div>
 </div>
 <!--table-->
-<div class="row m-2">
+<div class="row">
     <table class="table table-dark table-hover table-sm table-striped table-borderless">
         <!--        table head-->
         <thead>
-        <tr class="row m-0 text-white-50">
-            <th class="col-1 text-center">id</th>
-            <th class="col">file</th>
+        <tr class="text-white-50">
+            <th scope="col" width="5%" class="text-center">#</th>
+            <th scope="col" >file</th>
             <!--invalid links button-->
-            <th class="col-2 text-start">
-                <div class="row">
-                    <form class="d-flex"
-                          action="#"
-                          th:action="@{/clear-links/}"
-                          method="get">
-                        <button class="btn btn-dark btn-sm" type="submit" id="clear-links">
-                            <i class="fa-regular fa-trash-can m-2"></i>Clear invalid ignored
-                        </button>
-                    </form>
-                </div>
+            <th scope="col" width="12%" class="text-start">
+                <form class="d-flex"
+                      action="#"
+                      th:action="@{__${link_clear}__}"
+                      method="get">
+                    <button class="btn btn-dark btn-sm" type="submit" id="clear-links">
+                        <i class="fa-regular fa-trash-can mx-2"></i>Clear invalid ignored
+                    </button>
+                </form>
             </th>
         </tr>
         </thead>
         <!--        table body-->
         <tbody>
-        <tr class="row m-0" th:each="ignored : ${media_ignored}">
-            <td class="col-1" th:text="${ignored.mediaId}"></td>
-            <td class="col">
+        <tr th:each="ignored : ${media_ignored}">
+            <td scope="row" class="text-center" th:text="${ignored.mediaId}">123</td>
+            <td>
                 <span th:text="${ignored.originalPath}"
                       class="fs-6 fw-bold font-monospace">some/example/ignored/path</span>
             </td>
-            <td class="col-1 text-start">
-                <div class="row">
-                    <form action="#"
-                          th:action="@{/remove-ignore/{id}(id=${ignored.mediaId})}"
-                          method="post">
-                        <input type="hidden" value="" name="custom">
-                        <button class="btn btn-link btn-sm link-warning" type="submit"><i
-                                class="fa-solid fa-arrow-rotate-left"></i> Unignore
-                        </button>
-                    </form>
-                </div>
+            <td class="text-center">
+                <form action="#"
+                      th:action="@{__${ignore_delete}__}"
+                      method="post">
+                    <input type="hidden" th:value="${ignored.mediaId}" name="id">
+                    <button class="btn btn-link btn-sm link-warning" type="submit">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> Unignore
+                    </button>
+                </form>
             </td>
         </tr>
         </tbody>
     </table>
 </div>
-<div class="row m-2 justify-content-between">
+<div class="row justify-content-between">
     <div class="col-10"></div>
     <!--back to the top-->
     <div class="col-2">

@@ -2,8 +2,19 @@ package service;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import dao.MediaTrackerDao;
+import dao.MediaTrackerDaoImpl;
 import model.MediaLink;
+import model.MediaQuery;
 import org.junit.jupiter.api.*;
+import scanner.MediaFilesScanner;
+import scanner.MoviesFileScanner;
+import service.exceptions.ConfigurationException;
+import service.exceptions.NoApiKeyException;
+import service.query.MediaQueryService;
+import service.query.MovieQueryService;
+import util.CleanerService;
+import util.CleanerServiceImpl;
 import util.TextExtractTools;
 
 import java.io.File;
@@ -18,9 +29,20 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MediaLinksServiceImplTest {
 
-    MediaLinksServiceImpl mediaLinksService;
+    private MediaTrackerDao mediaTrackerDao;
+    private PropertiesService propertiesService;
+    private CleanerService cleanerService;
+    private FileService fileService;
+    private MediaQueryService mediaQueryService;
+    private Pagination<MediaLink> linkPagination;
+    private Pagination<MediaQuery> queryPagination;
+    private MediaLinksServiceImpl mediaLinksService;
+    private MediaFilesScanner mediaFilesScanner;
+    private RequestService requestService;
+    private ResponseParser responseParser;
     private List<String> testFiles;
     private Path incomingPath;
     private Path linksPath;
@@ -28,6 +50,25 @@ class MediaLinksServiceImplTest {
     private FileSystem fileSystem;
     private String incomingFolder = "incoming";
     private String linkFolder = "complete";
+    private String testToken = "testToken";
+
+    @BeforeAll
+    void createInstances() throws NoApiKeyException, ConfigurationException {
+        mediaFilesScanner = new MoviesFileScanner();
+        mediaTrackerDao = new MediaTrackerDaoImpl();
+        propertiesService = new PropertiesServiceImpl(testToken);
+        cleanerService = new CleanerServiceImpl();
+        fileService = new FileService();
+        linkPagination = new PaginationImpl<>();
+        queryPagination = new PaginationImpl<>();
+        requestService = new RequestService(propertiesService);
+        responseParser = new ResponseParser(propertiesService);
+        mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
+                propertiesService, queryPagination);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService,
+                cleanerService, fileService, linkPagination,
+                requestService, responseParser);
+    }
 
     @BeforeEach
     void createFileTree() throws IOException {
@@ -39,7 +80,7 @@ class MediaLinksServiceImplTest {
         incomingPath = rootPath.resolve(incomingFolder);
         linksPath = rootPath.resolve(linkFolder);
         createFolderStructureWithFilesBasedOfListing();
-        mediaLinksService = new MediaLinksServiceImpl();
+
     }
 
     @AfterEach
@@ -102,7 +143,6 @@ class MediaLinksServiceImplTest {
     @Test
     @DisplayName("Create hard link based on existing file and check if process was successful")
     void createLink() throws IOException {
-        MediaLinksServiceImpl mediaLinksService = new MediaLinksServiceImpl();
         MediaLink mediaLink = new MediaLink();
         mediaLink.setMediaId(1);
         mediaLink.setOriginalPresent(true);

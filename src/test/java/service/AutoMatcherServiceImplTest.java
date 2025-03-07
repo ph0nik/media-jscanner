@@ -4,12 +4,18 @@ import com.google.common.io.Files;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import model.DeductedQuery;
+import model.MediaLink;
+import model.MediaQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import scanner.MoviesFileScanner;
+import service.exceptions.ConfigurationException;
+import service.exceptions.NoApiKeyException;
+import service.query.MovieQueryService;
 import util.CleanerService;
 import util.CleanerServiceImpl;
 import util.TextExtractTools;
+import websocket.config.NotificationDispatcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,21 +34,34 @@ class AutoMatcherServiceImplTest {
     private PropertiesService propertiesService;
     private MediaTrackerDao mediaTrackerDao;
     private CleanerService cleanerService;
-    private MediaQueryService mediaQueryService;
+    private MovieQueryService movieQueryService;
     private MoviesFileScanner moviesFileScanner;
-
+    private Pagination<MediaQuery> pagination;
+    private Pagination<MediaLink> linkPagination;
     private FileService fileService;
+    private RequestService requestService;
+    private ResponseParser responseParser;
+    private NotificationDispatcher notificationDispatcher;
+    private String testToken = "some token";
 
     @BeforeEach
-    public void initAutoMatcher() {
+    public void initAutoMatcher() throws NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new MediaTrackerDaoImpl();
-
         cleanerService = new CleanerServiceImpl();
-        propertiesService = new PropertiesServiceImpl();
+        propertiesService = new PropertiesServiceImpl(testToken);
         moviesFileScanner = new MoviesFileScanner();
-        mediaQueryService = new MediaQueryService(mediaTrackerDao, moviesFileScanner, propertiesService);
-        mediaLinksService = new MediaLinksServiceImpl();
-        autoMatcherService = new AutoMatcherServiceImpl(propertiesService, mediaLinksService);
+        pagination = new PaginationImpl<>();
+        linkPagination = new PaginationImpl<>();
+        requestService = new RequestService(propertiesService);
+        responseParser = new ResponseParser(propertiesService);
+        movieQueryService = new MovieQueryService(mediaTrackerDao, moviesFileScanner,
+                propertiesService, pagination);
+        mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService,
+                cleanerService,
+                new FileService(), linkPagination,
+                requestService, responseParser);
+        autoMatcherService = new AutoMatcherServiceImpl(requestService, responseParser,
+                mediaLinksService, movieQueryService);
     }
 
     @Test
@@ -54,7 +73,7 @@ class AutoMatcherServiceImplTest {
             File[] files = testPath.listFiles();
             if (files != null) {
                 for (File f : files) {
-                    DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(f.toString());
+                    DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(f.toString());
                     if (deductedQuery != null) deductedQueryList.add(deductedQuery);
                 }
             }
@@ -65,22 +84,22 @@ class AutoMatcherServiceImplTest {
     @Test
     public void extractTitleAndYearFromFileName_success() {
         String testFile1 = "A Better Tomorrow 1986 720p BluRay DD5.1 x264-DON.mkv";
-        DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
+        DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(testFile1);
         assertEquals("A Better Tomorrow", deductedQuery.getPhrase());
-        assertEquals("1986", deductedQuery.getYear());
+        assertEquals("1986", String.valueOf(deductedQuery.getYear()));
     }
 
     @Test
     public void extractTitleAndYearFromFileName_failure() {
         String testFile1 = "Computer Chess Andrew Bujalski.mp4";
-        DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
+        DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(testFile1);
         assertNull(deductedQuery);
     }
 
     @Test
     public void extractTitleAndYearFromEmptyFileName_failure() {
         String testFile1 = "";
-        DeductedQuery deductedQuery = autoMatcherService.extractTitleAndYear(testFile1);
+        DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(testFile1);
         assertNull(deductedQuery);
     }
 

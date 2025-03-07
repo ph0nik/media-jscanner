@@ -19,23 +19,32 @@
 </head>
 <body class="container-fluid">
 <div class="row" id="top">
-    <!--    top menu-->
     <nav class="nav navbar-light bg-light align-items-center">
         <div class="col">
             <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
                 <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
                 <li class="nav-item px-2">
-                    <a th:switch="${query_list.size()>0}" class="nav-link active" href="/query">new files
+                    <a th:switch="${query_list_movie.size()>0}" class="nav-link active" th:href="${tab_movie}">movies
                         <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list.size()}"
+                        <span th:case="${true}" th:text="${query_list_movie.size()}"
                               class="badge bg-primary rounded-pill"></span>
                         <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list.size()}"
+                        <span th:case="${false}" th:text="${query_list_movie.size()}"
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link" href="/links">links
+                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
+                        <!--                         show if any new files are in the queue -->
+                        <span th:case="${true}" th:text="${query_list_tv.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <!--                         for no links -->
+                        <span th:case="${false}" th:text="${query_list_tv.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
+                </li>
+                <li class="nav-item px-2">
+                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links
                         <!--                         show if any new files are in the queue -->
                         <span th:case="${true}" th:text="${link_list.size()}"
                               class="badge bg-primary rounded-pill"></span>
@@ -44,11 +53,18 @@
                               class="badge bg-secondary rounded-pill"></span>
                     </a>
                 </li>
+                <!--ignored-->
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/ignored">ignored</a>
+                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
+                        ignored
+                        <span th:case="${true}" th:text="${media_ignored.size()}"
+                              class="badge bg-primary rounded-pill"></span>
+                        <span th:case="${false}" th:text="${media_ignored.size()}"
+                              class="badge bg-secondary rounded-pill"></span>
+                    </a>
                 </li>
                 <li class="nav-item px-2">
-                    <a class="nav-link" href="/config">config</a>
+                    <a class="nav-link" th:href="${tab_config}">settings</a>
                 </li>
             </ul>
         </div>
@@ -57,7 +73,7 @@
             <!--scan folders-->
             <div class="col d-flex justify-content-center p-1">
                 <form action="#"
-                      th:action="@{/scan}"
+                      th:action="@{__${movie_scan}__}"
                       method="get">
                     <input type="hidden">
                     <button class="btn btn-success" type="submit">
@@ -68,18 +84,10 @@
         </div>
     </nav>
 </div>
-
 <!--error, no user paths found-->
-<!--<div class="alert alert-warning" role="alert">-->
-<!--    A simple warning alert—check it out!-->
-<!--</div>-->
-<div class="row" th:switch="${user_paths}">
-    <div th:case="${false}" class="col-8 offset-md-2">
-        <div class="row m-3 p-2 bg-light border border-danger rounded align-items-center">
-            <span class="text-danger text-center"><i class="fa-solid fa-triangle-exclamation fa-2xl"></i>
-                User provided paths not found! You can set up folders in the <code><b><u>config</u></b></code>
-                tab</span>
-        </div>
+<div th:if="${!user_paths}" class="row justify-content-center">
+    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
+        User provided paths not found! Please, add proper paths in config tab.
     </div>
 </div>
 <!-- info with file path -->
@@ -95,31 +103,18 @@
         <p class="text-center light-text">Select all elements referring to the same title.</br>You may skip this part to treat selected file as standalone title.</p>
     </div>
     <div class="col-1">
-        <form action="#" th:action="@{/skip-multipart}" method="get">
+        <form action="#" th:action="@{__${movie_skip_multi}__}" method="get">
             <button class="btn btn-secondary" type="submit">Skip >></button>
         </form>
     </div>
 </div>
 <!-- multipart query selection  -->
 <div class="row mx-2">
-<!--    <div class="row">-->
-<!--        <p th:text="${query.filePath}">file path</p>-->
-<!--    </div>-->
-<!--    <div class="row">-->
-<!--        <div class="col-1">-->
-<!--            <p>Multiple media found in selected folder, select all elements that belong to the same group as file-->
-<!--                above.</p>-->
-<!--        </div>-->
-<!--        <div class="col-6">-->
-<!--            <form action="#" th:action="@{/skip-multipart}" method="get">-->
-<!--                <button class="btn btn-outline-primary" type="submit">Skip >></button>-->
-<!--            </form>-->
-<!--        </div>-->
-<!--    </div>-->
-
     <fieldset>
         <table class="table table-dark table-striped table-hover table-borderless">
-            <form action="#" th:action="@{/set-multipart}" th:object="${multipart_dto}"
+            <form action="#"
+                  th:action="@{__${movie_set_multi}__}"
+                  th:object="${multipart_dto}"
                   method="post">
                 <thead>
                 <tr class="row m-0 text-white-50">

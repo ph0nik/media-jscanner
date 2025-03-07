@@ -1,7 +1,7 @@
 package util;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,9 +18,9 @@ public class TextExtractToolsTest {
 
     static List<String> testFiles;
 
-    @BeforeClass
-    public static void loadTestFile() throws IOException {
-        Path sd = Paths.get("src/test/resources/test_list.txt");
+    @BeforeEach
+    public void loadTestFile() throws IOException {
+        Path sd = Paths.get("src/test/resources/test_movies_abs_paths.txt");
         Path hd = Paths.get("src/test/resources/movies_hd.txt");
         testFiles = Files.readAllLines(hd, StandardCharsets.ISO_8859_1);
     }
@@ -27,10 +29,11 @@ public class TextExtractToolsTest {
     public void showGroupNames() {
         for (String p : testFiles) {
             String file = Path.of(p).getFileName().toString();
-            System.out.print(file);
-            System.out.print(" -> ");
             String s = TextExtractTools.replaceIllegalCharacters(file);
-            System.out.println(TextExtractTools.checkForSpecialDescriptor(s));
+
+//            System.out.print(file);
+//            System.out.print(" -> ");
+//            System.out.println(TextExtractTools.checkForSpecialDescriptor(s));
         }
     }
 
@@ -60,6 +63,34 @@ public class TextExtractToolsTest {
         String specialWithGroup = (special + " " + group).trim();
         specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : " - [" + specialWithGroup + "]";
         assertEquals(" - [720p x264]", specialWithGroup);
+    }
+
+    @Test
+    void extractTitleFromTvElement() {
+        String sample = "Masters.of.Sex.S02E06.720p.HDTV.x264-IMMERSE.mkv";
+        String s = TextExtractTools.extractTitleFromTvElement(sample);
+        System.out.println(s);
+    }
+
+    @Test
+    void extractSeasonNumber() throws IOException {
+        Path path = Paths.get("src/test/resources/seriale_lista.txt");
+        String episode = "Seriale/Fear.the.Walking.Dead.S02.1080p.BluRay.x264-ROVERS/Fear.the.Walking.Dead.S02E12.1080p.BluRay.x264-ROVERS/Fear.the.Walking.Dead.S02E12.1080p.BluRay.x264-ROVERS.mkv";
+        List<String> strings = Files.readAllLines(path);
+
+        Map<String, Integer> collect = strings.stream()
+                .filter((MediaFilter::validateExtension))
+                .distinct()
+                .collect(Collectors.toMap(
+                        episodeName -> episodeName,
+                        TextExtractTools::extractSeasonNumber
+                ));
+
+        assertEquals(2, collect.get(episode));
+
+//        String sample = "Seriale/Friends.S01-S10.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC.PACK-PSiG/Friends.S08.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC-PSiG/Friends.S08E16.The.One.Where.Joey.Tells.Rachel.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC-PSiG.mkv";
+//        int i = TextExtractTools.extractSeasonNumber(sample);
+//        System.out.println(i);
     }
 
 }

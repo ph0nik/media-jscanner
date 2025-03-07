@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class MultipartDto {
-
     private UUID queryUuid;
     private List<MultiPartElement> multiPartElementList;
 
