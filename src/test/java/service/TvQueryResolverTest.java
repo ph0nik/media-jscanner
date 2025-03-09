@@ -1,11 +1,13 @@
 package service;
 
+import app.EnvValidator;
 import dao.MediaTrackerDao;
 import dao.SpringHibernateBootstrapDao;
 import model.MediaQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
@@ -22,20 +24,21 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TvQueryResolverTest {
 
-    private static MediaTrackerDao mediaTrackerDao;
-    private static MoviesFileScanner moviesFileScanner;
-    private static PropertiesService propertiesService;
-    private static MovieQueryService movieQueryService;
-    private static Pagination<MediaQuery> pagination;
-    private static TvQueryResolver tvQueryResolver;
+    private MediaTrackerDao mediaTrackerDao;
+    private MoviesFileScanner moviesFileScanner;
+    private PropertiesService propertiesService;
+    private MovieQueryService movieQueryService;
+    private Pagination<MediaQuery> pagination;
+    private TvQueryResolver tvQueryResolver;
     private Path rootPath = Path.of("Seriale");
-    private static List<String> fileList;
-    private static String testToken = "test_token";
+    private List<String> fileList;
+    private EnvValidator envValidator;
 
     @BeforeAll
-    static void readAllPathsFromFile() throws IOException, NoApiKeyException, ConfigurationException {
+    void readAllPathsFromFile() throws IOException, NoApiKeyException, ConfigurationException {
         String listPath = "src/test/resources/seriale_lista.txt";
         fileList = Files.readAllLines(Path.of(listPath), StandardCharsets.UTF_8)
                 .stream()
@@ -44,10 +47,11 @@ class TvQueryResolverTest {
         initService();
     }
 
-    static void initService() throws NoApiKeyException, ConfigurationException {
+    void initService() throws NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new SpringHibernateBootstrapDao();
         moviesFileScanner = new MoviesFileScanner();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao, moviesFileScanner, propertiesService, pagination);
         tvQueryResolver = new TvQueryResolver(movieQueryService);

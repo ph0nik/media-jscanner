@@ -224,6 +224,13 @@ public class PropertiesServiceImpl implements PropertiesService {
         return targetFolderMap.get(USER_TARGET_TV);
     }
 
+    @Override
+    public Boolean checkUserPath(Path path) {
+        return path.toFile().exists();
+    }
+
+    // TODO read and write methods to any prop file with key value pair, with value as
+    // single or list
     private void addTargetPath(Path targetPath, String propertyKey) {
         Properties props = loadMediaFoldersProperties();
         String property = props.getProperty(propertyKey);
@@ -342,6 +349,7 @@ public class PropertiesServiceImpl implements PropertiesService {
     /*
      * Loads media file properties from internal file,
      * with default values.
+     * TODO remove default values start with empty paths
      * */
     private Properties loadInternalMediaFileProperties() {
         Properties props = new Properties();

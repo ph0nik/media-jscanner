@@ -1,5 +1,6 @@
 package service;
 
+import app.EnvValidator;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import model.MediaQuery;
@@ -19,13 +20,14 @@ class MovieQueryServiceTest {
     private MediaFilesScanner mediaFilesScanner;
     private PropertiesService propertiesService;
     private Pagination<MediaQuery> pagination;
-    private String testToken = "test_token";
+    private EnvValidator envValidator;
 
     @BeforeEach
     void initService() throws NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new MediaTrackerDaoImpl();
         mediaFilesScanner = new MoviesFileScanner();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(
                 mediaTrackerDao, mediaFilesScanner, propertiesService, pagination);

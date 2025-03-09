@@ -1,5 +1,6 @@
 package service;
 
+import app.EnvValidator;
 import com.google.common.io.Files;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
@@ -41,14 +42,15 @@ class AutoMatcherServiceImplTest {
     private FileService fileService;
     private RequestService requestService;
     private ResponseParser responseParser;
+    private EnvValidator envValidator;
     private NotificationDispatcher notificationDispatcher;
-    private String testToken = "some token";
 
     @BeforeEach
     public void initAutoMatcher() throws NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new MediaTrackerDaoImpl();
         cleanerService = new CleanerServiceImpl();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         moviesFileScanner = new MoviesFileScanner();
         pagination = new PaginationImpl<>();
         linkPagination = new PaginationImpl<>();

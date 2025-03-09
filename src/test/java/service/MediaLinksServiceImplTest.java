@@ -1,5 +1,6 @@
 package service;
 
+import app.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import dao.MediaTrackerDao;
@@ -51,12 +52,14 @@ class MediaLinksServiceImplTest {
     private String incomingFolder = "incoming";
     private String linkFolder = "complete";
     private String testToken = "testToken";
+    private EnvValidator envValidator;
 
     @BeforeAll
     void createInstances() throws NoApiKeyException, ConfigurationException {
         mediaFilesScanner = new MoviesFileScanner();
         mediaTrackerDao = new MediaTrackerDaoImpl();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         cleanerService = new CleanerServiceImpl();
         fileService = new FileService();
         linkPagination = new PaginationImpl<>();

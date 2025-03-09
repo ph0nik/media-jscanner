@@ -3,10 +3,8 @@ package service.backup;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import model.MediaLink;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import service.exceptions.MissingFolderOrFileException;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -18,27 +16,29 @@ import java.util.Random;
 
 class XmlBackupServiceTest {
 
-    private String dataFolder = "data";
     private BackupService backupService;
-    private FileSystem fileSystem;
-    private Path rootPath;
+    private Path testRootPath;
+    private FileSystem fs;
 
     @BeforeEach
     void prepareFileSystem() throws IOException {
-        fileSystem = Jimfs.newFileSystem(Configuration.windows());
-        rootPath = fileSystem.getPath("");
-        Path testRootPath = rootPath.resolve(dataFolder);
+        Path rootPath;
+        fs = Jimfs.newFileSystem(Configuration.windows());
+        rootPath = fs.getPath("");
+        String dataFolder = "data";
+        testRootPath = rootPath.resolve(dataFolder);
         Files.createDirectory(testRootPath);
-        prepareBackupService(testRootPath);
+        backupService = new XmlBackupService();
     }
 
-    void prepareBackupService(Path dataPath) {
-        backupService = new XmlBackupService(dataPath);
+    @AfterEach
+    void tearFileSystem() throws IOException {
+        fs.close();
     }
 
     @Test
     @DisplayName("Serialize list with single element")
-    void prepareAndBackupSingleItem() throws IOException {
+    void prepareAndBackupSingleItem() throws IOException, MissingFolderOrFileException {
         MediaLink ml = new MediaLink();
         ml.setImdbId("tt123435");
         ml.setLinkPath("link path");
@@ -48,15 +48,17 @@ class XmlBackupServiceTest {
         ml.setOriginalPresent(true);
         List<MediaLink> mediaLinkList = new ArrayList<>();
         mediaLinkList.add(ml);
-
-        String exportPath = backupService.exportRecords(mediaLinkList);
-        List<MediaLink> importedList = backupService.importRecords(exportPath);
+        // export
+        String exportFileName = backupService.exportRecords(testRootPath, mediaLinkList);
+        // import
+        List<MediaLink> importedList = backupService.importRecords(testRootPath.resolve(exportFileName));
         Assertions.assertEquals(mediaLinkList.size(), importedList.size());
         Random rnd = new Random();
         int index = rnd.nextInt(importedList.size());
-        Assertions.assertEquals(importedList.get(index).getLinkPath(),
-                mediaLinkList.get(index).getLinkPath());
-        System.out.println(importedList);
+        Assertions.assertEquals(
+                importedList.get(index).getLinkPath(),
+                mediaLinkList.get(index).getLinkPath()
+        );
     }
 
 }

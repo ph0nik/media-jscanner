@@ -38,6 +38,8 @@ public interface PropertiesService {
      * */
     public PropertiesService addTargetPathMovie(Path targetPath) throws NoApiKeyException, ConfigurationException;
 
+    Boolean checkUserPath(Path path);
+
     public PropertiesService addTargetPathTv(Path targetPath) throws NoApiKeyException, ConfigurationException;
 
     /*

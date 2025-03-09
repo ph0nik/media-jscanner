@@ -1,10 +1,12 @@
 package service;
 
+import app.EnvValidator;
 import com.google.gson.Gson;
 import model.QueryResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import service.parser.MovieItem;
@@ -19,19 +21,20 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ResponseParserTest {
-    static String tmdbSearchResults;
-    static Path multiSearch;
-    static PropertiesService propertiesService;
-    static ResponseParser responseParser;
-    private static String testToken = "test_token";
+    private String tmdbSearchResults;
+    private Path multiSearch;
+    private PropertiesService propertiesService;
+    private ResponseParser responseParser;
 
     @BeforeAll
-    public static void loadTestFile() throws IOException, NoApiKeyException, ConfigurationException {
+    public void loadTestFile() throws IOException, NoApiKeyException, ConfigurationException {
         Path tmdbSearch = Paths.get("src/test/resources/json_tmdb_search_string.json");
         multiSearch = Paths.get("src/test/resources/json-multisearch.txt");
         tmdbSearchResults = Files.readString(tmdbSearch);
-        propertiesService = new PropertiesServiceImpl(testToken);
+        EnvValidator envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         responseParser = new ResponseParser(propertiesService);
     }
 

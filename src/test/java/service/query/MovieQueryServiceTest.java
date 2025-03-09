@@ -1,5 +1,6 @@
 package service.query;
 
+import app.EnvValidator;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import model.MediaQuery;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MovieQueryServiceTest {
 
     static MediaQueryService mediaQueryService;
@@ -33,20 +35,20 @@ class MovieQueryServiceTest {
     static PropertiesService propertiesService;
     static Pagination<MediaQuery> pagination;
     static List<MediaQuery> mediaQueryList;
-    private static String testToken = "test_token";
 
     @BeforeAll
-    static void init() throws IOException, NoApiKeyException, ConfigurationException {
+    void init() throws IOException, NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new MediaTrackerDaoImpl();
         mediaFilesScanner = new MoviesFileScanner();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        EnvValidator envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         pagination = new PaginationImpl<>();
         mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
                 propertiesService, pagination);
         getFileList();
     }
 
-    static void getFileList() throws IOException {
+    void getFileList() throws IOException {
         Path movies = Paths.get("src/test/resources/test_movies_abs_paths.txt");
         mediaQueryList = Files.readAllLines(movies, StandardCharsets.UTF_8)
                 .stream()

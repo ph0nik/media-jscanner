@@ -4,7 +4,9 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import model.MediaLink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import service.backup.model.BackupXml;
+import service.exceptions.MissingFolderOrFileException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,53 +16,58 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Service
 public class XmlBackupService implements BackupService {
 
     private static final Logger LOG = LoggerFactory.getLogger(XmlBackupService.class);
-    private final Path dataFolder;
 
-    public XmlBackupService(Path dataFolder) {
-        this.dataFolder = dataFolder;
-    }
+    public XmlBackupService() {}
 
 
-    String getBackupFileName() {
+    String createBackupFileName() {
         DateTimeFormatter timeStamp = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         return "backup-" + timeStamp.format(LocalDateTime.now(ZoneId.systemDefault())) + ".xml";
     }
-    @Override
-    public BackupXml prepareItemsForBackup(List<MediaLink> mediaLinks) {
+
+    private BackupXml prepareItemsForBackup(List<MediaLink> mediaLinks) {
         BackupXml backupXml = new BackupXml();
         backupXml.setMediaLinks(mediaLinks);
         return backupXml;
     }
 
     @Override
-    public String exportRecords(List<MediaLink> mediaLinkList) throws IOException {
-        if (checkAppDataFolder()) {
-            XmlMapper xmlMapper = new XmlMapper();
-            String backupFileName = getBackupFileName();
-            Path absoluteBackupPath = dataFolder.resolve(backupFileName);
-            String stringToWrite = xmlMapper.writeValueAsString(prepareItemsForBackup(mediaLinkList));
-            Files.writeString(absoluteBackupPath, stringToWrite);
-//            xmlMapper.writeValue(absoluteBackupPath.toFile(), prepareItemsForBackup(mediaLinkList));
-            return backupFileName;
+    public String exportRecords(Path dataDirectory, List<MediaLink> mediaLinkList)
+            throws IOException, MissingFolderOrFileException {
+        if (!checkAppDataFolder(dataDirectory)) {
+            String error = "[ backup_service ] No data folder found: " + dataDirectory;
+            LOG.error(error);
+            throw new MissingFolderOrFileException(error);
         } else {
-            LOG.error("[ backup_service ] Error: no data folder found");
+            XmlMapper xmlMapper = new XmlMapper();
+            String backupFileName = createBackupFileName(); // prepare file name
+            Path absoluteBackupPath = dataDirectory.resolve(backupFileName); // create full path
+            String stringToWrite = xmlMapper.writeValueAsString(prepareItemsForBackup(mediaLinkList)); // prepare string
+            Files.writeString(absoluteBackupPath, stringToWrite); // write to file
+            return backupFileName;
         }
-        return "";
     }
 
     @Override
-    public List<MediaLink> importRecords(String fileName) throws IOException {
-        Path absoluteBackupPath = dataFolder.resolve(fileName);
-        String xmlAsString = Files.readString(absoluteBackupPath);
-        XmlMapper xmlMapper = new XmlMapper();
-        return xmlMapper.readValue(xmlAsString, BackupXml.class).getMediaLinks();
+    public List<MediaLink> importRecords(Path fileNamePath)
+            throws IOException, MissingFolderOrFileException {
+        if (!checkAppDataFolder(fileNamePath)) {
+            String error = "[ backup_service ] No backup file found: " + fileNamePath;
+            LOG.error(error);
+            throw new MissingFolderOrFileException(error);
+        } else {
+            String xmlAsString = Files.readString(fileNamePath);
+            XmlMapper xmlMapper = new XmlMapper();
+            return xmlMapper.readValue(xmlAsString, BackupXml.class).getMediaLinks();
+        }
     }
 
     @Override
-    public boolean checkAppDataFolder() {
+    public boolean checkAppDataFolder(Path dataFolder) {
         return Files.exists(dataFolder);
     }
 

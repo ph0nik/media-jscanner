@@ -16,7 +16,7 @@ import java.util.List;
 
 
 @Component("hibernate")
-public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
+public class MediaTrackerDaoImpl implements MediaTrackerDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(MediaTrackerDaoImpl.class);
     private final String ignorePath = "ignored";
@@ -172,18 +172,6 @@ public class MediaTrackerDaoImpl implements MediaTrackerDao, DataBaseService {
             entityManager.close();
         }
         return singleResult;
-    }
-
-    @Override
-    public List<MediaLink> importLinks(String filePath) {
-        EntityManager entityManager = getEntityManager();
-        // TODO
-        return null;
-    }
-
-    @Override
-    public void exportLinks(String filePath) {
-        // TODO
     }
 
 //    @Override

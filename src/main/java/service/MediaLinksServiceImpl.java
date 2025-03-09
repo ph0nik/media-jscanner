@@ -36,6 +36,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private final RequestService requestService;
     private final Pagination<MediaLink> pagination;
     private final MediaIdentity linkIdentifier = MediaIdentity.IMDB;
+    // TODO separate all data from service,
     private LastRequest lastRequest;
     private QueryResult currentQueryResult;
     private List<MediaLink> currentMediaLinks = new LinkedList<>();
@@ -239,8 +240,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 
     @Override
     public int createFileLink(QueryResult queryResult,
-                                                MediaIdentity mediaIdentity,
-                                                MediaQueryService mediaQueryService)
+                              MediaIdentity mediaIdentity,
+                              MediaQueryService mediaQueryService)
             throws NetworkException {
         int processed = 0;
         for (MediaQuery mq : mediaQueryService.getProcessList()) {

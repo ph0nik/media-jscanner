@@ -1,14 +1,12 @@
 package service.query;
 
+import app.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoImpl;
 import model.MediaQuery;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.Pagination;
@@ -28,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TvQueryServiceTest {
     static MediaQueryService mediaQueryService;
     static MediaTrackerDao mediaTrackerDao;
@@ -40,14 +39,14 @@ class TvQueryServiceTest {
     private static final String incomingFolder = "incoming";
     private static final String linkFolder = "complete";
     private static Path workPath;
-    private static String testToken = "test_token";
 
     @BeforeAll
-    static void init() throws IOException, NoApiKeyException, ConfigurationException {
+    void init() throws IOException, NoApiKeyException, ConfigurationException {
         createFileSystem();
         mediaTrackerDao = new MediaTrackerDaoImpl();
         mediaFilesScanner = new MoviesFileScanner();
-        propertiesService = new PropertiesServiceImpl(testToken);
+        EnvValidator envValidator = new EnvValidator(null);
+        propertiesService = new PropertiesServiceImpl(envValidator);
         propertiesService.addTargetPathTv(workPath.resolve("Seriale"));
         pagination = new PaginationImpl<>();
         mediaQueryService = new TvQueryService(mediaTrackerDao, mediaFilesScanner,
