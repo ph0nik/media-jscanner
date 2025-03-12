@@ -13,15 +13,11 @@ public interface PropertiesService {
 
     public Properties getNetworkProperties();
 
-//    public Properties getApiToken(Properties networkProperties);
+    public boolean userMoviePathsExist();
 
-    boolean checkApiToken();
+    public boolean userTvPathsExist();
 
-    public boolean isUserTargetPath();
-
-    public boolean isUserLinksPath();
-
-    public boolean checkUserPaths();
+    public boolean userPathsPresent();
 
     /*
      * Returns list of folders to be watched.
@@ -48,9 +44,9 @@ public interface PropertiesService {
     public void setLinksPathMovie(Path linksRoot) throws NoApiKeyException, ConfigurationException;
 
 
-    void removeTargetPathMovie(Path of) throws NoApiKeyException, ConfigurationException;
+    void removeTargetPathMovie(Path of) throws ConfigurationException;
 
-    void removeTargetPathTv(Path of) throws NoApiKeyException, ConfigurationException;
+    void removeTargetPathTv(Path of) throws ConfigurationException;
 
     Path getLinksFolderTv();
 

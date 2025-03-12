@@ -1,8 +1,6 @@
 package app.controller;
 
-import model.MediaLink;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +11,6 @@ import service.MediaLinksService;
 import service.PropertiesService;
 import service.query.MovieQueryService;
 
-import java.util.List;
-
 @Controller
 public class IgnoredController {
     @Autowired
@@ -23,42 +19,25 @@ public class IgnoredController {
     private MediaLinksService mediaLinksService;
     @Autowired
     private MovieQueryService movieQueryService;
-    @Value("${go.ignore.search}")
-    private String ignoreSearch;
-    @Value("${go.ignore.remove}")
-    private String ignoreDelete;
-    @Value("${go.link.clear}")
-    private String clearLinks;
+    private static final String SEARCH_IGNORED = "/search-ignore/";
+    private static final String DELETE_IGNORED = "/remove-ignore/";
+
     @ModelAttribute
     private void setIgnoreEndpoints(Model model) {
-        model.addAttribute("ignore_search", ignoreSearch);
-        model.addAttribute("ignore_delete", ignoreDelete);
-        model.addAttribute("link_clear", clearLinks);
-    }
-    @ModelAttribute("link_list")
-    public List<MediaLink> getAllMediaLinks() {
-        return mediaLinksService.getMediaLinks();
+        model.addAttribute("ignore_search", SEARCH_IGNORED);
+        model.addAttribute("ignore_delete", DELETE_IGNORED);
+        model.addAttribute("link_clear", LinksController.CLEAR_LINKS);
     }
 
-    @ModelAttribute("media_ignored")
-    public List<MediaLink> getAllIgnoredMedia() {
-        return mediaLinksService.getMediaIgnoredList();
-    }
-
-    @ModelAttribute("user_paths")
-    public boolean checkForUserProvidedPaths() {
-        return propertiesService.checkUserPaths();
-    }
-
-    @GetMapping("${tab.ignored}")
+    @GetMapping(value = CommonHandler.IGNORED)
     public String showIgnoredFiles(Model model) {
         return "ignored";
     }
 
-    @PostMapping("${go.ignore.remove}")
+    @PostMapping(value = DELETE_IGNORED)
     public String removeFromIgnoredList(@RequestParam("id") long id, Model model) {
         mediaLinksService.unIgnoreMedia(id);
-        return "redirect:/ignored";
+        return "redirect:" + CommonHandler.IGNORED;
     }
 
     @PostMapping("${go.ignore.search}")

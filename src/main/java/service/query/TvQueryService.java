@@ -48,15 +48,18 @@ public class TvQueryService extends GeneralQueryService {
 
     @Override
     public void scanForNewMediaQueries() {
-        List<MediaQuery> collect = tvFilesScanner.scanMediaFolders(
-                        propertiesService.getTargetFolderListTv(),
-                        mediaTrackerDao.getAllMediaLinks()
-                )
-                .stream()
-                .map(this::createQuery)
-                .collect(Collectors.toList());
-        setCurrentMediaQueries(collect);
-        groupByParentPathBatch(getCurrentMediaQueries());
+        if (propertiesService.userPathsPresent()) {
+            List<MediaQuery> collect = tvFilesScanner.scanMediaFolders(
+                            propertiesService.getTargetFolderListTv(),
+                            mediaTrackerDao.getAllMediaLinks()
+                    )
+                    .stream()
+                    .map(this::createQuery)
+                    .collect(Collectors.toList());
+            setCurrentMediaQueries(collect);
+            groupByParentPathBatch(getCurrentMediaQueries());
+        }
+
     }
 
     public List<MediaQuery> getParentFolders() {
@@ -128,16 +131,16 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     /*
-    * Extract season number from file name if possible
-    * Returns -1 in case of not matching right pattern.
-    * */
+     * Extract season number from file name if possible
+     * Returns -1 in case of not matching right pattern.
+     * */
     public int getSeasonTv() {
         return TextExtractTools.extractSeasonNumber(getReferenceQuery().getFilePath());
     }
 
     /*
-    * Not needed here TODO
-    * */
+     * Not needed here TODO
+     * */
     @Override
     public Path getMatchingPath(MediaQuery mediaQuery) {
         List<FilePath> targetFolderListTv = propertiesService.getTargetFolderListTv();
@@ -151,8 +154,8 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     /*
-    * Get grouped queries with given parent folder path
-    * */
+     * Get grouped queries with given parent folder path
+     * */
     public List<MediaQuery> getGroupedQueriesWithParent(String parentPath) {
         return mediaQueriesByRootMap.get(Path.of(parentPath))
                 .stream()
@@ -175,8 +178,8 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     /*
-    * Get queries grouped together with query having given id
-    * */
+     * Get queries grouped together with query having given id
+     * */
     @Override
     public List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid) {
         MediaQuery queryByUuid = getQueryByUuid(mediaQueryUuid);
@@ -192,10 +195,10 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     /*
-    * With given parent path gets first associated element from grouped collection,
-    * order is not guaranteed. File is used as a reference instead of parent path
-    * because it is needed for details extraction.
-    * */
+     * With given parent path gets first associated element from grouped collection,
+     * order is not guaranteed. File is used as a reference instead of parent path
+     * because it is needed for details extraction.
+     * */
     public void setUpQueryReference(String path) throws NoQueryFoundException {
         Iterator<Path> iterator = mediaQueriesByRootMap.get(Path.of(path)).iterator();
         if (iterator.hasNext()) {

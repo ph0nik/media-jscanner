@@ -41,15 +41,18 @@ public class MovieQueryService extends GeneralQueryService {
     // except ones that are already ignored or already has links
     @Override
     public void scanForNewMediaQueries() {
-        List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
-                        propertiesService.getTargetFolderListMovie(),
-                        mediaTrackerDao.getAllMediaLinks()
-                )
-                .stream()
-                .map(this::createQuery)
-                .collect(Collectors.toList());
-        setCurrentMediaQueries(collect);
-        groupByParentPathBatch(getCurrentMediaQueries());
+        if (propertiesService.userPathsPresent()) {
+            List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
+                            propertiesService.getTargetFolderListMovie(),
+                            mediaTrackerDao.getAllMediaLinks()
+                    )
+                    .stream()
+                    .map(this::createQuery)
+                    .collect(Collectors.toList());
+            setCurrentMediaQueries(collect);
+            groupByParentPathBatch(getCurrentMediaQueries());
+        }
+
     }
 
     @Override

@@ -6,14 +6,16 @@ import model.MediaQuery;
 import model.QueryResult;
 import model.multipart.MultipartDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import service.*;
+import service.AutoMatcherService;
+import service.MediaConnectionService;
+import service.MediaLinksService;
+import service.PropertiesService;
 import service.exceptions.NetworkException;
 import service.query.MovieQueryService;
 import service.query.TvQueryService;
@@ -39,57 +41,41 @@ public class QueryController {
     private TvQueryService tvQueryService;
     @Autowired
     private MediaConnectionService mediaConnectionService;
-    @Autowired
-    private ErrorNotificationService errorNotificationService;
-    @Value("${go.movie.search}")
-    private String search;
-    @Value("${go.movie.select}")
-    private String select;
-    @Value("${go.movie.setmulti}")
-    private String setMulti;
-    @Value("${go.movie.skipmulti}")
-    private String skipMulti;
-    @Value("${go.movie.withyear}")
-    private String searchWithYear;
-    @Value("${go.movie.imdb}")
-    private String imdbSearch;
-    @Value("${go.movie.auto}")
-    private String auto;
-    @Value("${go.movie.link}")
-    private String movieNewLink;
-    @Value("${go.movie.ignore}")
-    private String movieNewIgnore;
+    private static final String SEARCH_WITH_QUERY = "/search-query/";
+    private static final String SELECT_QUERY = "/select-query/";
+    private static final String SET_MULTI_PART = "/set-multipart";
+    private static final String SKIP_MULTI_PART = "/skip-multipart";
+    private static final String SEARCH_WITH_YEAR = "/search-with-year/";
+    private static final String SEARCH_WITH_IMDB_LINK = "/imdb-link/";
+    private static final String AUTO_MATCH = "/auto";
+    private static final String NEW_MOVIE_LINK = "/new-link-movie/";
+    private static final String MARK_AS_IGNORED = "/new-ignore-movie/";
     @ModelAttribute
     private void setMenuLinks(Model model) {
-        model.addAttribute("movie_search", search);
-        model.addAttribute("movie_select", select);
-        model.addAttribute("movie_set_multi", setMulti);
-        model.addAttribute("movie_skip_multi", skipMulti);
-        model.addAttribute("movie_search_year", searchWithYear);
-        model.addAttribute("movie_imdb_id", imdbSearch);
-        model.addAttribute("movie_auto", auto);
-        model.addAttribute("movie_link", movieNewLink);
-        model.addAttribute("movie_new_ignore", movieNewIgnore);
+        model.addAttribute("movie_search", SEARCH_WITH_QUERY);
+        model.addAttribute("movie_select", SELECT_QUERY);
+        model.addAttribute("movie_set_multi", SET_MULTI_PART);
+        model.addAttribute("movie_skip_multi", SKIP_MULTI_PART);
+        model.addAttribute("movie_search_year", SEARCH_WITH_YEAR);
+        model.addAttribute("movie_imdb_id", SEARCH_WITH_IMDB_LINK);
+        model.addAttribute("movie_auto", AUTO_MATCH);
+        model.addAttribute("movie_link", NEW_MOVIE_LINK);
+        model.addAttribute("movie_new_ignore", MARK_AS_IGNORED);
     }
-    @ModelAttribute("error")
-    public String getCurrentResult() {
-        return errorNotificationService.getCurrentResult();
-    }
-
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
 
     @GetMapping("/")
     // TODO change variables in templates
     public String redirectToQuery() {
-        return "redirect:/movie";
+        return "redirect:" + CommonHandler.MOVIE;
     }
 
     /*
      * Show elements awaiting in the queue and let user select
      * file to process or let auto matcher guess correct movies.
      * */
-    @GetMapping("${tab.movies}")
+    @GetMapping(value = CommonHandler.MOVIE)
     public String movieQueryList(@RequestParam("page") Optional<Integer> page,
                                  @RequestParam("size") Optional<Integer> size,
                                  Model model) {
@@ -116,7 +102,7 @@ public class QueryController {
         return "query_list";
     }
 
-    @PostMapping("${go.movie.search}")
+    @PostMapping(value = SEARCH_WITH_QUERY)
     public String searchInQueryResults(@RequestParam("search") String search,
                                        Model model) {
         int min = 1;
@@ -142,7 +128,7 @@ public class QueryController {
      * Present returned results and prompt user to select which title
      * will be used to create symlink.
      * */
-    @PostMapping("${go.movie.select}")
+    @PostMapping(value = SELECT_QUERY)
     public String selectQuery(@RequestParam String custom,
                               @RequestParam UUID uuid, Model model) throws NetworkException {
 //        movieQueryService.setReferenceQuery(uuid);
@@ -177,7 +163,7 @@ public class QueryController {
 
     }
 
-    @PostMapping("${go.movie.setmulti}")
+    @PostMapping(value = SET_MULTI_PART)
     public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) throws NetworkException {
 //        movieQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
 //        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("",
@@ -189,7 +175,7 @@ public class QueryController {
         return "result_selection";
     }
 
-    @GetMapping("${go.movie.skipmulti}")
+    @GetMapping(value = SKIP_MULTI_PART)
     public String skipMultiPart(Model model) throws NetworkException {
 //        movieQueryService.addQueryToProcess(movieQueryService.getReferenceQuery());
 //        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("",
@@ -201,7 +187,7 @@ public class QueryController {
         return "result_selection";
     }
 
-    @PostMapping("${go.movie.withyear}")
+    @PostMapping(value = SEARCH_WITH_YEAR)
     public String searchTmdbWithYear(@RequestParam String custom,
                                      @RequestParam Optional<Integer> year,
                                      Model model) throws NetworkException {
@@ -215,7 +201,7 @@ public class QueryController {
         return "result_selection";
     }
 
-    @PostMapping("${go.movie.imdb}")
+    @PostMapping(value = SEARCH_WITH_IMDB_LINK)
     public String passImdbLink(@RequestParam String imdbLink, Model model) throws NetworkException {
         List<QueryResult> queryResults = mediaLinksService.searchWithImdbId(imdbLink,
                 MediaIdentity.IMDB,
@@ -229,7 +215,7 @@ public class QueryController {
     /*
      * GET mapping as a protection measure in case user reloads page
      * */
-    @GetMapping(value = {"${go.movie.select}", "${go.movie.withyear}"})
+    @GetMapping(value = {SELECT_QUERY, SEARCH_WITH_YEAR})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
         LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
         if (latestMediaQuery == null) return "redirect:/";
@@ -240,7 +226,7 @@ public class QueryController {
         return "result_selection";
     }
 
-    @PostMapping("${go.movie.link}")
+    @PostMapping(value = NEW_MOVIE_LINK)
     public String newLink(QueryResult queryResult,
                           BindingResult bindingResult,
                           Model model) throws NetworkException {
@@ -250,15 +236,15 @@ public class QueryController {
                 movieQueryService);
         // TODO implement list of results
 //        operationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
-        return "redirect:/movie";
+        return "redirect:" + CommonHandler.MOVIE;
     }
 
-    @GetMapping("${go.movie.link}")
+    @GetMapping(value = NEW_MOVIE_LINK)
     public String newLinkGet(){
-        return "redirect:/links";
+        return "redirect:" + CommonHandler.LINKS;
     }
 
-    @PostMapping("${go.movie.ignore}")
+    @PostMapping(value = MARK_AS_IGNORED)
     public String addToIgnoreList(@RequestParam UUID uuid, Model model)  {
         movieQueryService.setReferenceQuery(uuid);
         movieQueryService.addQueryToProcess(movieQueryService.getReferenceQuery());
@@ -266,14 +252,14 @@ public class QueryController {
         return "redirect:/";
     }
 
-    @GetMapping("${go.movie.scan}")
+    @GetMapping(value = CommonHandler.SCAN_FOR_MEDIA)
     public String scanFolders() {
         movieQueryService.scanForNewMediaQueries();
         tvQueryService.scanForNewMediaQueries();
         return "redirect:/";
     }
 
-    @GetMapping("${go.movie.auto}")
+    @GetMapping(value = AUTO_MATCH)
     public String autoMatch() throws NetworkException {
         // TODO secure in case of network problems, funky stuff with the files
         future = autoMatcherService.autoMatchFilesWithFuture();

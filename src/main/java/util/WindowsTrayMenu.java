@@ -2,8 +2,6 @@ package util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 import runner.OpenBrowser;
 
 import javax.swing.*;
@@ -12,8 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 
-@Component
-@Profile("dev")
+//@Component
+//@Profile("dev")
 public class WindowsTrayMenu implements TrayMenu {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowsTrayMenu.class);

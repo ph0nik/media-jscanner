@@ -3,10 +3,10 @@ package app.controller;
 import model.MediaLink;
 import model.MediaQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import service.ErrorNotificationService;
 import service.MediaLinksService;
 import service.PropertiesService;
 import service.query.MovieQueryService;
@@ -17,8 +17,6 @@ import java.util.List;
 @ControllerAdvice
 public class CommonHandler {
     @Autowired
-    private Router router;
-    @Autowired
     private MovieQueryService movieQueryService;
     @Autowired
     private TvQueryService tvQueryService;
@@ -26,32 +24,24 @@ public class CommonHandler {
     private MediaLinksService mediaLinksService;
     @Autowired
     private PropertiesService propertiesService;
-    @Value("${tab.movies}")
-    private String movie;
-    @Value("${tab.tv}")
-    private String tv;
-    @Value("${tab.links}")
-    private String links;
-    @Value("${tab.ignored}")
-    private String ignored;
-    @Value("${tab.config}")
-    private String config;
-    @Value("${go.movie.scan}")
-    private String scan;
+    @Autowired
+    private ErrorNotificationService errorNotificationService;
+    public static final String MOVIE = "/movie";
+    public static final String TV = "/tv";
+    public static final String LINKS = "/links";
+    public static final String IGNORED = "/ignored";
+    public static final String CONFIG = "/config";
+    public static final String SCAN_FOR_MEDIA = "/scan-for-media";
     @ModelAttribute
     private void setMenuLinks(Model model) {
-        model.addAttribute("tab_movie", movie);
-        model.addAttribute("tab_tv", tv);
-        model.addAttribute("tab_links", links);
-        model.addAttribute("tab_ignored", ignored);
-        model.addAttribute("tab_config", config);
-        model.addAttribute("movie_scan", scan);
+        model.addAttribute("tab_movie", MOVIE);
+        model.addAttribute("tab_tv", TV);
+        model.addAttribute("tab_links", LINKS);
+        model.addAttribute("tab_ignored", IGNORED);
+        model.addAttribute("tab_config", CONFIG);
+        model.addAttribute("movie_scan", SCAN_FOR_MEDIA);
     }
 
-    @ModelAttribute("router")
-    public Router getRouter() {
-        return router;
-    }
     @ModelAttribute("query_list_size")
     public int getAllQueriesSize() {
         return movieQueryService.getCurrentMediaQueries().size() + tvQueryService.getCurrentMediaQueries().size();
@@ -72,14 +62,16 @@ public class CommonHandler {
     public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
-    @ModelAttribute("user_paths")
+    @ModelAttribute("user_paths") // TODO if user paths are not set redirect to config
     public boolean checkForUserProvidedPaths() {
-        return propertiesService.checkUserPaths();
+        return propertiesService.userMoviePathsExist();
     }
-    @ModelAttribute("api_token")
-    public boolean isApiTokenPresent() {
-        return propertiesService.checkApiToken();
+    @ModelAttribute("error")
+    public String getCurrentResult() {
+        return errorNotificationService.getCurrentResult();
     }
+
+// TODO implement handler interceptor to check folders and redirect user to config
 
 
 }

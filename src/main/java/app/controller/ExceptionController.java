@@ -3,10 +3,7 @@ package app.controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import service.exceptions.ConfigurationException;
-import service.exceptions.NetworkException;
-import service.exceptions.NoApiKeyException;
-import service.exceptions.NoQueryFoundException;
+import service.exceptions.*;
 
 import java.io.FileNotFoundException;
 
@@ -26,5 +23,12 @@ public class ExceptionController {
         model.addAttribute("error_msg", ex.getMessage());
         return "error";
     }
+
+//    @ExceptionHandler(value = MissingUserPathsException.class)
+//    public String missingUserPaths(Model model) {
+//        return "redirect:" + CommonHandler.CONFIG;
+//    }
+
+
 
 }

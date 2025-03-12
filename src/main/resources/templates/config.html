@@ -109,7 +109,8 @@
                 <thead class="table-dark">
                 <tr class="row m-0 py-0">
                     <th class="col">
-                        Movie links path</th>
+                        Movie links path
+                    </th>
                 </tr>
                 </thead>
                 <tbody class="table-secondary">
@@ -117,9 +118,10 @@
                     <td class="col-auto text-end">
                         <span>current:</span>
                     </td>
-                    <td class="align-middle col" th:switch="${links_path_validated}">
+                    <td class="align-middle col">
                         <span class="fw-normal font-monospace" th:text="${links_folder_movie}"></span>
-                        <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                        <span th:if="${!links_folder_movie.toFile.exists()}"
+                              class="fw-normal font-monospace text-danger">[invalid path]</span>
                     </td>
                 </tr>
                 <!--        links form-->
@@ -159,7 +161,8 @@
                 </td>
                 <td class="col">
                     <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>
-                    <span th:if="${!path.isExisting()}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                    <span th:if="${!path.isExisting()}"
+                          class="fw-normal font-monospace text-danger">[invalid path]</span>
                 </td>
                 <td class="col-auto align-middle">
                     <!--                <div class="row" th:if="${chk_user_target}">-->
@@ -180,25 +183,28 @@
                             <div class="input-group input-group-sm">
                                 <input type="hidden" th:value="${path.getPath}" name="path">
                                 <i class="fa-regular fa-trash-can m-2"></i>
-                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-movie">Clear folder
+                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-movie">Clear
+                                    folder
                                 </button>
                             </div>
                         </form>
                     </div>
                 </td>
             </tr>
-            <!--                     add new path-->
+            <!--add new movie source path-->
             <tr class="row m-0">
                 <form class="d-flex"
                       action="#"
-                      th:action="@{__${movie_new_target}__}"
+                      th:action="@{__${movie_new_source}__}"
                       method="post">
                     <td class="col-1"></td>
                     <td class="col">
                         <div class="input-group input-group-sm pe-2">
+
                             <input class="form-control" type="search" placeholder="path..." name="path" id="path-movie"
                                    aria-label="Search">
                             <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
+
                         </div>
                     </td>
                 </form>
@@ -236,9 +242,9 @@
                     <td class="col-1 text-end">
                         <span>current:</span>
                     </td>
-                    <td class="align-middle col" th:switch="${links_path_validated}">
+                    <td class="align-middle col">
                         <span class="fw-normal font-monospace" th:text="${links_folder_tv}"></span>
-                        <span th:case="${false}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                        <span th:if="${!links_folder_tv.toFile.exists()}" class="fw-normal font-monospace text-danger">[invalid path]</span>
                     </td>
                 </tr>
                 <!--        links form-->
@@ -279,7 +285,8 @@
                 <!--            <td class="col" th:switch="${target_path_validated.get(path)}">-->
                 <td class="col">
                     <span class="fw-normal font-monospace" th:text="${path.getPath()}"></span>
-                    <span th:if="${!path.isExisting()}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                    <span th:if="${!path.isExisting()}"
+                          class="fw-normal font-monospace text-danger">[invalid path]</span>
                 </td>
                 <td class="col-2 align-middle">
                     <!--                <div class="row" th:if="${chk_user_target}">-->
@@ -300,7 +307,8 @@
                             <div class="input-group input-group-sm">
                                 <input type="hidden" th:value="${path.getPath()}" name="path">
                                 <i class="fa-regular fa-trash-can m-2"></i>
-                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-tv">Clear folder
+                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-tv">Clear
+                                    folder
                                 </button>
                             </div>
                         </form>

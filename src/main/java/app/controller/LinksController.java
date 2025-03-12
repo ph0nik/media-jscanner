@@ -3,13 +3,11 @@ package app.controller;
 import model.MediaLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import service.ErrorNotificationService;
 import service.MediaLinksService;
 import service.PropertiesService;
 import service.query.MediaQueryService;
@@ -23,8 +21,6 @@ import java.util.stream.Collectors;
 public class LinksController {
 
     @Autowired
-    private Router router;
-    @Autowired
     private MediaLinksService mediaLinksService;
     @Autowired
     private PropertiesService propertiesService;
@@ -34,45 +30,28 @@ public class LinksController {
     @Autowired
     @Qualifier("tvQuery")
     private MediaQueryService tvQueryService;
-    @Autowired
-    private ErrorNotificationService errorNotificationService;
     private int sessionPageSize = 25;
-    @Value("${go.link.new}")
-    private String newLink;
-    @Value("${go.link.clear}")
-    private String clearLinks;
-    @Value("${go.link.search}")
-    private String searchLinks;
-    @Value("${go.link.remove}")
-    private String removeLink;
-    @Value("${go.link.deloriginal}")
-    private String deleteOriginal;
-    @Value("${go.link.restore}")
-    private String restoreOriginal;
+    private static final String CREATE_NEW_LINK = "/newlink";
+    public static final String CLEAR_LINKS = "/clear-links/";
+    private static final String SEARCH_LINKS = "/search-link/";
+    private static final String REMOVE_LINK = "/remove-link/";
+    private static final String DELETE_SOURCE_FILE = "/delete-original/";
+    private static final String RESTORE_SOURCE_FILE = "/restore-original/";
+//    private static final String LINKS = "/links";
     @ModelAttribute
     private void setMenuLinks(Model model) {
-        model.addAttribute("link_new", newLink);
-        model.addAttribute("link_clear", clearLinks);
-        model.addAttribute("link_search", searchLinks);
-        model.addAttribute("link_remove", removeLink);
-        model.addAttribute("link_delete_org", deleteOriginal);
-        model.addAttribute("link_restore_org", restoreOriginal);
-    }
-
-    @ModelAttribute("error")
-    public String getCurrentResult() {
-        return errorNotificationService.getCurrentResult();
-    }
-
-    @ModelAttribute("link_list")
-    public List<MediaLink> getAllMediaLinks() {
-        return mediaLinksService.getMediaLinks();
+//        model.addAttribute("link_new", CREATE_NEW_LINK);
+        model.addAttribute("link_clear", CLEAR_LINKS);
+        model.addAttribute("link_search", SEARCH_LINKS);
+        model.addAttribute("link_remove", REMOVE_LINK);
+        model.addAttribute("link_delete_org", DELETE_SOURCE_FILE);
+        model.addAttribute("link_restore_org", RESTORE_SOURCE_FILE);
     }
 
     /*
      * Show all existing symlinks.
      * */
-    @GetMapping("${tab.links}")
+    @GetMapping(value = CommonHandler.LINKS)
     public String linksSorted(@RequestParam(value = "sort", required = false) String sort,
                               @RequestParam("page") Optional<Integer> page,
                               @RequestParam("size") Optional<Integer> size,
@@ -99,13 +78,13 @@ public class LinksController {
         return "links";
     }
 
-    @GetMapping("${go.link.clear}")
+    @GetMapping(value = CLEAR_LINKS)
     public String clearLinks(Model model) {
         mediaLinksService.clearInvalidIgnoreAndLinks();
-        return "redirect:/links";
+        return "redirect:" + CommonHandler.LINKS;
     }
 
-    @PostMapping("${go.link.search}")
+    @PostMapping(value = SEARCH_LINKS)
     public String searchLink(@RequestParam("search") String search, Model model) {
         int min = 1;
         int max = sessionPageSize;
@@ -116,21 +95,22 @@ public class LinksController {
         return "links";
     }
 
-    @PostMapping("${go.link.remove}")
+    @PostMapping(value = REMOVE_LINK)
     public String newLink(@RequestParam("id") long id, Model model) {
         mediaLinksService.moveBackToQueue(id);
-        return "redirect:/scan";
+        return "redirect:" + CommonHandler.SCAN_FOR_MEDIA;
     }
 
-    @PostMapping("${go.link.deloriginal}{id}")
+    // TODO check if parameter works
+    @PostMapping(value = DELETE_SOURCE_FILE + "{id}")
     public String deleteOriginal(@PathVariable("id") long id, Model model) {
         mediaLinksService.deleteOriginalFile(id);
-        return "redirect:/links";
+        return "redirect:" + CommonHandler.LINKS;
     }
 
-    @PostMapping("${go.link.restore}{id}")
+    @PostMapping(value = RESTORE_SOURCE_FILE + "{id}")
     public String restoreOriginal(@PathVariable("id") long id, Model model) {
         mediaLinksService.restoreOriginalFile(id);
-        return "redirect:/links";
+        return "redirect:" + CommonHandler.LINKS;
     }
 }
