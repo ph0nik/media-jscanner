@@ -24,10 +24,6 @@ public class ExceptionController {
         return "error";
     }
 
-//    @ExceptionHandler(value = MissingUserPathsException.class)
-//    public String missingUserPaths(Model model) {
-//        return "redirect:" + CommonHandler.CONFIG;
-//    }
 
 
 

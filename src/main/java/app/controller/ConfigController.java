@@ -4,10 +4,7 @@ import model.form.LinksPathForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import service.MediaLinksService;
 import service.PropertiesService;
 import service.exceptions.ConfigurationException;
@@ -18,18 +15,19 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Controller
-public class TrackerController {
+//@RequestMapping(value = CommonHandler.CONFIG)
+public class ConfigController {
     @Autowired
     private MediaLinksService mediaLinksService;
     @Autowired
     private PropertiesService propertiesService;
-    private static final String MOVIE_NEW_LINK_PATH = "/movie-new-link/";
-    private static final String MOVIE_NEW_SOURCE_PATH = "/movie-new-source/";
-    private static final String MOVIE_DELETE_SOURCE_PATH = "/movie-delete-source/";
-    private static final String TV_NEW_LINK_PATH = "/tv-new-link/";
-    private static final String TV_NEW_SOURCE_PATH = "/tv-new-source/";
-    private static final String TV_DELETE_SOURCE_PATH = "/tv-delete-source/";
-    private static final String CLEAR_FOLDERS = "/clear-folders/";
+    private static final String MOVIE_NEW_LINK_PATH = "/config/movie-new-link-path/";
+    private static final String MOVIE_NEW_SOURCE_PATH = "/config/movie-new-source-path/";
+    private static final String MOVIE_DELETE_SOURCE_PATH = "/config/movie-delete-source-path/";
+    private static final String TV_NEW_LINK_PATH = "/config/tv-new-link-path/";
+    private static final String TV_NEW_SOURCE_PATH = "/config/tv-new-source-path/";
+    private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
+    private static final String CLEAR_FOLDERS = "/config/clear-folders/";
     @ModelAttribute
     private void setConfigEndpoints(Model model) {
         model.addAttribute("movie_new_link", MOVIE_NEW_LINK_PATH);
@@ -48,7 +46,7 @@ public class TrackerController {
     /*
     * Returns configuration panel
     * */
-    @GetMapping("/config")
+    @GetMapping(value = CommonHandler.CONFIG)
     public String configuration(Model model) {
         Path movieLinksPath = propertiesService.getLinksFolderMovie();
         Path tvLinksPath = propertiesService.getLinksFolderTv();
@@ -67,7 +65,7 @@ public class TrackerController {
     @PostMapping(value = MOVIE_DELETE_SOURCE_PATH)
     public String deletePathMovie(@RequestParam String path, Model model) throws ConfigurationException {
         propertiesService.removeTargetPathMovie(Path.of(path));
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 
     /*

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import util.MediaType;
 
-import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,10 +40,6 @@ public class PropertiesServiceImpl implements PropertiesService {
         this.tmdbApiToken = envValidator.getTmdbApiToken();
         loadPropertiesFromFiles();
         createDataFolder();
-    }
-
-    @PostConstruct
-    private void initProperies() {
     }
 
     /*
@@ -104,6 +99,7 @@ public class PropertiesServiceImpl implements PropertiesService {
             });
         }
     }
+
     /*
      *  Check if properties file contains empty properties
      *  Return list of empty properties
@@ -145,6 +141,25 @@ public class PropertiesServiceImpl implements PropertiesService {
             return Arrays.stream(propertyValue.split(";"))
                     .map(String::trim)
                     .allMatch(String::isEmpty);
+        }
+    }
+
+    /*
+    * Checks if provided user paths exist, takes MediaType as an argument and
+    * returns true only if link folder is valid and at least one of source folders
+    * exist.
+    * */
+    public boolean doUserPathsExist(MediaType mediaType) {
+        if (mediaType == MediaType.MOVIE) {
+            return targetFolderMap.get(USER_TARGET_MOVIE)
+                    .stream()
+                    .anyMatch(p -> Files.exists(p.getPath()))
+                    && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_MOVIE)));
+        } else {
+            return targetFolderMap.get(USER_TARGET_TV)
+                    .stream()
+                    .anyMatch(p -> Files.exists(p.getPath()))
+                    && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_TV)));
         }
     }
 
@@ -255,6 +270,7 @@ public class PropertiesServiceImpl implements PropertiesService {
         addTargetPath(targetPath, USER_TARGET_TV);
         return this;
     }
+
     /*
      * Add target folder path to path list.
      * */

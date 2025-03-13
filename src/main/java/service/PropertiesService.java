@@ -3,6 +3,7 @@ package service;
 import model.path.FilePath;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
+import util.MediaType;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -19,6 +20,7 @@ public interface PropertiesService {
 
     public boolean userPathsPresent();
 
+    public boolean doUserPathsExist(MediaType mediaType);
     /*
      * Returns list of folders to be watched.
      * */
