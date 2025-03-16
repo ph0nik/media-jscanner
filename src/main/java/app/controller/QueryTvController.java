@@ -156,8 +156,8 @@ public class QueryTvController {
         int seasonNumber = queryResult.getMultipart();
         queryResult = mediaLinksService.getTvDetails(queryResult, seasonNumber);
         List<MediaLink> mediaLinksTv = mediaLinksService.createMediaLinksTv(queryResult, seasonNumber, tvQueryService);
-        System.out.println("before");
-        mediaLinksTv.forEach(System.out::println);
+//        System.out.println("before");
+//        mediaLinksTv.forEach(System.out::println);
         MediaLinkDto mediaLinksDto = mediaConnectionService.getMediaLinksDto(mediaLinksTv);
         model.addAttribute("media_links_dto", mediaLinksDto);
         model.addAttribute("query", tvQueryService.getReferenceQuery());

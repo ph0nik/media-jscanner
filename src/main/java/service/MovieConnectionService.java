@@ -34,8 +34,10 @@ public class MovieConnectionService implements MediaConnectionService {
         if (groupedQueries.size() > 1) {
             MultipartDto multipartDto = new MultipartDto();
             multipartDto.setQueryUuid(uuid);
+            int counter = 1;
             for (MediaQuery query : groupedQueries) {
-                multipartDto.addMultiPartElement(new MultiPartElement(query.getFilePath()));
+//                multipartDto.addMultiPartElement(new MultiPartElement(query.getFilePath()));
+                multipartDto.addMultiPartElement(new MultiPartElement(query, counter++));
             }
             return multipartDto;
         }

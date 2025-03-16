@@ -150,17 +150,19 @@ public class PropertiesServiceImpl implements PropertiesService {
     * exist.
     * */
     public boolean doUserPathsExist(MediaType mediaType) {
-        if (mediaType == MediaType.MOVIE) {
-            return targetFolderMap.get(USER_TARGET_MOVIE)
+        if (mediaType == MediaType.MOVIE && userMoviePathsExist()) {
+            return getTargetFolderListMovie()
                     .stream()
                     .anyMatch(p -> Files.exists(p.getPath()))
                     && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_MOVIE)));
-        } else {
-            return targetFolderMap.get(USER_TARGET_TV)
+        }
+        if (mediaType == MediaType.TV && userTvPathsExist()) {
+            return getTargetFolderListTv()
                     .stream()
                     .anyMatch(p -> Files.exists(p.getPath()))
                     && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_TV)));
         }
+        return false;
     }
 
     public boolean userPathsPresent() {
@@ -224,8 +226,7 @@ public class PropertiesServiceImpl implements PropertiesService {
 
     public Path getLinksFolderTv() {
         String seriesLinksFolder = mediaFilesProperties.getProperty(USER_LINKS_TV);
-        if (seriesLinksFolder == null) return Path.of("");
-        else return Path.of(seriesLinksFolder);
+        return Path.of(Objects.requireNonNullElse(seriesLinksFolder, ""));
 //        return getLinksFolder(USER_LINKS_TV, DEFAULT_LINKS_TV);
     }
 
@@ -279,9 +280,6 @@ public class PropertiesServiceImpl implements PropertiesService {
         return this;
     }
 
-    // TODO load props from file, add or change value for key, save, reload
-    // TODO read and write methods to any prop file with key value pair, with value as
-    // single or list
     private void addTargetPath(Path targetPath, String propertyKey) {
         Properties props = loadExternalMediaFileProperties();
         String property = props.getProperty(propertyKey);
@@ -347,7 +345,9 @@ public class PropertiesServiceImpl implements PropertiesService {
         loadPropertiesFromFiles();
     }
 
-    // TODO check if working
+    /*
+    * Backups media folder properties file each time it is updated
+    * */
     void backupMediaPropertiesFile() {
         Path fileToMovePath = Paths.get(EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE);
         Path targetPath = Paths.get(EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK);

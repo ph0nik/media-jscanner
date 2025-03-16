@@ -1,5 +1,6 @@
 package service.query;
 
+import model.MediaLink;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.slf4j.Logger;
@@ -23,10 +24,27 @@ public abstract class GeneralQueryService implements MediaQueryService {
     private List<MediaQuery> mediaQueriesList; // = new LinkedList<>();
     private MediaQuery referenceQuery;
     private List<MediaQuery> groupedQueriesToProcess;
+    private List<MediaLink> mediaLinksToProcess;
 
     public GeneralQueryService(Pagination<MediaQuery> pagination) {
         this.pagination = pagination;
     }
+
+    @Override
+    public List<MediaLink> getMediaLinksToProcess() {
+        return mediaLinksToProcess;
+    }
+
+    @Override
+    public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess) {
+        this.mediaLinksToProcess = mediaLinksToProcess;
+    }
+
+    @Override
+    public void clearMediaLinksToProcess() {
+        this.mediaLinksToProcess = List.of();
+    }
+
     @Override
     public MediaQuery getReferenceQuery() {
         return referenceQuery;

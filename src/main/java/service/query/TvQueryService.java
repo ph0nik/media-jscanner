@@ -54,7 +54,7 @@ public class TvQueryService extends GeneralQueryService {
                             mediaTrackerDao.getAllMediaLinks()
                     )
                     .stream()
-                    .map(this::createQuery)
+                    .map(this::createMovieQuery)
                     .collect(Collectors.toList());
             setCurrentMediaQueries(collect);
             groupByParentPathBatch(getCurrentMediaQueries());
@@ -73,7 +73,7 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     @Override
-    public MediaQuery createQuery(Path path) {
+    public MediaQuery createMovieQuery(Path path) {
         return new MediaQuery(path.toString(), MediaType.TV);
     }
 

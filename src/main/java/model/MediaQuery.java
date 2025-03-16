@@ -11,7 +11,7 @@ public class MediaQuery {
     private long queryId;
     private UUID queryUuid;
     private String filePath;
-    private byte multipart;
+    private int multipart;
     private MediaType mediaType;
 
     public MediaQuery(String filePath, MediaType mediaType) {
@@ -29,7 +29,7 @@ public class MediaQuery {
         this.mediaType = mediaType;
     }
 
-    public byte getMultipart() {
+    public int getMultipart() {
         return multipart;
     }
 
@@ -39,7 +39,7 @@ public class MediaQuery {
      * 0 default
      * +1 multipart and grouped
      * */
-    public void setMultipart(byte multipart) {
+    public void setMultipart(int multipart) {
         this.multipart = multipart;
     }
 

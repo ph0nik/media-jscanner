@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
-class ResponseParser {
+public class ResponseParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(ResponseParser.class);
     private final String TMDB_POSTER_PREFIX = "tmdb_poster_prefix";
@@ -74,7 +74,6 @@ class ResponseParser {
                 qr.setImdbId(externalDbId);
                 qr.setTitle(value);
                 qr.setDescription(resultSnippet);
-                // set filepath
                 qr.setOriginalPath(filePath);
                 qr.setPoster("");
                 qr.setYear("");
@@ -119,6 +118,7 @@ class ResponseParser {
         try {
             MovieResults movieResults = new Gson().fromJson(jsonString, MovieResults.class);
             if (movieResults == null || movieResults.getMovieResults() == null) return List.of();
+            // TODO here check for nulls
             return movieResults.getMovieResults()
                     .stream()
                     .map(movieItem -> parseMovieItem(movieItem, new QueryResult(path)))

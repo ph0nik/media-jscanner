@@ -2,7 +2,6 @@ package service;
 
 import model.LastRequest;
 import model.MediaLink;
-import model.OperationResult;
 import model.QueryResult;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +11,7 @@ import service.query.TvQueryService;
 import util.MediaIdentity;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -44,8 +44,6 @@ public interface MediaLinksService {
     List<MediaLink> createMediaLinksTv(QueryResult queryResult, int seasonNumber,
                                        TvQueryService tvQueryService) throws FileNotFoundException;
 
-    void setCurrentMediaLinks(List<MediaLink> mediaLinks);
-
     /*
     * Returns results of latest request
     * */
@@ -54,11 +52,13 @@ public interface MediaLinksService {
     /*
      * Create symlink with specified query result and link properties
      * */
-    int createFileLink(QueryResult queryResult,
-                                         MediaIdentity mediaIdentity,
-                                         MediaQueryService mediaQueryService) throws NetworkException;
+    List<MediaLink> createFileLink(QueryResult queryResult,
+                                   MediaIdentity mediaIdentity,
+                                   MediaQueryService mediaQueryService) throws NetworkException;
 
-    OperationResult createHardLinkWithDirectories(MediaLink mediaLink);
+    void persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
+
+    boolean createHardLinkWithDirectories(MediaLink mediaLink) throws IOException;
 
     /*
     * Flag media query element as ignored.
@@ -82,14 +82,14 @@ public interface MediaLinksService {
     /*
     * Remove link and add target path back to the queue
     * */
-    void moveBackToQueue(long mediaLinkId);
+    void moveBackToQueue(long mediaLinkId) throws IOException;
 
     /*
     * Deletes original element of created link
     * */
     MediaLink deleteOriginalFile(long mediaLinkId);
 
-    MediaLink restoreOriginalFile(long mediaLinkId);
+    MediaLink restoreOriginalFile(long mediaLinkId) throws IOException;
 
     /*
     * Remove ignore flag and move back media file into the media queue.

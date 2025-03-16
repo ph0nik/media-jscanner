@@ -178,14 +178,14 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
      * If results list have only one element use it for creating symbolic link.
      * Any file containing special keywords is being marked as extra feature.
      * */
-    private int createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) throws NetworkException {
+    private List<MediaLink> createLinksWithBestMatches(List<QueryResult> queryResults, DeductedQuery deductedQuery) throws NetworkException {
         if (queryResults.size() == 1 && !TextExtractTools.isSampleOrTrailer(deductedQuery.getPath())) {
 //            MediaType type = (hasExtrasInName(deductedQuery.getPath())) ? MediaType.EXTRAS : MediaType.MOVIE;
             return mediaLinksService.createFileLink(queryResults.get(0),
                     MediaIdentity.TMDB,
                     movieQueryService);
         }
-        return 0;
+        return List.of();
     }
 
     private String replaceIllegalCharacters(String title) {

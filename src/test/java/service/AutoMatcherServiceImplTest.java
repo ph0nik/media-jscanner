@@ -69,7 +69,7 @@ class AutoMatcherServiceImplTest {
     @Test
     public void scanFilesInDirectory() {
         File testPath = new File(".\\test-folder\\movies-target\\");
-        assertEquals(true, testPath.exists());
+        assertTrue(testPath.exists());
         List<DeductedQuery> deductedQueryList = new ArrayList<>();
         if (testPath.isDirectory()) {
             File[] files = testPath.listFiles();
@@ -87,6 +87,7 @@ class AutoMatcherServiceImplTest {
     public void extractTitleAndYearFromFileName_success() {
         String testFile1 = "A Better Tomorrow 1986 720p BluRay DD5.1 x264-DON.mkv";
         DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(testFile1);
+        System.out.println(deductedQuery);
         assertEquals("A Better Tomorrow", deductedQuery.getPhrase());
         assertEquals("1986", String.valueOf(deductedQuery.getYear()));
     }

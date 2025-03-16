@@ -1,12 +1,13 @@
 package service;
 
 import model.QueryResult;
+import model.validator.RequiredFieldException;
+import model.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import util.MediaIdentity;
 
-import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
 import static util.TextExtractTools.*;
@@ -14,49 +15,42 @@ import static util.TextExtractTools.*;
 @Service
 public class FileService {
     private static final Logger LOG = LoggerFactory.getLogger(FileService.class);
+    private static final String FOLDER_PATTERN = "%title% (%year%) [imdbid-%imdb_id%]";
+    private static final String FILE_NAME_PATTERN = "%title%%special%%part%.%extension%";
     private final String whitespace = " ";
-    private Path linksRootFolder;
-    public void setLinksRootFolder(Path root) {
-        this.linksRootFolder = root;
+
+    public Path createMovieLinkPath_new(QueryResult queryResult,
+                                         MediaIdentity mediaIdentity,
+                                         Path rootLinksFolder) throws RequiredFieldException, IllegalAccessException {
+        // query result validation should be outside of this method
+        // TITLE (YEAR) [imdbid-IMDBID]/TITLE - [SPECIAL]-cdPART.EXT
+        Validator.validateForNulls(queryResult); // check for null fields
+        String part = (queryResult.getMultipart() > 0)
+                ? "-cd" + queryResult.getMultipart()
+                : "";
+        String title = replaceIllegalCharacters(queryResult.getTitle());
+        String movieId = (mediaIdentity == MediaIdentity.IMDB)
+                ? queryResult.getImdbId()
+                : String.valueOf(queryResult.getTheMovieDbId());
+        String extension = getExtension(queryResult.getOriginalPath());
+        String special = checkForSpecialDescriptor(queryResult.getOriginalPath());
+        String specialWithGroup = (special.trim().isEmpty())
+                ? ""
+                : whitespace + "-" + whitespace + "[" + special + "]";
+        String folderName = FOLDER_PATTERN.replace("%title%", title)
+                .replace("%year%", queryResult.getYear())
+                .replace("%imdb_id%", movieId);
+        String fileName = FILE_NAME_PATTERN.replace("%title%", title)
+                .replace("%special%", specialWithGroup)
+                .replace("%part%", part)
+                .replace("%extension%", extension);
+        return rootLinksFolder.resolve(folderName).resolve(fileName);
     }
 
-    /*
-     * Create file path for symlink file with given query result and media data
-     * */
-//    public Path createMovieLinkPath(QueryResult queryResult, MediaTransferData mediaTransferData,
-//                             MediaIdentity mediaIdentity) throws FileNotFoundException {
-//        if (linksRootFolder == null) throw new FileNotFoundException("No links root folder defined.");
-//        String imdbPattern = "[imdbid-%imdb_id%]";
-//        int discNumber = mediaTransferData.getPartNumber();
-//        String part = (discNumber > 0) ? "-cd" + discNumber : "";
-//        String title = replaceIllegalCharacters(mediaTransferData.getTitle());
-//        String yearFormatted = WHITESPACE + "(" + mediaTransferData.getYear() + ")";
-//        String idFormatted = "";
-//        if (mediaIdentity == MediaIdentity.TMDB) {
-//            idFormatted = " [tmdbid-" + queryResult.getTheMovieDbId() + "]";
-////            idFormatted = imdbPattern.replaceAll("%imdb_id%", queryResult.getImdbId());
-//        }
-//        if (mediaIdentity == MediaIdentity.IMDB) {
-//            idFormatted = " [imdbid-" + mediaTransferData.getImdbId() + "]";
-//        }
-//        String extension = getExtension(queryResult.getOriginalPath());
-//        // get special identifier for movie extras
-//        String special = checkForSpecialDescriptor(queryResult.getOriginalPath());
-//        String group = ""; //
-//        String specialWithGroup = (special + WHITESPACE + group).trim();
-//        specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : WHITESPACE + "-" + WHITESPACE + "[" + specialWithGroup + "]";
-//        // build path names
-//        LOG.info("[ link ] creating path names...");
-//        String movieFolder = title + yearFormatted + idFormatted;
-//        LOG.info("[ link ] folder: {}", movieFolder);
-//        String movieName = title + specialWithGroup + part + "." + extension;
-//        LOG.info("[ link ] file: {}", movieName);
-//        return linksRootFolder.resolve(movieFolder).resolve(movieName);
-//    }
-
     public Path createMovieLinkPath(QueryResult queryResult,
-                                    MediaIdentity mediaIdentity) throws FileNotFoundException {
-        if (linksRootFolder == null) throw new FileNotFoundException("No links root folder defined.");
+                                    MediaIdentity mediaIdentity,
+                                    Path linksRootFolder) throws RequiredFieldException, IllegalAccessException {
+        Validator.validateForNulls(queryResult);
         String imdbPattern = "[imdbid-%imdb_id%]";
         int discNumber = queryResult.getMultipart();
         String part = (discNumber > 0) ? "-cd" + discNumber : "";
@@ -131,8 +125,8 @@ public class FileService {
 //    }
 
     public Path createExtrasLinkPath(QueryResult queryResult,
-                                     MediaIdentity mediaIdentity) throws FileNotFoundException {
-        if (linksRootFolder == null) throw new FileNotFoundException("No links root folder defined.");
+                                     MediaIdentity mediaIdentity,
+                                     Path linksRootFolder) {
         if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
             LOG.error("[ file_service ] Empty title field.");
             return null;
@@ -171,9 +165,8 @@ public class FileService {
     }
 
     public Path createTvEpisodePath(QueryResult queryResult, int seasonNumber,
-                                    int episodeNumber, MediaIdentity mediaIdentity)
-            throws FileNotFoundException {
-        if (linksRootFolder == null) throw new FileNotFoundException("No links root folder defined.");
+                                    int episodeNumber, MediaIdentity mediaIdentity,
+                                    Path linksRootFolder) {
         if (queryResult.getMultipart() < episodeNumber) return null;
         if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
             LOG.error("[ file_service ] Empty title field.");
@@ -213,7 +206,7 @@ public class FileService {
         return linksRootFolder.resolve(titleFolder).resolve(seasonFolder).resolve(episodeName);
     }
 
-    public boolean validatePath(String path) {
+    public boolean doesPathExist(String path) {
         return Path.of(path).toFile().exists();
     }
 }

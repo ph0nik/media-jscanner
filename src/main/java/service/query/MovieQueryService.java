@@ -13,6 +13,7 @@ import service.PropertiesService;
 import util.MediaType;
 
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,7 +48,7 @@ public class MovieQueryService extends GeneralQueryService {
                             mediaTrackerDao.getAllMediaLinks()
                     )
                     .stream()
-                    .map(this::createQuery)
+                    .map(this::createMovieQuery)
                     .collect(Collectors.toList());
             setCurrentMediaQueries(collect);
             groupByParentPathBatch(getCurrentMediaQueries());
@@ -56,7 +57,7 @@ public class MovieQueryService extends GeneralQueryService {
     }
 
     @Override
-    public MediaQuery createQuery(Path filePath) {
+    public MediaQuery createMovieQuery(Path filePath) {
         return new MediaQuery(filePath.toString(), MediaType.MOVIE);
     }
 
@@ -109,7 +110,6 @@ public class MovieQueryService extends GeneralQueryService {
      * */
     @Override
     public List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid) {
-//        Path parent = Path.of(getQueryByUuid(mediaQueryUuid).getFilePath()).getParent();
         MediaQuery queryByUuid = getQueryByUuid(mediaQueryUuid);
         if (queryByUuid == null) return List.of();
         Path parentPath = getMatchingPath(queryByUuid);
@@ -118,49 +118,11 @@ public class MovieQueryService extends GeneralQueryService {
         if (uuids == null) return List.of(queryByUuid);
         return uuids.stream()
                 .map(this::getQueryByUuid)
-                // after creating link other files within the same folder are ignored, so they won't appear here
+                // after creating link other files within the same folder are ignored,
+                // so they won't appear here
                 .filter(query -> query.getMultipart() == -1)
+                .sorted(Comparator.comparing(MediaQuery::getFilePath))
                 .collect(Collectors.toList());
     }
-
-//    @Override
-//    public List<MediaQuery> getProcessList() {
-//        return groupedQueriesToProcess;
-//    }
-//
-//    /*
-//     * Adds single query to process list, it's called when new link is created
-//     * */
-//    @Override
-//    public List<MediaQuery> addQueryToProcess(MediaQuery mediaQuery) {
-//        // MediaType is never null
-////        if (mediaQuery.getMediaType() == null) mediaQuery.setMediaType(MediaType.MOVIE);
-//        groupedQueriesToProcess = List.of(mediaQuery);
-//        return groupedQueriesToProcess;
-//    }
-//
-//    @Override
-//    public List<MediaQuery> addQueriesToProcess(List<MultiPartElement> multiPartElementsList) {
-//        groupedQueriesToProcess = new LinkedList<>();
-//        int counter = multiPartElementsList.size();
-//        for (MediaQuery mq : getCurrentMediaQueries()) {
-//            for (MultiPartElement mpe : multiPartElementsList) {
-//                if (mpe.getMultipartSwitch() && mpe.getFilePath().equals(mq.getFilePath())) {
-//                    mq.setMultipart(mpe.getPartNumber());
-//                    mq.setMediaType(mpe.getMediaType());
-//                    groupedQueriesToProcess.add(mq);
-//                    counter--;
-//                    break;
-//                }
-//            }
-//            if (counter == 0) break;
-//        }
-//        LOG.info("[ query_service ] Grouped {} elements", groupedQueriesToProcess.size());
-//        if (groupedQueriesToProcess.isEmpty()) {
-//            LOG.info("[ query_service ] No queries marked, adding reference to the queue");
-//            addQueryToProcess(getReferenceQuery());
-//        }
-//        return groupedQueriesToProcess;
-//    }
 
 }

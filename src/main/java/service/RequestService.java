@@ -17,7 +17,7 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 
 @Component
-class RequestService {
+public class RequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestService.class);
     private PropertiesService propertiesService;

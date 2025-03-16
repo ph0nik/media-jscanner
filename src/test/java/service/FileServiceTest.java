@@ -1,6 +1,9 @@
 package service;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import model.QueryResult;
+import model.validator.RequiredFieldException;
 import org.junit.jupiter.api.*;
 import util.MediaIdentity;
 import util.MediaType;
@@ -8,6 +11,7 @@ import util.MediaType;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,18 +20,37 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Disabled
+//@Disabled
 class FileServiceTest {
 
+    private FileSystem fileSystem;
     private FileService fileService;
     private QueryResult queryResult;
-    Path defaultFile;
+    Path rootPath;
+    String sourceFolder = "incoming";
+    Path sourcePath;
+    String linksFolder = "complete";
+    Path linksPath;
 
     @BeforeEach
     void initFileService() {
+        System.out.println("Creating file system...");
+        fileSystem = Jimfs.newFileSystem(Configuration.windows());
+        rootPath = fileSystem.getPath("R:\\media-jscanner-test");
+        sourcePath = rootPath.resolve(sourceFolder);
+        linksPath = rootPath.resolve(linksFolder);
         fileService = new FileService();
-        fileService.setLinksRootFolder(Path.of("m:\\"));
         setProperQueryResult();
+    }
+
+    @AfterEach
+    void closeFileSystem() throws IOException {
+        if (fileSystem.isOpen()) {
+            fileSystem.close();
+            System.out.println("File system is closed");
+        } else {
+            System.out.println("No file system found");
+        }
     }
 
     void setProperQueryResult() {
@@ -46,29 +69,46 @@ class FileServiceTest {
         queryResult.setMultipart((byte) 2);
     }
 
-
     @Test
     @DisplayName("Check path creation with correct parameters")
-    void linkPathCreation_proper() throws FileNotFoundException {
-        Path movieLinkPath = fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB);
+    void linkPathCreation_proper() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
+        Path movieLinkPath = fileService.createMovieLinkPath_new(queryResult, MediaIdentity.IMDB, linksPath);
         Assertions.assertNotNull(movieLinkPath);
         Assertions.assertEquals(movieLinkPath.getFileName().toString(), "The Matrix-cd2.mkv");
     }
 
     @Test
     @DisplayName("Check possible null or empty fields of incoming objects")
-    void linkPathCreation_nullCheck() throws FileNotFoundException {
+    void linkPathCreation_nullCheck() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
         queryResult.setMediaType(null);
-        Assertions.assertNotNull(fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB));
+        Assertions.assertThrows(
+                RequiredFieldException.class,
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                "media type field should be null"
+        );
         queryResult.setTitle(null);
-        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB));
+        Assertions.assertThrowsExactly(
+                RequiredFieldException.class,
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                "title field should be null"
+        );
         setProperQueryResult();
         queryResult.setYear(null);
-        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB));
+        Assertions.assertThrowsExactly(
+                RequiredFieldException.class,
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                "year field should be null"
+        );
+        System.out.println("media identity null");
         setProperQueryResult();
-        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, null));
+        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, null, linksPath));
+
         queryResult.setOriginalPath(null);
-        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB));
+        Assertions.assertThrowsExactly(
+                RequiredFieldException.class,
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                "original path field should be null"
+        );
     }
 
     @Disabled
@@ -77,7 +117,7 @@ class FileServiceTest {
         String seriesPaths = "src/test/resources/seriale_lista.txt";
         Path path = Paths.get(seriesPaths);
         List<String> strings = Files.readAllLines(path, StandardCharsets.ISO_8859_1);
-        defaultFile = Path.of("r:\\");
+        Path defaultFile = Path.of("r:\\");
         strings.stream()
                 .map(s -> s.split(":")[0])
                 .map(x -> Path.of("R:\\media-jscanner-test\\").resolve(x))

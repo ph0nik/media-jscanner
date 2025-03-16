@@ -110,6 +110,7 @@ public class TextExtractTools {
         Path of = Path.of(path);
         Path fileName = of.getName(of.getNameCount() - 1);
         if (TextExtractTools.isSampleOrTrailer(path)) return null;
+//        String altRegex = "^(?:(\\d{4})\\.)?([\\w\\s.]+?)(?:\\s+|\\.)?(\\d{4})?(?:\\..*)?$";
         String regex = "\\b^.+?\\d{4}\\b";
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(fileName.toString());

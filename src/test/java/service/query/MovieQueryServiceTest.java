@@ -52,7 +52,7 @@ class MovieQueryServiceTest {
         Path movies = Paths.get("src/test/resources/test_movies_abs_paths.txt");
         mediaQueryList = Files.readAllLines(movies, StandardCharsets.UTF_8)
                 .stream()
-                .map(s -> mediaQueryService.createQuery(Path.of(s)))
+                .map(s -> mediaQueryService.createMovieQuery(Path.of(s)))
                 .collect(Collectors.toList());
         mediaQueryService.setCurrentMediaQueries(mediaQueryList);
     }

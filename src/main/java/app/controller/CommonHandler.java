@@ -62,7 +62,7 @@ public class CommonHandler {
     public List<MediaLink> getAllIgnoredMedia() {
         return mediaLinksService.getMediaIgnoredList();
     }
-    @ModelAttribute("user_paths") // TODO if user paths are not set redirect to config
+    @ModelAttribute("user_paths")
     public boolean checkForUserProvidedPaths() {
         return propertiesService.userMoviePathsExist();
     }
@@ -70,8 +70,6 @@ public class CommonHandler {
     public String getCurrentResult() {
         return errorNotificationService.getCurrentResult();
     }
-
-// TODO implement handler interceptor to check folders and redirect user to config
 
 
 }

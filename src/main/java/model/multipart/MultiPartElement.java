@@ -1,24 +1,25 @@
 package model.multipart;
 
+import model.MediaQuery;
 import util.MediaType;
 
 public class MultiPartElement {
 
     private String filePath;
     private String fileName;
-    private boolean multipartSwitch;
-    private byte partNumber;
+    private boolean multipartSwitch = true;
+    private int partNumber = 0;
     private MediaType mediaType;
 
-    public MultiPartElement() {
-        partNumber = 0;
-        multipartSwitch = false;
-    }
+    public MultiPartElement() {}
 
     public MultiPartElement(String mediaQueryFilePath) {
         this.filePath = mediaQueryFilePath;
-        partNumber = 0;
-        multipartSwitch = false;
+    }
+
+    public MultiPartElement(MediaQuery mediaQuery, int partNumber) {
+        this.filePath = mediaQuery.getFilePath();
+        this.partNumber = partNumber;
     }
 
     public boolean getMultipartSwitch() {
@@ -44,18 +45,18 @@ public class MultiPartElement {
         } else {
             x = filePath.lastIndexOf("/");
         }
-        return filePath.substring(x, filePath.length());
+        return filePath.substring(x);
     }
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
 
-    public byte getPartNumber() {
+    public int getPartNumber() {
         return partNumber;
     }
 
-    public void setPartNumber(byte partNumber) {
+    public void setPartNumber(int partNumber) {
         this.partNumber = partNumber;
     }
 

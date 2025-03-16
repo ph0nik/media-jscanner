@@ -61,7 +61,7 @@ class TvQueryServiceTest {
         testFiles = Files.readAllLines(movies, StandardCharsets.ISO_8859_1);
         mediaQueryList = testFiles.stream()
                 .filter(MediaFilter::validateExtension)
-                .map(f -> mediaQueryService.createQuery(workPath.resolve(f)))
+                .map(f -> mediaQueryService.createMovieQuery(workPath.resolve(f)))
                 .collect(Collectors.toList());
         mediaQueryService.setCurrentMediaQueries(mediaQueryList);
     }

@@ -1,5 +1,6 @@
 package model;
 
+import model.validator.Required;
 import util.MediaType;
 
 import java.util.Objects;
@@ -7,17 +8,22 @@ import java.util.UUID;
 
 public class QueryResult implements Comparable<QueryResult> {
     private Long id;
+    @Required
     private MediaType mediaType;
+    @Required
     private String title;
+    @Required
     private String originalPath;
     private int theMovieDbId;
+    @Required
     private String imdbId;
     private String description;
     private String url;
     private UUID queryId;
     private String poster;
+    @Required
     private String year;
-    private byte multipart;
+    private int multipart;
 
     public QueryResult() {}
 
@@ -25,11 +31,11 @@ public class QueryResult implements Comparable<QueryResult> {
         this.originalPath = path;
     }
 
-    public byte getMultipart() {
+    public int getMultipart() {
         return multipart;
     }
 
-    public void setMultipart(byte multipart) {
+    public void setMultipart(int multipart) {
         this.multipart = multipart;
     }
 

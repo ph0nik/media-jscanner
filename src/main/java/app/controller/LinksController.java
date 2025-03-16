@@ -12,6 +12,7 @@ import service.MediaLinksService;
 import service.PropertiesService;
 import service.query.MediaQueryService;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -96,7 +97,7 @@ public class LinksController {
     }
 
     @PostMapping(value = REMOVE_LINK)
-    public String newLink(@RequestParam("id") long id, Model model) {
+    public String newLink(@RequestParam("id") long id, Model model) throws IOException {
         mediaLinksService.moveBackToQueue(id);
         return "redirect:" + CommonHandler.SCAN_FOR_MEDIA;
     }
@@ -109,7 +110,7 @@ public class LinksController {
     }
 
     @PostMapping(value = RESTORE_SOURCE_FILE + "{id}")
-    public String restoreOriginal(@PathVariable("id") long id, Model model) {
+    public String restoreOriginal(@PathVariable("id") long id, Model model) throws IOException {
         mediaLinksService.restoreOriginalFile(id);
         return "redirect:" + CommonHandler.LINKS;
     }

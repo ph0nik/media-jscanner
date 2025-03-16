@@ -15,7 +15,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Controller
-//@RequestMapping(value = CommonHandler.CONFIG)
 public class ConfigController {
     @Autowired
     private MediaLinksService mediaLinksService;
@@ -58,7 +57,6 @@ public class ConfigController {
         return "config";
     }
 
-    // TODO check all incoming paths, if incorrect get proper exceptions and report back to user at the same option lvl
     /*
      * Delete selected target path for movie
      * */
@@ -74,7 +72,7 @@ public class ConfigController {
     @PostMapping(value = TV_DELETE_SOURCE_PATH)
     public String deletePathTv(@RequestParam String path, Model model) throws ConfigurationException {
         propertiesService.removeTargetPathTv(Path.of(path));
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 
     /*
@@ -83,7 +81,7 @@ public class ConfigController {
     @PostMapping(value = MOVIE_NEW_SOURCE_PATH)
     public String addPathMovie(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathMovie(Path.of(path));
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 
     /*
@@ -92,7 +90,7 @@ public class ConfigController {
     @PostMapping(value = TV_NEW_SOURCE_PATH)
     public String addPathTv(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathTv(Path.of(path));
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 
     /*
@@ -105,7 +103,7 @@ public class ConfigController {
             mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolderMovie(), newLinksPath);
         }
         propertiesService.setLinksPathMovie(newLinksPath);
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 
     @PostMapping(value = TV_NEW_LINK_PATH)
@@ -114,16 +112,14 @@ public class ConfigController {
         if (linksPathForm.isMoveContent()) {
             mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolderMovie(), newLinksPath);
         }
-
         propertiesService.setLinksPathTv(newLinksPath);
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
-
 
     // Rename to something meaningful to let user know what action is being taken
     @PostMapping(value = CLEAR_FOLDERS)
     public String clearSelectedFolder(@RequestParam String path, Model model) {
         mediaLinksService.removeEmptyFolders(path);
-        return "redirect:/config";
+        return "redirect:" + CommonHandler.CONFIG;
     }
 }

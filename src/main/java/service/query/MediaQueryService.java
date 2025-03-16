@@ -1,5 +1,6 @@
 package service.query;
 
+import model.MediaLink;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.springframework.data.domain.Page;
@@ -10,17 +11,25 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MediaQueryService {
+    List<MediaLink> getMediaLinksToProcess();
+
+    void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);
+
+    void clearMediaLinksToProcess();
+
     MediaQuery getReferenceQuery();
 
     void setReferenceQuery(UUID mediaQueryUuid);
 
     void setReferenceQuery(MediaQuery mediaQuery);
 
+
+
     // scan given paths and gather all files matching criteria
     // except ones that are already ignored or already has links
     void scanForNewMediaQueries();
 
-    MediaQuery createQuery(Path path);
+    MediaQuery createMovieQuery(Path path);
     /*
      * Removes given element from the query list
      * */

@@ -49,6 +49,7 @@ public class QueryController {
     private static final String SEARCH_WITH_IMDB_LINK = "/imdb-link/";
     private static final String AUTO_MATCH = "/auto";
     private static final String NEW_MOVIE_LINK = "/new-link-movie/";
+    private static final String PERSIST_NEW_MOVIE_LINKS = "/persist-new-links/";
     private static final String MARK_AS_IGNORED = "/new-ignore-movie/";
     @ModelAttribute
     private void setMenuLinks(Model model) {
@@ -61,6 +62,7 @@ public class QueryController {
         model.addAttribute("movie_auto", AUTO_MATCH);
         model.addAttribute("movie_link", NEW_MOVIE_LINK);
         model.addAttribute("movie_new_ignore", MARK_AS_IGNORED);
+        model.addAttribute("movie_new_links", PERSIST_NEW_MOVIE_LINKS);
     }
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
@@ -219,23 +221,31 @@ public class QueryController {
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
         LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
         if (latestMediaQuery == null) return "redirect:/";
-        MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
+//        MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
         model.addAttribute("result_list", latestMediaQuery.getLastRequest());
         model.addAttribute("query_result", new QueryResult());
-        model.addAttribute("query", lastMediaQuery);
+        model.addAttribute("query", latestMediaQuery.getLastMediaQuery());
         return "result_selection";
     }
 
     @PostMapping(value = NEW_MOVIE_LINK)
-    public String newLink(QueryResult queryResult,
-                          BindingResult bindingResult,
-                          Model model) throws NetworkException {
+    public String createLinkPath(QueryResult queryResult,
+                                 BindingResult bindingResult,
+                                 Model model) throws NetworkException {
         MediaIdentity mediaIdentity = (queryResult.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
-        int operations = mediaLinksService.createFileLink(queryResult,
+        List<MediaLink> fileLink = mediaLinksService.createFileLink(queryResult,
                 mediaIdentity,
                 movieQueryService);
+        model.addAttribute("file_link_to_process", fileLink);
+        return "link_creation_confirm";
         // TODO implement list of results
 //        operationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
+//        return "redirect:" + CommonHandler.MOVIE;
+    }
+
+    @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
+    public String persistWithGivenListOfLinks(Model model) {
+        mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
         return "redirect:" + CommonHandler.MOVIE;
     }
 
@@ -261,6 +271,9 @@ public class QueryController {
 
     @GetMapping(value = AUTO_MATCH)
     public String autoMatch() throws NetworkException {
+        // TODO automatcher should search titles based of few first words
+        // query tmdb and return results matched to each file
+        // show them to user to confirm link creation in batch
         // TODO secure in case of network problems, funky stuff with the files
         future = autoMatcherService.autoMatchFilesWithFuture();
         return "redirect:/";

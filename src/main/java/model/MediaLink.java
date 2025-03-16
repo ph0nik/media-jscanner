@@ -1,6 +1,7 @@
 package model;
 
 import com.opencsv.bean.CsvBindByName;
+import model.validator.Required;
 import service.backup.model.CsvBean;
 
 import javax.persistence.*;
@@ -18,22 +19,27 @@ public class MediaLink extends CsvBean {
 
     @Column(name = "link_path")
     @CsvBindByName(column = "link_path")
+    @Required
     private String linkPath;
 
     @Column(name = "target_path", unique = true)
     @CsvBindByName(column = "target_path")
+    @Required
     private String originalPath;
 
     @Column(name = "the_movie_db_id")
     @CsvBindByName(column = "the_movie_db_id")
+    @Required
     private int theMovieDbId;
 
     @Column(name = "imdb_id")
     @CsvBindByName(column = "imdb_id")
+    @Required
     private String imdbId;
 
     @Column(name = "original_present")
     @CsvBindByName(column = "original_present")
+    @Required
     private boolean originalPresent = true;
 
     public boolean isOriginalPresent() {

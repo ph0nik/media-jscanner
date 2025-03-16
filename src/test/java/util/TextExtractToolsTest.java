@@ -1,6 +1,8 @@
 package util;
 
+import model.DeductedQuery;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -8,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,7 +25,7 @@ public class TextExtractToolsTest {
     public void loadTestFile() throws IOException {
         Path sd = Paths.get("src/test/resources/test_movies_abs_paths.txt");
         Path hd = Paths.get("src/test/resources/movies_hd.txt");
-        testFiles = Files.readAllLines(hd, StandardCharsets.ISO_8859_1);
+        testFiles = Files.readAllLines(sd, StandardCharsets.ISO_8859_1);
     }
 
     @Test
@@ -91,6 +94,26 @@ public class TextExtractToolsTest {
 //        String sample = "Seriale/Friends.S01-S10.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC.PACK-PSiG/Friends.S08.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC-PSiG/Friends.S08E16.The.One.Where.Joey.Tells.Rachel.MULTi.1080p.HMAX.WEB-DL.DD5.1.HEVC-PSiG.mkv";
 //        int i = TextExtractTools.extractSeasonNumber(sample);
 //        System.out.println(i);
+    }
+
+    @Test
+    @Disabled
+    void extractTitleAndYearFromFileName() {
+        List<DeductedQuery> output = new ArrayList<>();
+        int counter = 0;
+        for (String s : testFiles) {
+            // TODO fix matching pattern
+            DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(s.toLowerCase());
+            System.out.println(s);
+            System.out.println("\t" + deductedQuery);
+            if (deductedQuery != null) {
+                output.add(deductedQuery);
+            }
+            counter++;
+        }
+        System.out.println("All elements: " + counter);
+        System.out.println("Extracted: " + output.size());
+
     }
 
 }
