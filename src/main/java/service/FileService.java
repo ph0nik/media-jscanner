@@ -24,6 +24,7 @@ public class FileService {
                                          Path rootLinksFolder) throws RequiredFieldException, IllegalAccessException {
         // query result validation should be outside of this method
         // TITLE (YEAR) [imdbid-IMDBID]/TITLE - [SPECIAL]-cdPART.EXT
+        // TODO if one of ids is missing select the second one
         Validator.validateForNulls(queryResult); // check for null fields
         String part = (queryResult.getMultipart() > 0)
                 ? "-cd" + queryResult.getMultipart()

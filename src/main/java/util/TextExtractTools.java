@@ -86,7 +86,7 @@ public class TextExtractTools {
      * */
     public static boolean hasExtrasInName(String path) {
         Path of = Path.of(path);
-        String regex = "(?i).+(interview|featurette|deleted)";
+        String regex = "(?i).+(extras|interview|featurette|deleted)";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(of.toString().toLowerCase());
         return matcher.find();
@@ -107,22 +107,71 @@ public class TextExtractTools {
      * Files containing keyword sample or trailer are being ignored.
      * */
     public static DeductedQuery extractTitleAndYear(String path) {
-        Path of = Path.of(path);
-        Path fileName = of.getName(of.getNameCount() - 1);
-        if (TextExtractTools.isSampleOrTrailer(path)) return null;
-//        String altRegex = "^(?:(\\d{4})\\.)?([\\w\\s.]+?)(?:\\s+|\\.)?(\\d{4})?(?:\\..*)?$";
-        String regex = "\\b^.+?\\d{4}\\b";
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(fileName.toString());
-        if (m.find()) {
-            String group = m.group();
+        if (isSampleOrTrailer(path) || hasExtrasInName(path)) return null;
+        Path fileName = Path.of(path).getFileName();
+        int extensionStart = fileName.toString().lastIndexOf('.');
+        // remove extension
+        String fileNameString = fileName.toString().substring(0, extensionStart);
+        // remove all non-alphanumeric characters
+        String withoutSpecialCharacters = fileNameString.replaceAll("[^a-zA-Z0-9]+", " ");
+        DeductedQuery deductedQuery = extractFromStringWithLeadingYear(withoutSpecialCharacters, path);
+        if (deductedQuery != null) return deductedQuery;
+        deductedQuery = extractFromStringWithLeadingTitle(withoutSpecialCharacters, path);
+        if (deductedQuery != null) return deductedQuery;
+        return extractFromStringWithoutYear(withoutSpecialCharacters, path);
+    }
+
+    private static DeductedQuery extractFromStringWithoutYear(String input, String path) {
+        String[] split = input.split("\\s+");
+        StringBuilder title = new StringBuilder();
+        if (split.length > 5) {
+            for (int i = 0; i < 5; i++) {
+                title.append(" ").append(split[i]);
+            }
+        } else {
+            for (String s : split) {
+                title.append(" ").append(s);
+            }
+        }
+        return new DeductedQuery(title.toString().trim(), 1000, path);
+    }
+
+    private static DeductedQuery extractFromStringWithLeadingTitle(String input, String path) {
+        //        String altRegex = "^(?:(\\d{4})\\.)?([\\w\\s.]+?)(?:\\s+|\\.)?(\\d{4})?(?:\\..*)?$";
+        String regex = "^\\b.+?\\d{4}\\b";
+        Pattern titlePattern = Pattern.compile(regex);
+        Matcher titleMatcher = titlePattern.matcher(input);
+        if (titleMatcher.find()) {
+            String group = titleMatcher.group();
             String filtered = replaceIllegalCharacters(group);
             int i = filtered.length() - 4;
             int year = Integer.parseInt(filtered.substring(i));
             String title = filtered.substring(0, i).trim();
             return new DeductedQuery(title, year, path);
-        }
-        return null;
+        } else return null;
+    }
+
+    private static DeductedQuery extractFromStringWithLeadingYear(String input, String path) {
+//        String startingWithYearRegex = "^(\\d{4})(?!\\s+\\d{4})";
+        String startingWithYearRegex = "^(\\d{4})\\s+([a-zA-Z0-9\\s]+?)(?!\\s+\\d{4})$";
+        Pattern yearPattern = Pattern.compile(startingWithYearRegex);
+        Matcher yearMatcher = yearPattern.matcher(input);
+        if (yearMatcher.find() && yearMatcher.groupCount() > 0) {
+            StringBuilder title = new StringBuilder();
+            int year = Integer.parseInt(yearMatcher.group(1));
+            String titleCandidate = yearMatcher.group(2);
+            String[] split = titleCandidate.split("\\s+");
+            if (split.length > 5) {
+                for (int i = 0; i < 5; i++) {
+                    title.append(" ").append(split[i]);
+                }
+            } else {
+                for (String s : split) {
+                    title.append(" ").append(s);
+                }
+            }
+            return new DeductedQuery(title.toString().trim(), year, path);
+        } else return null;
     }
 
     public static String extractTitleFromTvElement(String path) {

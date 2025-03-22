@@ -31,11 +31,54 @@ function printResponse(response) {
     percentage.setAttribute("style","width: " + percentageValue + "%");
     percentage.setAttribute("aria-valuenow", percentageValue);
 
+    if (responseObj.link != "") {
+        insertRowData(responseObj.currentFile, responseObj.link, responseObj.currentElementNumber);
+    }
+
     if (responseObj.enabled === false) {
         let spinnerUpdated = document.getElementById("spinner").className + " visually-hidden";
         spinner.setAttribute("class", spinnerUpdated);
         currentFile.setAttribute("class", "text-success");
+        showConfirmAndAbortButtons();
+//        showFinishButton();
     }
+}
+
+const rowTemplate = `
+            <tr>
+                <td colspan="1" class="text-center col-1">
+                    <span>{{index}}</span>
+                </td>
+                <td colspan="3">
+                    <span  class="fs-6 fw-bold text-muted">{{sourcePath}}</span>
+                    <div class="flex">
+                        <i class="fa-solid fa-link"></i>
+                        <span class="fs-6 fw-normal">{{linkPath}}</span>
+                    </div>
+                </td>
+            </tr>
+`;
+
+function insertRowData(sourcePath, linkPath, index) {
+    var table = document.getElementById("incoming_links");
+    let newRowHtml = rowTemplate
+    .replace('{{index}}', index)
+    .replace('{{sourcePath}}', sourcePath)
+    .replace('{{linkPath}}', linkPath);
+
+    table.querySelector('tbody').insertAdjacentHTML('beforeend', newRowHtml);
+}
+
+function showConfirmAndAbortButtons() {
+    let confirmUpdated = document.getElementById("confirm_form").className = "visible";
+    confirm_form.setAttribute("class", confirmUpdated);
+    let abortUpdated = document.getElementById("abort_form").className = "visible";
+    abort_form.setAttribute("class", abortUpdated);
+}
+
+function showFinishButton() {
+    let finalButtonUpdated = document.getElementById("follow_button").className = "visible";
+    follow_button.setAttribute("class", finalButtonUpdated);
 }
 
 function fitString(string) {

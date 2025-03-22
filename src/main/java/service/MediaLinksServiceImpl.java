@@ -242,9 +242,10 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         List<MediaLink> mediaLinksToProcess = new ArrayList<>();
         for (MediaQuery mq : mediaQueryService.getProcessList()) {
             MediaLink mediaLink = createFileLink(queryResult, mediaIdentity, mq, mediaQueryService);
-            mediaLinksToProcess.add(mediaLink);
+            if (mediaLink != null) mediaLinksToProcess.add(mediaLink);
+            // if some data needed to create filename is missing, skip it
         }
-        mediaQueryService.setMediaLinksToProcess(mediaLinksToProcess);
+//        mediaQueryService.setMediaLinksToProcess(mediaLinksToProcess);
         return mediaLinksToProcess;
     }
 
@@ -260,7 +261,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         try {
             return createLinkPath(queryResult);
         } catch (RequiredFieldException | IllegalAccessException e) { // temporary
-            throw new RuntimeException(e);
+            LOG.error("[ media_links_service ] Empty media link field: {}", e.getMessage());
+            return null;
         }
     }
 
@@ -294,10 +296,18 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         Path linkPath = Path.of("");
 //        fileService.setLinksRootFolder(propertiesService.getLinksFolderMovie());
         if (queryResult.getMediaType() == MediaType.MOVIE) {
-            linkPath = fileService.createMovieLinkPath_new(queryResult, linkIdentifier, propertiesService.getLinksFolderMovie());
+            linkPath = fileService.createMovieLinkPath_new(
+                    queryResult,
+                    linkIdentifier,
+                    propertiesService.getLinksFolderMovie()
+            );
         }
         if (queryResult.getMediaType() == MediaType.EXTRAS) {
-            linkPath = fileService.createMovieLinkPath_new(queryResult, linkIdentifier, propertiesService.getLinksFolderMovie());
+            linkPath = fileService.createMovieLinkPath_new(
+                    queryResult,
+                    linkIdentifier,
+                    propertiesService.getLinksFolderMovie()
+            );
         }
         MediaLink mediaLink = new MediaLink();
         mediaLink.setOriginalPath(originalPath.toString());

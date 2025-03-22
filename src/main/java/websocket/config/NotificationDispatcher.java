@@ -17,10 +17,8 @@ public class NotificationDispatcher {
 
     private static final Logger LOG = LoggerFactory.getLogger(NotificationDispatcher.class);
     private static final String NOTIFICATION_DEST = "/notification/item";
-
     private final SimpMessagingTemplate template;
-
-    private Set<String> listeners = new HashSet<>();
+    private final Set<String> listeners = new HashSet<>();
 
     public NotificationDispatcher(SimpMessagingTemplate template) {
         this.template = template;
@@ -40,7 +38,6 @@ public class NotificationDispatcher {
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
             headerAccessor.setSessionId(listener);
             headerAccessor.setLeaveMutable(true);
-
             template.convertAndSendToUser(listener,
                     NOTIFICATION_DEST, "check this", headerAccessor.getMessageHeaders());
         }

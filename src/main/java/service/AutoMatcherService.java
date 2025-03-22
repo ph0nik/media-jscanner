@@ -17,6 +17,8 @@ public interface AutoMatcherService {
 
     Future<List<MediaLink>> autoMatchFilesWithFuture() throws NetworkException;
 
-    int autoMatchSingleFile(Path path) throws NetworkException;
+    Future<List<MediaLink>> autoMatchAndGetLinks() throws NetworkException;
+
+    List<MediaLink> autoMatchSingleFile(Path path) throws NetworkException;
 
 }

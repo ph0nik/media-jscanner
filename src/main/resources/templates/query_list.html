@@ -74,8 +74,8 @@
                 </li>
             </ul>
         </div>
-        <div class="col"></div>
-        <div class="col-2">
+
+        <div class="col-1">
             <!--scan folders-->
             <div class="col d-flex justify-content-center p-1">
                 <form action="#"
@@ -143,13 +143,6 @@
     <div class="col-4">
         <h2 class="col text-secondary">Movies</h2>
     </div>
-</div>
-<!--error, no user paths found-->
-<div th:if="${!user_paths}" class="row justify-content-center">
-    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
-        User provided paths not found! Please, add proper paths in config tab.
-    </div>
-
 </div>
 <!--page selection-->
 <div class="row justify-content-between">

@@ -51,6 +51,7 @@ public class QueryController {
     private static final String NEW_MOVIE_LINK = "/new-link-movie/";
     private static final String PERSIST_NEW_MOVIE_LINKS = "/persist-new-links/";
     private static final String MARK_AS_IGNORED = "/new-ignore-movie/";
+    private static final String AUTO_MATCH_FINISH = "/auto-match-finish/";
     @ModelAttribute
     private void setMenuLinks(Model model) {
         model.addAttribute("movie_search", SEARCH_WITH_QUERY);
@@ -63,12 +64,12 @@ public class QueryController {
         model.addAttribute("movie_link", NEW_MOVIE_LINK);
         model.addAttribute("movie_new_ignore", MARK_AS_IGNORED);
         model.addAttribute("movie_new_links", PERSIST_NEW_MOVIE_LINKS);
+        model.addAttribute("movie_auto_finish", AUTO_MATCH_FINISH);
     }
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
 
     @GetMapping("/")
-    // TODO change variables in templates
     public String redirectToQuery() {
         return "redirect:" + CommonHandler.MOVIE;
     }
@@ -110,6 +111,7 @@ public class QueryController {
         int min = 1;
         int max = sessionPageSize;
         // TODO move media query list to service and single object instance
+        // after moving all live data to single object unify pagable
 //        Page<MediaQuery> paginatedQueries = movieQueryService.findPaginatedQueries(
 //                PageRequest.of(0, sessionPageSize),
 //                movieQueryService.searchQuery(search));
@@ -236,16 +238,15 @@ public class QueryController {
         List<MediaLink> fileLink = mediaLinksService.createFileLink(queryResult,
                 mediaIdentity,
                 movieQueryService);
+        movieQueryService.setMediaLinksToProcess(fileLink);
         model.addAttribute("file_link_to_process", fileLink);
         return "link_creation_confirm";
-        // TODO implement list of results
-//        operationResults.forEach(lcr -> errorNotificationService.setLinkCreationResult(lcr));
-//        return "redirect:" + CommonHandler.MOVIE;
     }
 
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
         mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
+        movieQueryService.clearMediaLinksToProcess();
         return "redirect:" + CommonHandler.MOVIE;
     }
 
@@ -270,12 +271,17 @@ public class QueryController {
     }
 
     @GetMapping(value = AUTO_MATCH)
-    public String autoMatch() throws NetworkException {
-        // TODO automatcher should search titles based of few first words
-        // query tmdb and return results matched to each file
-        // show them to user to confirm link creation in batch
-        // TODO secure in case of network problems, funky stuff with the files
-        future = autoMatcherService.autoMatchFilesWithFuture();
-        return "redirect:/";
+    public String autoMatch(Model model) throws NetworkException {
+        future = autoMatcherService.autoMatchAndGetLinks();
+        boolean autoMatcherStatus = future == null || future.isDone();
+        model.addAttribute("future", autoMatcherStatus);
+        return "auto_matcher";
+    }
+
+    @GetMapping(value = AUTO_MATCH_FINISH)
+    public String autoMatchShowLinks(Model model) {
+        List<MediaLink> fileLink = movieQueryService.getMediaLinksToProcess();
+        model.addAttribute("file_link_to_process", fileLink);
+        return "link_creation_confirm";
     }
 }

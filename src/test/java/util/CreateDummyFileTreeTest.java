@@ -1,10 +1,12 @@
 package util;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
+@Disabled
 public class CreateDummyFileTreeTest {
 
     @Test

@@ -34,6 +34,14 @@ public class RequestService {
         return tmdbApiGeneralRequest(apiRequest);
     }
 
+    String tmdbApiTitleMovie(String query) throws NetworkException {
+        LOG.info("[ request_service ] Creating request for title movie search...");
+        String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_movie_title")
+                .replace("<<query>>", query);
+        LOG.info("[ request_service ] {}", apiRequest);
+        return tmdbApiGeneralRequest(apiRequest);
+    }
+
     String tmdbApiTitleAndYearMovie(String query, int year) throws NetworkException {
         LOG.info("[ request_service ] Creating request for title and year movie search...");
         String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_movie_title_year")

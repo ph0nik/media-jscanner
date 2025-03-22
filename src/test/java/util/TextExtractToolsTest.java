@@ -20,11 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TextExtractToolsTest {
 
     static List<String> testFiles;
+    private final Path sd = Paths.get("src/test/resources/test_movies_abs_paths.txt");
+    private final Path hd = Paths.get("src/test/resources/movies_hd.txt");
+    private final Path randomSources = Paths.get("src/test/resources/incoming-random-sources.txt");
 
     @BeforeEach
     public void loadTestFile() throws IOException {
-        Path sd = Paths.get("src/test/resources/test_movies_abs_paths.txt");
-        Path hd = Paths.get("src/test/resources/movies_hd.txt");
         testFiles = Files.readAllLines(sd, StandardCharsets.ISO_8859_1);
     }
 
@@ -98,16 +99,16 @@ public class TextExtractToolsTest {
 
     @Test
     @Disabled
-    void extractTitleAndYearFromFileName() {
+    void extractTitleAndYearFromFileName() throws IOException {
         List<DeductedQuery> output = new ArrayList<>();
         int counter = 0;
-        for (String s : testFiles) {
-            // TODO fix matching pattern
+        testFiles = Files.readAllLines(sd, StandardCharsets.ISO_8859_1);
+        List<String> collect = testFiles.stream().filter(MediaFilter::validateExtension).collect(Collectors.toList());
+        for (String s : collect) {
             DeductedQuery deductedQuery = TextExtractTools.extractTitleAndYear(s.toLowerCase());
-            System.out.println(s);
-            System.out.println("\t" + deductedQuery);
             if (deductedQuery != null) {
                 output.add(deductedQuery);
+
             }
             counter++;
         }
