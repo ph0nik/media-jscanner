@@ -1,8 +1,9 @@
 package service;
 
 import app.EnvValidator;
+import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
-import dao.MediaTrackerDaoImpl;
+import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,10 +22,11 @@ class MovieQueryServiceTest {
     private PropertiesService propertiesService;
     private Pagination<MediaQuery> pagination;
     private EnvValidator envValidator;
+    private MediaLinkRepository mediaLinkRepository;
 
     @BeforeEach
     void initService() throws NoApiKeyException, ConfigurationException {
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);

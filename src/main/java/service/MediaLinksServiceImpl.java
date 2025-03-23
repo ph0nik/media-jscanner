@@ -44,7 +44,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private LastRequest lastRequest;
     private QueryResult currentQueryResult;
 
-    public MediaLinksServiceImpl(@Qualifier("spring") MediaTrackerDao dao,
+    public MediaLinksServiceImpl(@Qualifier("jpa") MediaTrackerDao dao,
                                  PropertiesService propertiesService,
                                  CleanerService cleanerService,
                                  FileService fs,
@@ -250,9 +250,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     MediaLink createFileLink(QueryResult queryResult,
-                                   MediaIdentity mediaIdentifier,
-                                   MediaQuery mediaQuery,
-                                   MediaQueryService mediaQueryService)
+                             MediaIdentity mediaIdentifier,
+                             MediaQuery mediaQuery,
+                             MediaQueryService mediaQueryService)
             throws NetworkException {
         queryResult.setMultipart(mediaQuery.getMultipart());
         queryResult.setMediaType(mediaQuery.getMediaType());
@@ -348,20 +348,20 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      *           use true to invert and recreate original, source file.
      * */
     public boolean createHardLinkWithDirectories(Path linkPath, Path incomingPath)
-            throws IOException, SecurityException  {
+            throws IOException, SecurityException {
         Path parentLinkPath = linkPath.getParent();
         if (!Files.exists(incomingPath)) {
             LOG.error("[ link ] No original file found with path: {}", incomingPath);
             return false;
         }
-            if (!Files.exists(parentLinkPath)) {
-                Files.createDirectories(parentLinkPath);
-                LOG.info("[ link ] creating folder...: {}", parentLinkPath);
-            }
-            LOG.info("[ link ] creating link...");
-            Files.createLink(linkPath, incomingPath);
-            LOG.info("[ link ] link created: {} => {}", linkPath, incomingPath);
-            return true;
+        if (!Files.exists(parentLinkPath)) {
+            Files.createDirectories(parentLinkPath);
+            LOG.info("[ link ] creating folder...: {}", parentLinkPath);
+        }
+        LOG.info("[ link ] creating link...");
+        Files.createLink(linkPath, incomingPath);
+        LOG.info("[ link ] link created: {} => {}", linkPath, incomingPath);
+        return true;
     }
 
     @Override
@@ -474,8 +474,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         cleanerService.clearEmptyFolders(Path.of(mediaLink.getOriginalPath()).getParent());
         LOG.info("[ delete_original ] Original file deleted: {}", mediaLink.getOriginalPath());
         mediaLink.setOriginalPresent(false);
-        mediaTrackerDao.updateLink(mediaLink);
-        return mediaLink;
+        return mediaTrackerDao.addNewLink(mediaLink);
+//        mediaTrackerDao.updateLink(mediaLink);
+//        return mediaLink;
     }
 
     @Override
@@ -484,14 +485,15 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         createHardLinkWithDirectories(Path.of(mediaLink.getOriginalPath()), Path.of(mediaLink.getLinkPath()));
         LOG.info("[ restore_original ] Original file restored: {}", mediaLink.getOriginalPath());
         mediaLink.setOriginalPresent(true);
-        mediaTrackerDao.updateLink(mediaLink);
-        return mediaLink;
+        return mediaTrackerDao.addNewLink(mediaLink);
+//        mediaTrackerDao.updateLink(mediaLink);
+//        return mediaLink;
     }
 
     @Override
     public void unIgnoreMedia(long mediaIgnoreId) {
-        MediaLink mediaLink = mediaTrackerDao.removeLink(mediaIgnoreId);
-        LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
+        mediaTrackerDao.removeLink(mediaIgnoreId);
+        LOG.info("[ remove_link ] Link removed for file: {}", mediaIgnoreId);
 
     }
 
@@ -499,10 +501,19 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      * Checks if original path of given media link exists and updates boolean value if needed.
      * */
     MediaLink validateLink(MediaLink mediaLink) {
-        if (!fileService.doesPathExist(mediaLink.getOriginalPath()) && mediaLink.isOriginalPresent()) {
-            mediaLink.setOriginalPresent(false);
-            mediaTrackerDao.updateLink(mediaLink);
+        boolean originalPresent = mediaLink.isOriginalPresent();
+        if (
+                fileService.doesPathExist(mediaLink.getOriginalPath())
+                        != originalPresent
+        ) {
+            mediaLink.setOriginalPresent(!originalPresent);
+            return mediaTrackerDao.addNewLink(mediaLink);
         }
+//            if (!fileService.doesPathExist(mediaLink.getOriginalPath())
+//                    && mediaLink.isOriginalPresent()) {
+//                mediaLink.setOriginalPresent(false);
+//                mediaTrackerDao.updateLink(mediaLink);
+//            }
         return mediaLink;
     }
 
@@ -528,7 +539,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                 Files.createSymbolicLink(newLinkPath, Path.of(ml.getOriginalPath()));
                 LOG.info("[ link ] Creating link... {}", newLinkPath);
                 ml.setLinkPath(newLinkString);
-                MediaLink mediaLink = mediaTrackerDao.updateLink(ml);
+                MediaLink mediaLink = mediaTrackerDao.addNewLink(ml);
                 cleanerService.deleteSingleFile(oldLinkPath);
                 cleanerService.clearEmptyFolders(oldLinkPath.getParent());
                 LOG.info("[ link ] Link moved to a new folder: {}", mediaLink);

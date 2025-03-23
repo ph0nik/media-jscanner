@@ -3,8 +3,9 @@ package service;
 import app.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
-import dao.MediaTrackerDaoImpl;
+import dao.MediaTrackerDaoJpa;
 import model.MediaLink;
 import model.MediaQuery;
 import org.junit.jupiter.api.*;
@@ -53,11 +54,12 @@ class MediaLinksServiceImplTest {
     private String linkFolder = "complete";
     private String testToken = "testToken";
     private EnvValidator envValidator;
+    private MediaLinkRepository mediaLinkRepository;
 
     @BeforeAll
     void createInstances() throws NoApiKeyException, ConfigurationException {
         mediaFilesScanner = new MoviesFileScanner();
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);
         cleanerService = new CleanerServiceImpl();

@@ -26,7 +26,7 @@ public class TvQueryService extends GeneralQueryService {
 
     // TODO prepare links to be execute before they are executed, present user with results beforehand
 
-    public TvQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao,
+    public TvQueryService(@Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
                           MediaFilesScanner mediaFilesScanner,
                           PropertiesService propertiesService,
                           Pagination<MediaQuery> pagination) {

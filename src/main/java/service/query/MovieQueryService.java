@@ -28,7 +28,7 @@ public class MovieQueryService extends GeneralQueryService {
     private final PropertiesService propertiesService;
     private Map<Path, List<UUID>> mediaQueriesByRootMap;
 
-    public MovieQueryService(@Qualifier("spring") MediaTrackerDao mediaTrackerDao,
+    public MovieQueryService(@Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
                              MediaFilesScanner moviesFileScanner,
                              PropertiesService propertiesService,
                              Pagination<MediaQuery> pagination) {

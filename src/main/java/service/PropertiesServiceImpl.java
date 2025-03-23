@@ -20,6 +20,7 @@ public class PropertiesServiceImpl implements PropertiesService {
     private final String MEDIA_FOLDERS_PROPERTIES_FILE = "mediafolders.properties";
     private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE = "data/mediafolders.properties";
     private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK = "data/mediafolders.properties.bak";
+    private final String DATA_FOLDER = "data";
     private final String NETWORK_PROPERTIES_FILE = "network.properties";
     private final String DEFAULT_TARGET_MOVIE = "defaultTargetFolderMovie";
     private final String USER_TARGET_MOVIE = "targetFolderMovie";
@@ -40,6 +41,10 @@ public class PropertiesServiceImpl implements PropertiesService {
         this.tmdbApiToken = envValidator.getTmdbApiToken();
         loadPropertiesFromFiles();
         createDataFolder();
+    }
+
+    public String getDataFolder() {
+        return DATA_FOLDER;
     }
 
     /*

@@ -107,7 +107,7 @@ public class TextExtractTools {
      * Files containing keyword sample or trailer are being ignored.
      * */
     public static DeductedQuery extractTitleAndYear(String path) {
-        if (isSampleOrTrailer(path) || hasExtrasInName(path)) return null;
+        if (path.isEmpty() || isSampleOrTrailer(path) || hasExtrasInName(path)) return null;
         Path fileName = Path.of(path).getFileName();
         int extensionStart = fileName.toString().lastIndexOf('.');
         // remove extension

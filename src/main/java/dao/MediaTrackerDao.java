@@ -21,7 +21,7 @@ public interface MediaTrackerDao {
     /*
     * Remove MediaLink element from database
     * */
-    MediaLink removeLink(Long mediaLinkId);
+    void removeLink(Long mediaLinkId);
 
     /*
     * Return all MediaLink elements from database

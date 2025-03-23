@@ -25,7 +25,7 @@ public class XmlBackupService implements BackupService {
 
 
     String createBackupFileName() {
-        DateTimeFormatter timeStamp = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        DateTimeFormatter timeStamp = DateTimeFormatter.ofPattern("yyyyMMdd");
         return "backup-" + timeStamp.format(LocalDateTime.now(ZoneId.systemDefault())) + ".xml";
     }
 

@@ -1,10 +1,10 @@
 package model;
 
 import com.opencsv.bean.CsvBindByName;
+import jakarta.persistence.*;
 import model.validator.Required;
 import service.backup.model.CsvBean;
 
-import javax.persistence.*;
 import java.util.Objects;
 
 @Entity

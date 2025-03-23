@@ -1,16 +1,22 @@
 package app.controller;
 
+import dao.DatabaseMigrationService;
 import model.form.LinksPathForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import service.MediaLinksService;
 import service.PropertiesService;
 import service.exceptions.ConfigurationException;
+import service.exceptions.MissingFolderOrFileException;
 import service.exceptions.NoApiKeyException;
 import util.MediaFilter;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -20,6 +26,8 @@ public class ConfigController {
     private MediaLinksService mediaLinksService;
     @Autowired
     private PropertiesService propertiesService;
+    @Autowired
+    private DatabaseMigrationService databaseMigrationService;
     private static final String MOVIE_NEW_LINK_PATH = "/config/movie-new-link-path/";
     private static final String MOVIE_NEW_SOURCE_PATH = "/config/movie-new-source-path/";
     private static final String MOVIE_DELETE_SOURCE_PATH = "/config/movie-delete-source-path/";
@@ -27,6 +35,7 @@ public class ConfigController {
     private static final String TV_NEW_SOURCE_PATH = "/config/tv-new-source-path/";
     private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
     private static final String CLEAR_FOLDERS = "/config/clear-folders/";
+    private static final String BACKUP_DATABASE = "/config/backup-database/";
     @ModelAttribute
     private void setConfigEndpoints(Model model) {
         model.addAttribute("movie_new_link", MOVIE_NEW_LINK_PATH);
@@ -36,6 +45,7 @@ public class ConfigController {
         model.addAttribute("tv_new_target", TV_NEW_SOURCE_PATH);
         model.addAttribute("tv_delete_target", TV_DELETE_SOURCE_PATH);
         model.addAttribute("clear_folders", CLEAR_FOLDERS);
+        model.addAttribute("backup_database", BACKUP_DATABASE);
     }
     @ModelAttribute("extensions")
     public List<String> getCurrentExtensions() {
@@ -50,7 +60,9 @@ public class ConfigController {
         Path movieLinksPath = propertiesService.getLinksFolderMovie();
         Path tvLinksPath = propertiesService.getLinksFolderTv();
         model.addAttribute("links_folder_movie", movieLinksPath);
+        model.addAttribute("links_folder_movie_exists", movieLinksPath.toFile().exists());
         model.addAttribute("links_folder_tv", tvLinksPath);
+        model.addAttribute("links_folder_tv_exists", tvLinksPath.toFile().exists());
         model.addAttribute("target_folder_movie", propertiesService.getTargetFolderListMovie());
         model.addAttribute("target_folder_tv", propertiesService.getTargetFolderListTv());
         model.addAttribute("links_path_form", new LinksPathForm());
@@ -120,6 +132,12 @@ public class ConfigController {
     @PostMapping(value = CLEAR_FOLDERS)
     public String clearSelectedFolder(@RequestParam String path, Model model) {
         mediaLinksService.removeEmptyFolders(path);
+        return "redirect:" + CommonHandler.CONFIG;
+    }
+
+    @GetMapping(value = BACKUP_DATABASE)
+    public String backupDatabase(Model model) throws MissingFolderOrFileException, IOException {
+        String dbBackupFileName = databaseMigrationService.backupDatabase(Path.of(propertiesService.getDataFolder()));
         return "redirect:" + CommonHandler.CONFIG;
     }
 }

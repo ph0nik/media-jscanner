@@ -2,93 +2,280 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      lang="en">
+      lang="en"
+      data-bs-theme="dark">
 
 <head>
     <title>media-jscanner | settings</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="../static/css/all.css" rel="stylesheet">
-    <link th:href="@{/css/all.css}" rel="stylesheet"/>
-    <link href="../static/style.css" rel="stylesheet">
-    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <script type="text/javascript"
+            src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"
+            th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" type="text/css"
+          href="../bootstrap-5.3.3-dist/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"-->
+    <!--          rel="stylesheet"-->
+    <!--          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"-->
+    <!--          crossorigin="anonymous">-->
+    <!--    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"-->
+    <!--            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"-->
+    <!--            crossorigin="anonymous"></script>-->
+    <link href="../static/css/all.css" th:href="@{/css/all.css}" rel="stylesheet"/>
+    <link href="../static/style.css" th:href="@{/style.css}" rel="stylesheet"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
 <div class="row" id="top">
-    <nav class="nav navbar-light bg-light align-items-center">
-        <div class="col">
-            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
-                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_movie.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_movie.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+    <nav class="navbar-dark bg-dark bg-gradient">
+        <a class="navbar-brand" href="#">media-jScanner</a>
+    </nav>
+    <nav class="navbar bg-secondary bg-gradient border-bottom border-secondary">
+        <div class="container-fluid">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">
+                        <i class="fa-solid fa-film"></i>movies</a>
                 </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_tv.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_tv.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_tv}">
+                        <i class="fa-solid fa-tv"></i>tv</a>
                 </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${link_list.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${link_list.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_links}">
+                        <i class="fa-solid fa-link"></i>links</a>
                 </li>
-                <!--ignored-->
-                <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
-                        ignored
-                        <span th:case="${true}" th:text="${media_ignored.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <span th:case="${false}" th:text="${media_ignored.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">
+                        <i class="fa-solid fa-ban"></i>ignored</a>
                 </li>
-                <li class="nav-item px-2">
-                    <a class="nav-link active" th:href="${tab_config}">settings</a>
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">
+                        <i class="fa-solid fa-hat-wizard"></i>wizard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark-emphasis link-light icon-link active" th:href="${tab_config}">
+                        <i class="fa-solid fa-gears"></i>settings</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger-emphasis link-light icon-link active" th:href="${movie_scan}">
+                        <i class="fa-solid fa-arrows-rotate fa-lg"></i>refresh</a>
+                </li>
+            </ul>
+            <form class="d-flex" role="search">
+                <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-light btn-sm" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+    <!--    <nav class="nav navbar-light align-items-center">-->
+    <!--        <div class="col">-->
+    <!--            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">-->
+    <!--                <li class="nav-item px-2">-->
+    <!--                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies-->
+    <!--                        &lt;!&ndash;                         show if any new files are in the queue &ndash;&gt;-->
+    <!--                        <i class="fa-solid fa-film fa-xl"></i>-->
+    <!--                        <span th:case="${true}" th:text="${query_list_movie.size()}"-->
+    <!--                              class="badge bg-primary rounded-pill"></span>-->
+    <!--                        &lt;!&ndash;                         for no links &ndash;&gt;-->
+    <!--                        <span th:case="${false}" th:text="${query_list_movie.size()}"-->
+    <!--                              class="badge bg-secondary rounded-pill"></span>-->
+    <!--                    </a>-->
+    <!--                </li>-->
+    <!--                <li class="nav-item px-2">-->
+    <!--                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv-->
+    <!--                        &lt;!&ndash;                         show if any new files are in the queue &ndash;&gt;-->
+    <!--                        <span th:case="${true}" th:text="${query_list_tv.size()}"-->
+    <!--                              class="badge bg-primary rounded-pill"></span>-->
+    <!--                        &lt;!&ndash;                         for no links &ndash;&gt;-->
+    <!--                        <span th:case="${false}" th:text="${query_list_tv.size()}"-->
+    <!--                              class="badge bg-secondary rounded-pill"></span>-->
+    <!--                    </a>-->
+    <!--                </li>-->
+    <!--                <li class="nav-item px-2">-->
+    <!--                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links-->
+    <!--                        &lt;!&ndash;                         show if any new files are in the queue &ndash;&gt;-->
+    <!--                        <span th:case="${true}" th:text="${link_list.size()}"-->
+    <!--                              class="badge bg-primary rounded-pill"></span>-->
+    <!--                        &lt;!&ndash;                         for no links &ndash;&gt;-->
+    <!--                        <span th:case="${false}" th:text="${link_list.size()}"-->
+    <!--                              class="badge bg-secondary rounded-pill"></span>-->
+    <!--                    </a>-->
+    <!--                </li>-->
+    <!--                &lt;!&ndash;ignored&ndash;&gt;-->
+    <!--                <li class="nav-item px-2">-->
+    <!--                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">-->
+    <!--                        ignored-->
+    <!--                        <span th:case="${true}" th:text="${media_ignored.size()}"-->
+    <!--                              class="badge bg-primary rounded-pill"></span>-->
+    <!--                        <span th:case="${false}" th:text="${media_ignored.size()}"-->
+    <!--                              class="badge bg-secondary rounded-pill"></span>-->
+    <!--                    </a>-->
+    <!--                </li>-->
+    <!--                <li class="nav-item px-2">-->
+    <!--                    <a class="nav-link active" th:href="${tab_config}">settings</a>-->
+    <!--                </li>-->
+    <!--            </ul>-->
+    <!--        </div>-->
+    <!--        <div class="col"></div>-->
+    <!--        <div class="col-2">-->
+    <!--            &lt;!&ndash;scan folders&ndash;&gt;-->
+    <!--            <div class="col d-flex justify-content-center p-1">-->
+    <!--                <form action="#"-->
+    <!--                      th:action="@{__${movie_scan}__}"-->
+    <!--                      method="get">-->
+    <!--                    <input type="hidden">-->
+    <!--                    <button class="btn btn-success" type="submit">-->
+    <!--                        <span class="m-2">Refresh</span>-->
+    <!--                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>-->
+    <!--                </form>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </nav>-->
+</div>
+<!--status message-->
+<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
+    <div class="col-1 text-end">
+        <span>[ status ]</span>
+    </div>
+    <div class="col">
+        <span th:text="${message}"></span>
+    </div>
+</div>
+<div class="row">
+    <h2 class="col py-2 text-secondary">Settings</h2>
+</div>
+<!--movie paths card-->
+<div class="bd-example m-0 pb-4 border-0">
+    <div class="card">
+        <div class="card-header">
+            <i class="fa-solid fa-film fa-sm"></i>
+            Movie paths
+        </div>
+        <!--current folder-->
+        <div class="card-body">
+            <h5 class="card-title">Current links folder:</h5>
+            <i class="fa-solid fa-folder"></i>
+            <span class="fw-normal font-monospace" th:text="${links_folder_movie}"></span>
+            <span th:if="${links_folder_tv_exists}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+        </div>
+        <!--add new source path-->
+        <div class="card-body">
+            <form>
+                <div class="mb-3">
+                    <label for="linkpath2" class="form-label">Insert path for newly created links:</label>
+                    <input class="form-control form-control-sm" id="linkpath2"></input>
+                </div>
+                <div class="row justify-content-between">
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">Change path</button>
+                    </div>
+                    <div class="col-auto form-check">
+                        <input type="checkbox" class="form-check-input" id="move1"
+                               value="false">
+                        <!--value was previously true-->
+                        <label class="form-check-label text-secondary" for="move1">Move current links folder content to
+                            a new
+                            location</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <hr>
+        <!--incoming folders-->
+        <div class="card-body">
+            <h5 class="card-title">Current source folders:</h5>
+            <ul>
+                <li class="" th:each="path, iter : ${target_folder_movie}">
+                    <div class="row m-0 p-0">
+                        <form action="#"
+                              th:action="@{__${movie_delete_target}__}"
+                              method="post"
+                              class="col-auto">
+                            <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>
+                            <span th:if="${!path.isExisting()}"
+                                  class="fw-normal font-monospace text-danger">[invalid path]</span>
+                            <input type="hidden" th:value="${path.getPath()}" name="path">
+                            <button class="btn btn-primary btn-sm" type="submit">Delete path</button>
+                        </form>
+                        <form
+                                action="#"
+                                th:action="@{__${clear_folders}__}"
+                                method="post"
+                                class="col-auto">
+                            <input type="hidden" th:value="${path.getPath}" name="path">
+                            <!--                            <i class="fa-regular fa-trash-can"></i>-->
+                            <button class="btn btn-primary btn-sm" type="submit">
+                                Clear folder
+                            </button>
+                        </form>
+                    </div>
                 </li>
             </ul>
         </div>
-        <div class="col"></div>
-        <div class="col-2">
-            <!--scan folders-->
-            <div class="col d-flex justify-content-center p-1">
-                <form action="#"
-                      th:action="@{__${movie_scan}__}"
-                      method="get">
-                    <input type="hidden">
-                    <button class="btn btn-success" type="submit">
-                        <span class="m-2">Refresh</span>
-                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
-                </form>
+        <!--add new movie source path-->
+        <div class="card-body">
+            <form action="#"
+                  th:action="@{__${movie_new_source}__}"
+                  method="post">
+                <div class="mb-3">
+                    <label for="sourcepath" class="form-label">Insert new source path for media files:</label>
+                    <input class="form-control form-control-sm" name="path" id="sourcepath"></input>
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Add new path</button>
+            </form>
+        </div>
+    </div>
+</div>
+<!--tv paths setup-->
+<div class="bd-example m-0 pb-4 border-0">
+    <div class="card">
+        <div class="card-header">
+            <i class="fa-solid fa-film fa-sm"></i>
+            TV paths
+        </div>
+        <div class="card-body">
+            <div class="input-group">
+
             </div>
         </div>
-    </nav>
+        <div class="card-body">
+            <h5 class="card-title">Special title treatment</h5>
+            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+        </div>
+    </div>
 </div>
+<!--backup db-->
+<div class="bd-example m-0 pb-4 border-0">
+    <div class="card">
+        <div class="card-header">
+            <i class="fa-solid fa-database"></i>
+            Backup database
+        </div>
+        <div class="card-body">
+            <p class="card-text">Export current data as xml file to a data folder.</p>
+
+            <form action="#"
+                  th:action="@{__${backup_database}__}"
+                  method="get">
+                <button type="submit" class="btn btn-sm btn-primary">Backup</button>
+            </form>
+
+        </div>
+    </div>
 </div>
-<div class="row">
-    <h2 class="col text-secondary">Settings</h2>
-</div>
-<!--error, no user paths found-->
-<div th:if="${!user_paths}" class="row justify-content-center">
-    <div class="col-auto m-2 text-center alert alert-danger" role="alert">
-        User provided paths not found! Please, add proper paths in config tab.
+<!--file info-->
+<div class="bd-example m-0 border-0">
+    <div class="card">
+        <div class="card-header">
+            <i class="fa-solid fa-file-video"></i>
+            File extensions
+        </div>
+        <div class="card-body">
+            <p class="card-text">Currently supported file extensions, that define element as media file.</p>
+            <ul class="list-group list-group-horizontal">
+                <li class="list-group-item" th:each="ext : ${extensions}" th:text="${ext}"></li>
+            </ul>
+        </div>
     </div>
 </div>
 <!--links path-->
@@ -99,259 +286,255 @@
         </h3>
         <h5>movie</h5>
     </div>
-    <div class="col">
-        <form class="d-flex p-0"
-              action="#"
-              th:action="@{__${movie_new_link}__}"
-              th:object="${links_path_form}"
-              method="post">
-            <table class="table table-sm table-borderless">
-                <thead class="table-dark">
-                <tr class="row m-0 py-0">
-                    <th class="col">
-                        Movie links path
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="table-secondary">
-                <tr class="row m-0">
-                    <td class="col-auto text-end">
-                        <span>current:</span>
-                    </td>
-                    <td class="align-middle col">
-                        <span class="fw-normal font-monospace" th:text="${links_folder_movie}"></span>
-                        <span th:if="${!links_folder_movie.toFile.exists()}"
-                              class="fw-normal font-monospace text-danger">[invalid path]</span>
-                    </td>
-                </tr>
-                <!--        links form-->
-                <tr class="row m-0">
-                    <td class="col-auto text-auto">
-                        <span>new:</span>
-                    </td>
-                    <td class="col align-middle">
-                        <div class="input-group input-group-sm pe-2">
-                            <input class="form-control" type="search" placeholder="path..." th:field="*{linksFilePath}"
-                                   name="linkpath" id="linkpath"
-                                   aria-label="Search">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
-                        </div>
-                        <div class="form-check text-muted">
-                            <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="move"
-                                   value="true">
-                            <label class="form-check-label" for="move">Move current links folder content to a new
-                                location.</label>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </form>
-        <table class="table table-sm table-borderless">
-            <thead class="table-dark">
-            <tr class="row m-0 py-0">
-                <th class="col">Incoming movie folders</th>
-            </tr>
-            </thead>
-            <tbody class="table-secondary">
-            <!--                path in table -->
-            <tr class="row m-0" th:each="path, iter : ${target_folder_movie}">
-                <td class="col-1 text-end">
-                    <span th:text="${iter.index + 1 + ' .'}"></span>
-                </td>
-                <td class="col">
-                    <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>
-                    <span th:if="${!path.isExisting()}"
-                          class="fw-normal font-monospace text-danger">[invalid path]</span>
-                </td>
-                <td class="col-auto align-middle">
-                    <!--                <div class="row" th:if="${chk_user_target}">-->
-                    <div class="row">
-                        <form
-                                action="#"
-                                th:action="@{__${movie_delete_target}__}"
-                                method="post"
-                                class="col-auto">
-                            <input type="hidden" th:value="${path.getPath()}" name="path">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
-                        </form>
-                        <form
-                                action="#"
-                                th:action="@{__${clear_folders}__}"
-                                method="post"
-                                class="col">
-                            <div class="input-group input-group-sm">
-                                <input type="hidden" th:value="${path.getPath}" name="path">
-                                <i class="fa-regular fa-trash-can m-2"></i>
-                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-movie">Clear
-                                    folder
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            <!--add new movie source path-->
-            <tr class="row m-0">
-                <form class="d-flex"
+<!--    <div class="col">-->
+        <!--        <form class="d-flex p-0"-->
+        <!--              action="#"-->
+        <!--              th:action="@{__${movie_new_link}__}"-->
+        <!--              th:object="${links_path_form}"-->
+        <!--              method="post">-->
+        <!--            <table class="table table-sm table-borderless">-->
+        <!--                <thead class="table-dark">-->
+        <!--                <tr class="row m-0 py-0">-->
+        <!--                    <th class="col">-->
+        <!--                        Movie links path-->
+        <!--                    </th>-->
+        <!--                </tr>-->
+        <!--                </thead>-->
+        <!--                <tbody class="table-secondary">-->
+        <!--                <tr class="row m-0">-->
+        <!--                    <td class="col-auto text-end">-->
+        <!--                        <span>current:</span>-->
+        <!--                    </td>-->
+        <!--                    <td class="align-middle col">-->
+        <!--                        <span class="fw-normal font-monospace" th:text="${links_folder_movie}"></span>-->
+        <!--                        <span th:if="${links_folder_movie_exists}"-->
+        <!--                              class="fw-normal font-monospace text-danger">[invalid path]</span>-->
+        <!--                    </td>-->
+        <!--                </tr>-->
+        <!--                &lt;!&ndash;        links form&ndash;&gt;-->
+        <!--                <tr class="row m-0">-->
+        <!--                    <td class="col-auto text-auto">-->
+        <!--                        <span>new:</span>-->
+        <!--                    </td>-->
+        <!--                    <td class="col align-middle">-->
+        <!--                        <div class="input-group input-group-sm pe-2">-->
+        <!--                            <input class="form-control" type="search" placeholder="path..." th:field="*{linksFilePath}"-->
+        <!--                                   name="linkpath" id="linkpath"-->
+        <!--                                   aria-label="Search">-->
+        <!--                            <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>-->
+        <!--                        </div>-->
+        <!--                        <div class="form-check text-muted">-->
+        <!--                            <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="move"-->
+        <!--                                   value="true">-->
+        <!--                            <label class="form-check-label" for="move">Move current links folder content to a new-->
+        <!--                                location.</label>-->
+        <!--                        </div>-->
+        <!--                    </td>-->
+        <!--                </tr>-->
+        <!--                </tbody>-->
+        <!--            </table>-->
+        <!--        </form>-->
+        <!--        <table class="table table-sm table-borderless">-->
+        <!--            <thead class="table-dark">-->
+        <!--            <tr class="row m-0 py-0">-->
+        <!--                <th class="col">Incoming movie folders</th>-->
+        <!--            </tr>-->
+        <!--            </thead>-->
+        <!--            <tbody class="table-secondary">-->
+        <!--            &lt;!&ndash;                path in table &ndash;&gt;-->
+        <!--            <tr class="row m-0" th:each="path, iter : ${target_folder_movie}">-->
+        <!--                <td class="col-1 text-end">-->
+        <!--                    <span th:text="${iter.index + 1 + ' .'}"></span>-->
+        <!--                </td>-->
+        <!--                <td class="col">-->
+        <!--                    <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>-->
+        <!--                    <span th:if="${!path.isExisting()}"-->
+        <!--                          class="fw-normal font-monospace text-danger">[invalid path]</span>-->
+        <!--                </td>-->
+        <!--                <td class="col-auto align-middle">-->
+        <!--                    &lt;!&ndash;                <div class="row" th:if="${chk_user_target}">&ndash;&gt;-->
+        <!--                    <div class="row">-->
+        <!--                        <form-->
+        <!--                                action="#"-->
+        <!--                                th:action="@{__${movie_delete_target}__}"-->
+        <!--                                method="post"-->
+        <!--                                class="col-auto">-->
+        <!--                            <input type="hidden" th:value="${path.getPath()}" name="path">-->
+        <!--                            <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>-->
+        <!--                        </form>-->
+        <!--                        <form-->
+        <!--                                action="#"-->
+        <!--                                th:action="@{__${clear_folders}__}"-->
+        <!--                                method="post"-->
+        <!--                                class="col">-->
+        <!--                            <div class="input-group input-group-sm">-->
+        <!--                                <input type="hidden" th:value="${path.getPath}" name="path">-->
+        <!--                                <i class="fa-regular fa-trash-can m-2"></i>-->
+        <!--                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-movie">Clear-->
+        <!--                                    folder-->
+        <!--                                </button>-->
+        <!--                            </div>-->
+        <!--                        </form>-->
+        <!--                    </div>-->
+        <!--                </td>-->
+        <!--            </tr>-->
+        <!--            &lt;!&ndash;add new movie source path&ndash;&gt;-->
+        <!--            <tr class="row m-0">-->
+        <!--                <form class="d-flex"-->
+        <!--                      action="#"-->
+        <!--                      th:action="@{__${movie_new_source}__}"-->
+        <!--                      method="post">-->
+        <!--                    <td class="col-1"></td>-->
+        <!--                    <td class="col">-->
+        <!--                        <div class="input-group input-group-sm pe-2">-->
+
+        <!--                            <input class="form-control" type="search" placeholder="path..." name="path" id="path-movie"-->
+        <!--                                   aria-label="Search">-->
+        <!--                            <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>-->
+
+        <!--                        </div>-->
+        <!--                    </td>-->
+        <!--                </form>-->
+        <!--            </tr>-->
+        <!--            </tbody>-->
+        <!--        </table>-->
+        <!--    </div>-->
+        <!--</div>-->
+        <!--tv links path-->
+        <div class="row m-0">
+            <div class="my-2 col-auto text-light text-center">
+                <h3>
+                    <i class="fa-solid fa-tv fa-xl"></i>
+                </h3>
+                <h5>tv</h5>
+            </div>
+            <div class="col">
+                <form class="d-flex p-0"
                       action="#"
-                      th:action="@{__${movie_new_source}__}"
+                      th:action="@{__${tv_new_link}__}"
+                      th:object="${links_path_form}"
                       method="post">
-                    <td class="col-1"></td>
-                    <td class="col">
-                        <div class="input-group input-group-sm pe-2">
-
-                            <input class="form-control" type="search" placeholder="path..." name="path" id="path-movie"
-                                   aria-label="Search">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
-
-                        </div>
-                    </td>
+                    <table class="table table-sm table-borderless">
+                        <thead class="table-dark">
+                        <tr class="row m-0">
+                            <th class="col">TV links path</th>
+                        </tr>
+                        </thead>
+                        <tbody class="table-secondary">
+                        <tr class="row m-0">
+                            <td class="col-1 text-end">
+                                <span>current:</span>
+                            </td>
+                            <td class="align-middle col">
+                                <span class="fw-normal font-monospace" th:text="${links_folder_tv}"></span>
+                                <span th:if="${links_folder_tv_exists}" class="fw-normal font-monospace text-danger">[invalid path]</span>
+                            </td>
+                        </tr>
+                        <!--        links form-->
+                        <tr class="row m-0">
+                            <td class="col-1 text-end">
+                                <span>new:</span>
+                            </td>
+                            <td class="col align-middle">
+                                <div class="input-group input-group-sm pe-2">
+                                    <input class="form-control" type="search" placeholder="path..."
+                                           th:field="*{linksFilePath}"
+                                           name="linkpath" id="linkpathtv"
+                                           aria-label="Search">
+                                    <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
+                                </div>
+                                <div class="form-check text-muted">
+                                    <input class="form-check-input" type="checkbox" th:field="*{moveContent}"
+                                           id="movetv"
+                                           value="true">
+                                    <label class="form-check-label" for="movetv">Move current links folder content to a
+                                        new
+                                        location.</label>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </form>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-<!--movie target paths list-->
-<div class="row m-0">
-
-</div>
-<!--tv links path-->
-<div class="row m-0">
-    <div class="my-2 col-auto text-light text-center">
-        <h3>
-            <i class="fa-solid fa-tv fa-xl"></i>
-        </h3>
-        <h5>tv</h5>
-    </div>
-    <div class="col">
-        <form class="d-flex p-0"
-              action="#"
-              th:action="@{__${tv_new_link}__}"
-              th:object="${links_path_form}"
-              method="post">
-            <table class="table table-sm table-borderless">
-                <thead class="table-dark">
-                <tr class="row m-0">
-                    <th class="col">TV links path</th>
-                </tr>
-                </thead>
-                <tbody class="table-secondary">
-                <tr class="row m-0">
-                    <td class="col-1 text-end">
-                        <span>current:</span>
-                    </td>
-                    <td class="align-middle col">
-                        <span class="fw-normal font-monospace" th:text="${links_folder_tv}"></span>
-                        <span th:if="${!links_folder_tv.toFile.exists()}" class="fw-normal font-monospace text-danger">[invalid path]</span>
-                    </td>
-                </tr>
-                <!--        links form-->
-                <tr class="row m-0">
-                    <td class="col-1 text-end">
-                        <span>new:</span>
-                    </td>
-                    <td class="col align-middle">
-                        <div class="input-group input-group-sm pe-2">
-                            <input class="form-control" type="search" placeholder="path..." th:field="*{linksFilePath}"
-                                   name="linkpath" id="linkpathtv"
-                                   aria-label="Search">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Change path</button>
-                        </div>
-                        <div class="form-check text-muted">
-                            <input class="form-check-input" type="checkbox" th:field="*{moveContent}" id="movetv"
-                                   value="true">
-                            <label class="form-check-label" for="move">Move current links folder content to a new
-                                location.</label>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </form>
-        <table class="table table-sm table-borderless">
-            <thead class="table-dark">
-            <tr class="row m-0">
-                <th class="col">Incoming tv folders</th>
-            </tr>
-            </thead>
-            <tbody class="table-secondary">
-            <!--                path in table -->
-            <tr class="row m-0" th:each="path, iter : ${target_folder_tv}">
-                <td class="col-1 text-end">
-                    <span th:text="${iter.index + 1 + ' .'}"></span>
-                </td>
-                <!--            <td class="col" th:switch="${target_path_validated.get(path)}">-->
-                <td class="col">
-                    <span class="fw-normal font-monospace" th:text="${path.getPath()}"></span>
-                    <span th:if="${!path.isExisting()}"
-                          class="fw-normal font-monospace text-danger">[invalid path]</span>
-                </td>
-                <td class="col-2 align-middle">
-                    <!--                <div class="row" th:if="${chk_user_target}">-->
-                    <div class="row">
-                        <form
-                                action="#"
-                                th:action="@{__${tv_delete_target}__}"
-                                method="post"
-                                class="col">
-                            <input type="hidden" th:value="${path.getPath()}" name="path">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
-                        </form>
-                        <form
-                                action="#"
-                                th:action="@{__${clear_folders}__}"
-                                method="post"
-                                class="col">
-                            <div class="input-group input-group-sm">
-                                <input type="hidden" th:value="${path.getPath()}" name="path">
-                                <i class="fa-regular fa-trash-can m-2"></i>
-                                <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-tv">Clear
-                                    folder
-                                </button>
+                <table class="table table-sm table-borderless">
+                    <thead class="table-dark">
+                    <tr class="row m-0">
+                        <th class="col">Incoming tv folders</th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-secondary">
+                    <!--                path in table -->
+                    <tr class="row m-0" th:each="path, iter : ${target_folder_tv}">
+                        <td class="col-1 text-end">
+                            <span th:text="${iter.index + 1 + ' .'}"></span>
+                        </td>
+                        <!--            <td class="col" th:switch="${target_path_validated.get(path)}">-->
+                        <td class="col">
+                            <span class="fw-normal font-monospace" th:text="${path.getPath()}"></span>
+                            <span th:if="${!path.isExisting()}"
+                                  class="fw-normal font-monospace text-danger">[invalid path]</span>
+                        </td>
+                        <td class="col-2 align-middle">
+                            <!--                <div class="row" th:if="${chk_user_target}">-->
+                            <div class="row">
+                                <form
+                                        action="#"
+                                        th:action="@{__${tv_delete_target}__}"
+                                        method="post"
+                                        class="col">
+                                    <input type="hidden" th:value="${path.getPath()}" name="path">
+                                    <button class="btn btn-outline-primary btn-sm" type="submit">Delete path</button>
+                                </form>
+                                <form
+                                        action="#"
+                                        th:action="@{__${clear_folders}__}"
+                                        method="post"
+                                        class="col">
+                                    <div class="input-group input-group-sm">
+                                        <input type="hidden" th:value="${path.getPath()}" name="path">
+                                        <i class="fa-regular fa-trash-can m-2"></i>
+                                        <button class="btn btn-outline-dark btn-sm" type="submit" id="empty-folders-tv">
+                                            Clear
+                                            folder
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
+                        </td>
+                    </tr>
+                    <!--                     add new path-->
+                    <tr class="row m-0">
+                        <form class="d-flex"
+                              action="#"
+                              th:action="@{__${tv_new_target}__}"
+                              method="post">
+                            <td class="col-1"></td>
+                            <td class="col">
+                                <div class="input-group input-group-sm pe-2">
+                                    <input class="form-control" type="search" placeholder="path..." name="path"
+                                           id="path-tv"
+                                           aria-label="Search">
+                                    <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
+                                </div>
+                            </td>
                         </form>
-                    </div>
-                </td>
-            </tr>
-            <!--                     add new path-->
-            <tr class="row m-0">
-                <form class="d-flex"
-                      action="#"
-                      th:action="@{__${tv_new_target}__}"
-                      method="post">
-                    <td class="col-1"></td>
-                    <td class="col">
-                        <div class="input-group input-group-sm pe-2">
-                            <input class="form-control" type="search" placeholder="path..." name="path" id="path-tv"
-                                   aria-label="Search">
-                            <button class="btn btn-outline-primary btn-sm" type="submit">Add new path</button>
-                        </div>
-                    </td>
-                </form>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
-<!--tv target list-->
-<div class="row m-0">
-
-</div>
-<div class="row bg-light m-0">
-    <div class="row m-0">
-        <span>Media files extensions:</span>
-    </div>
-    <div class="row justify-content-start">
-        <div class="col">
-            <span class="badge bg-secondary fs-6 m-1" th:text="${ext}" th:each="ext : ${extensions}"></span>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script>
+        <!--<div class="row bg-light m-0">-->
+        <!--    <div class="row m-0">-->
+        <!--        <span>Media files extensions:</span>-->
+        <!--    </div>-->
+        <!--    <div class="row justify-content-start">-->
+        <!--        <div class="col">-->
+        <!--            <span class="badge bg-secondary fs-6 m-1" th:text="${ext}" th:each="ext : ${extensions}"></span>-->
+        <!--        </div>-->
+        <!--    </div>-->
+        </div>
+        <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"-->
+        <!--        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"-->
+        <!--        crossorigin="anonymous"></script>-->
 </body>
 </html>

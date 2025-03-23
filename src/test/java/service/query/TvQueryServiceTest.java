@@ -3,8 +3,9 @@ package service.query;
 import app.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
-import dao.MediaTrackerDaoImpl;
+import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
 import org.junit.jupiter.api.*;
 import scanner.MediaFilesScanner;
@@ -39,11 +40,12 @@ class TvQueryServiceTest {
     private static final String incomingFolder = "incoming";
     private static final String linkFolder = "complete";
     private static Path workPath;
+    private MediaLinkRepository mediaLinkRepository;
 
     @BeforeAll
     void init() throws IOException, NoApiKeyException, ConfigurationException {
         createFileSystem();
-        mediaTrackerDao = new MediaTrackerDaoImpl();
+        mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);

@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public interface PropertiesService {
 
-
+    public String getDataFolder();
     public Properties getNetworkProperties();
 
     public boolean userMoviePathsExist();

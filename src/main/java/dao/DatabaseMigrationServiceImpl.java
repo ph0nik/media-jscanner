@@ -1,9 +1,9 @@
 package dao;
 
 import model.MediaLink;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import service.PropertiesService;
 import service.backup.XmlBackupService;
 import service.exceptions.MissingFolderOrFileException;
 
@@ -15,13 +15,16 @@ import java.util.List;
 public class DatabaseMigrationServiceImpl implements DatabaseMigrationService {
 
 //    private final String backupFolder = "data/";
+    private final MediaTrackerDao mediaTrackerDao;
+    private final XmlBackupService xmlBackupService;
 
-    @Qualifier("spring")
-    @Autowired
-    MediaTrackerDao mediaTrackerDao;
-
-    @Autowired
-    XmlBackupService xmlBackupService;
+    public DatabaseMigrationServiceImpl(
+            @Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
+            XmlBackupService xmlBackupService,
+            PropertiesService propertiesService) {
+        this.mediaTrackerDao = mediaTrackerDao;
+        this.xmlBackupService = xmlBackupService;
+    }
 
     @Override
     public String backupDatabase(Path backupFolder) throws IOException, MissingFolderOrFileException {

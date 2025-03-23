@@ -7,13 +7,11 @@ import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Repository("spring")
-@Transactional
+//@Repository("spring")
+//@Transactional
 public class SpringHibernateBootstrapDao implements MediaTrackerDao {
 
     public static final Logger LOG = LoggerFactory.getLogger(SpringHibernateBootstrapDao.class);
@@ -43,12 +41,12 @@ public class SpringHibernateBootstrapDao implements MediaTrackerDao {
     }
 
     @Override
-    public MediaLink removeLink(Long mediaLinkId) {
+    public void removeLink(Long mediaLinkId) {
         MediaLink mediaLink = getLinkById(mediaLinkId);
-        if (mediaLink == null) return null;
+//        if (mediaLink == null) return null;
 //        getCurrentSession().delete(mediaLink);
         getCurrentSession().remove(mediaLink);
-        return mediaLink;
+//        return mediaLink;
     }
 
     @Override

@@ -50,6 +50,7 @@ class XmlBackupServiceTest {
         mediaLinkList.add(ml);
         // export
         String exportFileName = backupService.exportRecords(testRootPath, mediaLinkList);
+        System.out.println(exportFileName);
         // import
         List<MediaLink> importedList = backupService.importRecords(testRootPath.resolve(exportFileName));
         Assertions.assertEquals(mediaLinkList.size(), importedList.size());

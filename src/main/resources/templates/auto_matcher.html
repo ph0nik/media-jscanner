@@ -111,36 +111,6 @@
             </button>
         </form>
     </div>
-    <!--info & progress bar-->
-    <div class="col justify-content-start">
-        <!--    scanning file: [1/123] name-->
-        <div th:switch="${future}" class="row">
-            <div th:case="${false}" class="col-2">
-                <span th:id="spinner" class="spinner-border spinner-border-sm" role="status"></span>
-                <span>scanning file:</span>
-            </div>
-            <div th:case="${true}" class="col-1">
-                        <span th:id="spinner" class="spinner-border spinner-border-sm visually-hidden"
-                              role="status"></span>
-                <span>ready!</span>
-            </div>
-            <div class="col text-nowrap">
-                <span>[</span>
-                <span id="currentElementNumber">-</span>
-                <span>/</span>
-                <span id="totalElements">-</span>
-                <span>]</span>
-                <span class="fst-italic" id="currentFile">none</span>
-            </div>
-        </div>
-        <div class="col-12">
-            <!--    progress bar-->
-            <div class="progress">
-                <div class="progress-bar" id="progress" role="progressbar" style="width: 0%" aria-valuenow="0"
-                     aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </div>
-    </div>
 </div>
 <div class="row">
     <table class="table table-dark table-sm table-striped align-middle table-bordered"
