@@ -1,6 +1,7 @@
 package service.query;
 
-import app.EnvValidator;
+import app.config.CacheConfig;
+import app.config.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import dao.MediaLinkRepository;
@@ -8,12 +9,13 @@ import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
-import service.Pagination;
-import service.PaginationImpl;
-import service.PropertiesService;
-import service.PropertiesServiceImpl;
+import service.*;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import util.MediaFilter;
@@ -27,7 +29,9 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(CacheConfig.class)
 class TvQueryServiceTest {
     static MediaQueryService mediaQueryService;
     static MediaTrackerDao mediaTrackerDao;
@@ -41,6 +45,8 @@ class TvQueryServiceTest {
     private static final String linkFolder = "complete";
     private static Path workPath;
     private MediaLinkRepository mediaLinkRepository;
+    @Autowired
+    private CacheManager cacheManager;
 
     @BeforeAll
     void init() throws IOException, NoApiKeyException, ConfigurationException {
@@ -52,7 +58,7 @@ class TvQueryServiceTest {
         propertiesService.addTargetPathTv(workPath.resolve("Seriale"));
         pagination = new PaginationImpl<>();
         mediaQueryService = new TvQueryService(mediaTrackerDao, mediaFilesScanner,
-                propertiesService, pagination);
+                propertiesService, pagination, new LiveDataService(), cacheManager);
         getFileList();
 //        createFolderStructureWithFilesBasedOfListing();
     }
@@ -65,7 +71,7 @@ class TvQueryServiceTest {
                 .filter(MediaFilter::validateExtension)
                 .map(f -> mediaQueryService.createMovieQuery(workPath.resolve(f)))
                 .collect(Collectors.toList());
-        mediaQueryService.setCurrentMediaQueries(mediaQueryList);
+        mediaQueryService.updateCurrentMediaQueries(mediaQueryList);
     }
 
     static void createFileSystem() {

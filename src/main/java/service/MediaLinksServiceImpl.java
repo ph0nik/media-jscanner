@@ -1,12 +1,18 @@
 package service;
 
+import app.config.CacheConfig;
 import dao.MediaTrackerDao;
-import model.*;
+import model.MediaLink;
+import model.MediaQuery;
+import model.OperationResult;
+import model.QueryResult;
 import model.validator.RequiredFieldException;
 import model.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -23,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,6 +38,8 @@ import java.util.stream.Stream;
 public class MediaLinksServiceImpl implements MediaLinksService {
     private static final Logger LOG = LoggerFactory.getLogger(MediaLinksServiceImpl.class);
     private static final int DEFAULT_YEAR_VALUE = 0; // 1000
+    private static final String LAST_REQUEST_KEY = "last-request";
+    private static final String LINKS_TO_PROCESS_KEY = "links-to-process";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
@@ -39,10 +48,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private final RequestService requestService;
     private final Pagination<MediaLink> pagination;
     private final MediaIdentity linkIdentifier = MediaIdentity.IMDB;
-    // TODO separate all data from service, create LiveData class
-    // store all the data that is not persisted to db
-    private LastRequest lastRequest;
     private QueryResult currentQueryResult;
+    private final CacheManager cacheManager;
 
     public MediaLinksServiceImpl(@Qualifier("jpa") MediaTrackerDao dao,
                                  PropertiesService propertiesService,
@@ -50,7 +57,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                                  FileService fs,
                                  Pagination<MediaLink> pagination,
                                  RequestService requestService,
-                                 ResponseParser responseParser) {
+                                 ResponseParser responseParser,
+                                 CacheManager cacheManager) {
         this.mediaTrackerDao = dao;
         this.propertiesService = propertiesService;
         this.cleanerService = cleanerService;
@@ -58,6 +66,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         this.pagination = pagination;
         this.requestService = requestService;
         this.responseParser = responseParser;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -65,6 +74,46 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return pagination.getPage(pageable, mediaLinkList);
     }
 
+    private void updateCache(String cacheName, String cacheKey, Object value) {
+        if (value != null) {
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.put(cacheKey, value);
+            }
+        }
+    }
+
+    private <T> T getFromCache(String cacheName, String cacheKey, Class<T> type) {
+        Cache cache = cacheManager.getCache(cacheName);
+        return (cache != null) ? cache.get(cacheKey, type) : null;
+    }
+
+    private void clearCache(String cacheName, String cacheKey) {
+        Cache cache = cacheManager.getCache(cacheName);
+        if (cache != null) cache.evict(cacheKey);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<MediaLink> getMediaLinksToProcess() {
+        List<MediaLink> fromCache = getFromCache(
+                CacheConfig.MEDIA_LINKS_SERVICE,
+                LINKS_TO_PROCESS_KEY,
+                List.class);
+        return (fromCache == null) ? List.of() : fromCache;
+    }
+
+    @Override
+    public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess) {
+        updateCache(CacheConfig.MEDIA_LINKS_SERVICE, LINKS_TO_PROCESS_KEY, mediaLinksToProcess);
+    }
+
+    @Override
+    public void clearMediaLinksToProcess() {
+        clearCache(CacheConfig.MEDIA_LINKS_SERVICE, LINKS_TO_PROCESS_KEY);
+    }
+
+    // TODO wtf?
     public QueryResult getCurrentQueryResult() {
         return currentQueryResult;
     }
@@ -98,7 +147,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                     mediaIdentity, DEFAULT_YEAR_VALUE, SearchType.TMDB_API_TV);
             combinedSearchResults.addAll(webSearchResults);
         }
-        lastRequest = new LastRequest(combinedSearchResults, mediaQuery);
+        setLatestMediaQueryRequest(combinedSearchResults);
         return combinedSearchResults;
     }
 
@@ -186,7 +235,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             LOG.info("[ episode_list ] Found matching episodes.");
             String response = requestService.tmdbGetSeasonDetails(queryResult);
             queryResult = responseParser.parseTvDetail(queryResult, response, seasonNumber);
-            // if episodecount == 0 thore ex for incorrect season
+            // if episodecount == 0 throw ex for incorrect season
         }
         setCurrentQueryResult(queryResult);
         return queryResult;
@@ -230,8 +279,17 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 //    }
 
     @Override
-    public LastRequest getLatestMediaQueryRequest() {
-        return lastRequest;
+    public List<QueryResult> getLatestMediaQueryRequest() {
+        return Optional.ofNullable(
+                cacheManager.getCache(CacheConfig.LAST_REQUEST))
+                .map(cache -> cache.get(LAST_REQUEST_KEY, List.class))
+                .map(list -> (List<QueryResult>) list)
+                .orElse(List.of());
+    }
+
+    @Override
+    public void setLatestMediaQueryRequest(List<QueryResult> latestMediaQueryRequest) {
+        cacheManager.getCache(CacheConfig.LAST_REQUEST).put(LAST_REQUEST_KEY, latestMediaQueryRequest);
     }
 
     @Override
@@ -268,7 +326,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 
     @Override
     public void persistsCollectedMediaLinks(MediaQueryService mediaQueryService) {
-        for (MediaLink ml : mediaQueryService.getMediaLinksToProcess()) {
+        for (MediaLink ml : getMediaLinksToProcess()) {
             try {
                 Validator.validateForNulls(ml);
                 if (createHardLinkWithDirectories(ml)) {

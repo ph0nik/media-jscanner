@@ -1,6 +1,5 @@
 package service;
 
-import model.LastRequest;
 import model.MediaLink;
 import model.QueryResult;
 import org.springframework.data.domain.Page;
@@ -17,6 +16,11 @@ import java.util.List;
 
 public interface MediaLinksService {
 
+    public List<MediaLink> getMediaLinksToProcess();
+
+    public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);
+
+    public void clearMediaLinksToProcess();
     /*
      * Executes media query search using web search engine and web api search engine.
      * Return results or empty list if nothing was found.
@@ -47,7 +51,9 @@ public interface MediaLinksService {
     /*
     * Returns results of latest request
     * */
-    LastRequest getLatestMediaQueryRequest();
+    List<QueryResult> getLatestMediaQueryRequest();
+
+    void setLatestMediaQueryRequest(List<QueryResult> latestMediaQueryRequest);
 
     /*
      * Create symlink with specified query result and link properties

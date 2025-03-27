@@ -1,11 +1,14 @@
 package service.query;
 
+import app.config.CacheConfig;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
 import model.path.FilePath;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import scanner.MediaFilesScanner;
+import service.LiveDataService;
 import service.Pagination;
 import service.PropertiesService;
 import service.exceptions.NoQueryFoundException;
@@ -18,19 +21,21 @@ import java.util.stream.Collectors;
 
 @Component("tvQuery")
 public class TvQueryService extends GeneralQueryService {
+
+    private static final String TV_QUERIES_LIST_KEY = "tv-queries-list";
     private final MediaTrackerDao mediaTrackerDao;
     private final MediaFilesScanner tvFilesScanner;
     private final PropertiesService propertiesService;
     private Map<Path, List<Path>> mediaQueriesByRootMap;
 //    private List<MediaQuery> groupedQueriesToProcess;
 
-    // TODO prepare links to be execute before they are executed, present user with results beforehand
-
     public TvQueryService(@Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
                           MediaFilesScanner mediaFilesScanner,
                           PropertiesService propertiesService,
-                          Pagination<MediaQuery> pagination) {
-        super(pagination);
+                          Pagination<MediaQuery> pagination,
+                          LiveDataService liveDataService,
+                          CacheManager cacheManager) {
+        super(pagination, cacheManager);
         this.mediaTrackerDao = mediaTrackerDao;
         this.tvFilesScanner = mediaFilesScanner;
         this.propertiesService = propertiesService;
@@ -47,7 +52,7 @@ public class TvQueryService extends GeneralQueryService {
     // get grouped files and create links for each individual file
 
     @Override
-    public void scanForNewMediaQueries() {
+    public List<MediaQuery> scanForNewMediaQueries() {
         if (propertiesService.userPathsPresent()) {
             List<MediaQuery> collect = tvFilesScanner.scanMediaFolders(
                             propertiesService.getTargetFolderListTv(),
@@ -56,10 +61,12 @@ public class TvQueryService extends GeneralQueryService {
                     .stream()
                     .map(this::createMovieQuery)
                     .collect(Collectors.toList());
-            setCurrentMediaQueries(collect);
-            groupByParentPathBatch(getCurrentMediaQueries());
+            updateCurrentMediaQueries(collect);
+            return collect;
+//            groupByParentPathBatch(getCurrentMediaQueries());
         }
 
+        return null;
     }
 
     public List<MediaQuery> getParentFolders() {
@@ -78,7 +85,7 @@ public class TvQueryService extends GeneralQueryService {
     }
 
     @Override
-    public void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
+    public Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
         List<Path> collect = mediaQueryList
                 .stream()
                 .map(MediaQuery::getFilePath)
@@ -90,6 +97,7 @@ public class TvQueryService extends GeneralQueryService {
                 .map(FilePath::getPath)
                 .collect(Collectors.toList());
         mediaQueriesByRootMap = findCommonFolderForSortedPaths(collect, rootPaths);
+        return Collections.emptyMap(); // TODO temp
     }
 
     Map<Path, List<Path>> findCommonFolderForSortedPaths(List<Path> path, List<Path> rootPaths) {
@@ -192,6 +200,28 @@ public class TvQueryService extends GeneralQueryService {
             }
         }
         return List.of();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<MediaQuery> getCurrentMediaQueries() {
+        List<MediaQuery> fromCache = getFromCache(
+                CacheConfig.MEDIA_QUERIES,
+                TV_QUERIES_LIST_KEY,
+                List.class
+        );
+        return (fromCache == null) ? scanForNewMediaQueries() : fromCache;
+//        return Optional.ofNullable(
+//                        cacheManager.getCache(CacheConfig.TV_QUERIES))
+//                .map(cache -> cache.get(TV_QUERIES_CACHE_KEY, List.class))
+//                .map(list -> (List<MediaQuery>) list)
+//                .orElse(List.of()
+//                );
+    }
+
+    @Override
+    public void updateCurrentMediaQueries(List<MediaQuery> mediaQueryList) {
+        updateCache(CacheConfig.MEDIA_QUERIES, TV_QUERIES_LIST_KEY, mediaQueryList);
     }
 
     /*

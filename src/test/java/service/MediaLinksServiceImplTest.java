@@ -1,6 +1,7 @@
 package service;
 
-import app.EnvValidator;
+import app.config.CacheConfig;
+import app.config.EnvValidator;
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
 import dao.MediaLinkRepository;
@@ -9,6 +10,10 @@ import dao.MediaTrackerDaoJpa;
 import model.MediaLink;
 import model.MediaQuery;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
@@ -32,6 +37,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest
+@Import(CacheConfig.class)
 class MediaLinksServiceImplTest {
 
     private MediaTrackerDao mediaTrackerDao;
@@ -56,6 +63,9 @@ class MediaLinksServiceImplTest {
     private EnvValidator envValidator;
     private MediaLinkRepository mediaLinkRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     @BeforeAll
     void createInstances() throws NoApiKeyException, ConfigurationException {
         mediaFilesScanner = new MoviesFileScanner();
@@ -69,10 +79,10 @@ class MediaLinksServiceImplTest {
         requestService = new RequestService(propertiesService);
         responseParser = new ResponseParser(propertiesService);
         mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
-                propertiesService, queryPagination);
+                propertiesService, queryPagination, new LiveDataService(), cacheManager);
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService,
                 cleanerService, fileService, linkPagination,
-                requestService, responseParser);
+                requestService, responseParser, cacheManager);
     }
 
     @BeforeEach

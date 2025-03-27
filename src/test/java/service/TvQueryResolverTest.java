@@ -1,6 +1,7 @@
 package service;
 
-import app.EnvValidator;
+import app.config.CacheConfig;
+import app.config.EnvValidator;
 import dao.MediaTrackerDao;
 import dao.SpringHibernateBootstrapDao;
 import model.MediaQuery;
@@ -8,6 +9,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
@@ -24,7 +29,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(CacheConfig.class)
 class TvQueryResolverTest {
 
     private MediaTrackerDao mediaTrackerDao;
@@ -36,6 +43,9 @@ class TvQueryResolverTest {
     private Path rootPath = Path.of("Seriale");
     private List<String> fileList;
     private EnvValidator envValidator;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @BeforeAll
     void readAllPathsFromFile() throws IOException, NoApiKeyException, ConfigurationException {
@@ -53,7 +63,9 @@ class TvQueryResolverTest {
         envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);
         pagination = new PaginationImpl<>();
-        movieQueryService = new MovieQueryService(mediaTrackerDao, moviesFileScanner, propertiesService, pagination);
+        movieQueryService = new MovieQueryService(mediaTrackerDao,
+                moviesFileScanner, propertiesService, pagination,
+                new LiveDataService(), cacheManager);
         tvQueryResolver = new TvQueryResolver(movieQueryService);
     }
 

@@ -3,7 +3,6 @@ package dao;
 import model.MediaLink;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import service.PropertiesService;
 import service.backup.XmlBackupService;
 import service.exceptions.MissingFolderOrFileException;
 
@@ -20,8 +19,7 @@ public class DatabaseMigrationServiceImpl implements DatabaseMigrationService {
 
     public DatabaseMigrationServiceImpl(
             @Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
-            XmlBackupService xmlBackupService,
-            PropertiesService propertiesService) {
+            XmlBackupService xmlBackupService) {
         this.mediaTrackerDao = mediaTrackerDao;
         this.xmlBackupService = xmlBackupService;
     }

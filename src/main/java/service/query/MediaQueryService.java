@@ -1,6 +1,5 @@
 package service.query;
 
-import model.MediaLink;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.springframework.data.domain.Page;
@@ -8,14 +7,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface MediaQueryService {
-    List<MediaLink> getMediaLinksToProcess();
-
-    void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);
-
-    void clearMediaLinksToProcess();
 
     MediaQuery getReferenceQuery();
 
@@ -24,10 +19,9 @@ public interface MediaQueryService {
     void setReferenceQuery(MediaQuery mediaQuery);
 
 
-
     // scan given paths and gather all files matching criteria
     // except ones that are already ignored or already has links
-    void scanForNewMediaQueries();
+    List<MediaQuery> scanForNewMediaQueries();
 
     MediaQuery createMovieQuery(Path path);
     /*
@@ -42,7 +36,7 @@ public interface MediaQueryService {
 
     MediaQuery getQueryByUuid(UUID uuid);
 
-    void groupByParentPathBatch(List<MediaQuery> mediaQueryList);
+    Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList);
 
     Path getMatchingPath(MediaQuery mediaQuery);
 
@@ -63,11 +57,13 @@ public interface MediaQueryService {
      * */
     List<MediaQuery> getCurrentMediaQueries();
 
+    void updateCurrentMediaQueries(List<MediaQuery> mediaQueryList);
+
     MediaQuery getMediaQueryByPath(Path path);
 
     Page<MediaQuery> getPageableQueries(Pageable pageable, List<MediaQuery> mediaQueryList);
 
-    void setCurrentMediaQueries(List<MediaQuery> mediaQueries);
+//    void setCurrentMediaQueries(List<MediaQuery> mediaQueries);
 
     List<MediaQuery> getProcessList();
 
@@ -88,5 +84,5 @@ public interface MediaQueryService {
     /*
      * Returns query with given file path
      * */
-    MediaQuery findQueryByFilePath(String filepath);
+    MediaQuery getQueryByFilePath(String filepath);
 }

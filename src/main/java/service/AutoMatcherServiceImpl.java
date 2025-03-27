@@ -19,6 +19,7 @@ import websocket.config.NotificationDispatcher;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -127,8 +128,8 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
                 mediaQueryList.size(),
                 index
         );
-        movieQueryService.setMediaLinksToProcess(mediaLinks);
-        return new AsyncResult<>(mediaLinks);
+        mediaLinksService.setMediaLinksToProcess(mediaLinks);
+        return CompletableFuture.completedFuture(mediaLinks);
     }
 
     public List<MediaLink> autoMatchSingleFile(Path path) throws NetworkException {

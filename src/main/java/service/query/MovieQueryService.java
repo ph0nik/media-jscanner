@@ -1,47 +1,51 @@
 package service.query;
 
+import app.config.CacheConfig;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
 import model.path.FilePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import scanner.MediaFilesScanner;
+import service.LiveDataService;
 import service.Pagination;
 import service.PropertiesService;
 import util.MediaType;
 
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component("movieQuery")
 public class MovieQueryService extends GeneralQueryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MovieQueryService.class);
+    private static final String MOVIE_QUERIES_LIST_KEY = "movie-queries-list";
     private final MediaTrackerDao mediaTrackerDao;
     private final MediaFilesScanner moviesFileScanner;
     private final PropertiesService propertiesService;
-    private Map<Path, List<UUID>> mediaQueriesByRootMap;
+//    private Map<Path, List<UUID>> mediaQueriesByRootMap;
 
     public MovieQueryService(@Qualifier("jpa") MediaTrackerDao mediaTrackerDao,
                              MediaFilesScanner moviesFileScanner,
                              PropertiesService propertiesService,
-                             Pagination<MediaQuery> pagination) {
-        super(pagination);
+                             Pagination<MediaQuery> pagination,
+                             LiveDataService liveDataService,
+                             CacheManager cacheManager) {
+        super(pagination, cacheManager);
         this.mediaTrackerDao = mediaTrackerDao;
         this.moviesFileScanner = moviesFileScanner;
         this.propertiesService = propertiesService;
+//        this.cacheManager = cacheManager;
     }
 
     // scan given paths and gather all files matching criteria
     // except ones that are already ignored or already has links
     @Override
-    public void scanForNewMediaQueries() {
+    public List<MediaQuery> scanForNewMediaQueries() {
         if (propertiesService.userPathsPresent()) {
             List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
                             propertiesService.getTargetFolderListMovie(),
@@ -50,10 +54,26 @@ public class MovieQueryService extends GeneralQueryService {
                     .stream()
                     .map(this::createMovieQuery)
                     .collect(Collectors.toList());
-            setCurrentMediaQueries(collect);
-            groupByParentPathBatch(getCurrentMediaQueries());
+            updateCurrentMediaQueries(collect);
+            return collect;
+//            groupByParentPathBatch(getCurrentMediaQueries());
         }
+        return List.of();
+    }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<MediaQuery> getCurrentMediaQueries() {
+        List<MediaQuery> fromCache = getFromCache(
+                CacheConfig.MEDIA_QUERIES,
+                MOVIE_QUERIES_LIST_KEY,
+                List.class);
+        return (fromCache == null) ? scanForNewMediaQueries() : fromCache;
+    }
+
+    @Override
+    public void updateCurrentMediaQueries(List<MediaQuery> mediaQueryList) {
+        updateCache(CacheConfig.MEDIA_QUERIES, MOVIE_QUERIES_LIST_KEY, mediaQueryList);
     }
 
     @Override
@@ -62,16 +82,19 @@ public class MovieQueryService extends GeneralQueryService {
     }
 
     @Override
-    public void groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
+    public Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
         List<FilePath> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
-        mediaQueriesByRootMap = mediaQueryList
+        Map<Path, List<UUID>> collect = mediaQueryList
                 .stream()
                 .filter(mq -> targetFolderListMovie.stream().noneMatch(
                         t -> t.getPath().equals(Path.of(mq.getFilePath()).getParent())
                 ))
                 .collect(Collectors.groupingBy(
-                        this::getMatchingPath, Collectors.mapping(MediaQuery::getQueryUuid, Collectors.toList())
+                        this::getMatchingPath,
+                        Collectors.mapping(MediaQuery::getQueryUuid, Collectors.toList())
                 ));
+        return collect;
+//        liveDataService.setMediaQueriesByRootMap(collect); TODO
     }
 
     /*
@@ -110,11 +133,13 @@ public class MovieQueryService extends GeneralQueryService {
      * */
     @Override
     public List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid) {
+        // TODO rework
         MediaQuery queryByUuid = getQueryByUuid(mediaQueryUuid);
         if (queryByUuid == null) return List.of();
         Path parentPath = getMatchingPath(queryByUuid);
-        if (mediaQueriesByRootMap == null) return List.of(queryByUuid);
-        List<UUID> uuids = mediaQueriesByRootMap.get(parentPath);
+        Map<Path, List<UUID>> pathListMap = groupByParentPathBatch(getCurrentMediaQueries());
+        if (pathListMap == null) return List.of(queryByUuid);
+        List<UUID> uuids = pathListMap.get(parentPath);
         if (uuids == null) return List.of(queryByUuid);
         return uuids.stream()
                 .map(this::getQueryByUuid)

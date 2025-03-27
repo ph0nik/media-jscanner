@@ -1,6 +1,6 @@
 package service;
 
-import app.EnvValidator;
+import app.config.EnvValidator;
 import model.path.FilePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

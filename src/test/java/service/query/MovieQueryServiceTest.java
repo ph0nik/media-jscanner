@@ -1,17 +1,19 @@
 package service.query;
 
-import app.EnvValidator;
+import app.config.CacheConfig;
+import app.config.EnvValidator;
 import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
-import service.Pagination;
-import service.PaginationImpl;
-import service.PropertiesService;
-import service.PropertiesServiceImpl;
+import service.*;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import util.MediaType;
@@ -27,7 +29,9 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Import(CacheConfig.class)
 class MovieQueryServiceTest {
 
     static MediaQueryService mediaQueryService;
@@ -38,6 +42,8 @@ class MovieQueryServiceTest {
     static List<MediaQuery> mediaQueryList;
     private MediaLinkRepository mediaLinkRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
     @BeforeAll
     void init() throws IOException, NoApiKeyException, ConfigurationException {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
@@ -46,7 +52,7 @@ class MovieQueryServiceTest {
         propertiesService = new PropertiesServiceImpl(envValidator);
         pagination = new PaginationImpl<>();
         mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
-                propertiesService, pagination);
+                propertiesService, pagination, new LiveDataService(), cacheManager);
         getFileList();
     }
 
@@ -56,7 +62,7 @@ class MovieQueryServiceTest {
                 .stream()
                 .map(s -> mediaQueryService.createMovieQuery(Path.of(s)))
                 .collect(Collectors.toList());
-        mediaQueryService.setCurrentMediaQueries(mediaQueryList);
+        mediaQueryService.updateCurrentMediaQueries(mediaQueryList);
     }
 
     @Test

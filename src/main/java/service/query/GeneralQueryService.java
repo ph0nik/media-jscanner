@@ -1,10 +1,12 @@
 package service.query;
 
-import model.MediaLink;
+import app.config.CacheConfig;
 import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import service.Pagination;
@@ -19,83 +21,68 @@ import java.util.stream.Collectors;
 public abstract class GeneralQueryService implements MediaQueryService {
 
     public static final Logger LOG = LoggerFactory.getLogger(GeneralQueryService.class);
+    public static final String MEDIA_QUERY_REFERENCE = "media-query-reference";
+    public static final String MEDIA_QUERY_PROCESS_LIST = "media-query-process";
 
     private final Pagination<MediaQuery> pagination;
-    private List<MediaQuery> mediaQueriesList; // = new LinkedList<>();
-    private MediaQuery referenceQuery;
-    private List<MediaQuery> groupedQueriesToProcess;
-    private List<MediaLink> mediaLinksToProcess;
+    private final CacheManager cacheManager;
 
-    public GeneralQueryService(Pagination<MediaQuery> pagination) {
+    public GeneralQueryService(
+            Pagination<MediaQuery> pagination,
+            CacheManager cacheManager
+    ) {
         this.pagination = pagination;
+        this.cacheManager = cacheManager;
     }
 
-    @Override
-    public List<MediaLink> getMediaLinksToProcess() {
-        return mediaLinksToProcess;
-    }
-
-    @Override
-    public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess) {
-        this.mediaLinksToProcess = mediaLinksToProcess;
-    }
-
-    @Override
-    public void clearMediaLinksToProcess() {
-        this.mediaLinksToProcess = List.of();
-    }
-
+    // TODO this might return null if value for this key was not set up
     @Override
     public MediaQuery getReferenceQuery() {
-        return referenceQuery;
-    };
+        return getFromCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_REFERENCE, MediaQuery.class);
+    }
 
     @Override
     public void setReferenceQuery(UUID mediaQueryUuid) {
-        referenceQuery = getQueryByUuid(mediaQueryUuid);
+        updateCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_REFERENCE, getQueryByUuid(mediaQueryUuid));
     }
 
     @Override
     public void setReferenceQuery(MediaQuery mediaQuery) {
-        referenceQuery = mediaQuery;
+        updateCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_REFERENCE, mediaQuery);
+    }
+
+    protected void updateCache(String cacheName, String cacheKey, Object value) {
+        if (value != null) {
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.put(cacheKey, value);
+            }
+        }
+    }
+
+    protected <T> T getFromCache(String cacheName, String cacheKey, Class<T> type) {
+        Cache cache = cacheManager.getCache(cacheName);
+        return (cache != null) ? cache.get(cacheKey, type) : null;
     }
 
     @Override
-    public abstract void scanForNewMediaQueries();
-
-//    MediaQuery getTvQuery(Path filePath) {
-//        return new MediaQuery(filePath.toString(), MediaType.TV);
-//    }
-
-//    public MediaFilesScanner initQueryList(MediaFilesScanner mediaFilesScanner) {
-//        mediaQueriesList = new LinkedList<>();
-//        return mediaFilesScanner;
-//    }
-
-//    @Override
-//    public MediaQuery createQuery(String filepath, MediaType mediaType) {
-//        MediaQuery mq = new MediaQuery(filepath, mediaType);
-//        mq.setMediaType(mediaType);
-//        return mq;
-////        mediaQueriesList.add(mq);
-//    }
-
-    @Override
     public void removeQueryFromQueue(MediaQuery mediaQuery) {
-        mediaQueriesList = getCurrentMediaQueries()
+        List<MediaQuery> filteredQueries = getCurrentMediaQueries()
                 .stream()
                 .filter(mq -> !mq.getQueryUuid().equals(mediaQuery.getQueryUuid()))
                 .collect(Collectors.toList());
-        groupByParentPathBatch(mediaQueriesList);
+        updateCurrentMediaQueries(filteredQueries);
+//        groupByParentPathBatch(filteredQueries);
     }
 
     @Override
     public void removeQueryByFilePath(String path) {
-        mediaQueriesList = getCurrentMediaQueries()
+        List<MediaQuery> filteredQueries = getCurrentMediaQueries()
                 .stream()
                 .filter(mq -> !mq.getFilePath().equals(path))
                 .collect(Collectors.toList());
-        groupByParentPathBatch(mediaQueriesList);
+        updateCurrentMediaQueries(filteredQueries);
+//        groupByParentPathBatch(filteredQueries);
     }
 
     /*
@@ -104,14 +91,11 @@ public abstract class GeneralQueryService implements MediaQueryService {
     * */
     @Override
     public MediaQuery getQueryByUuid(UUID uuid) {
-        return mediaQueriesList
+        return getCurrentMediaQueries()
                 .stream()
                 .filter(x -> x.getQueryUuid().equals(uuid))
                 .findFirst().orElse(null);
     }
-
-    @Override
-    public abstract void groupByParentPathBatch(List<MediaQuery> mediaQueryList);
 
     @Override
     public abstract List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid);
@@ -120,7 +104,8 @@ public abstract class GeneralQueryService implements MediaQueryService {
     public List<MediaQuery> searchQuery(String search) {
         if (search == null || search.isEmpty()) return List.of();
         String[] words = search.toLowerCase().split(" ");
-        return mediaQueriesList.stream()
+        return getCurrentMediaQueries()
+                .stream()
                 .filter(mq -> containsAllWords(words, mq.getFilePath()))
                 .collect(Collectors.toList());
     }
@@ -131,46 +116,37 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 .stream(words)
                 .allMatch(filePath.toLowerCase()::contains);
     }
-    @Override
-    public List<MediaQuery> getCurrentMediaQueries() {
-        return (mediaQueriesList == null) ? List.of() : mediaQueriesList;
-    }
-
-    /*
-    * get media query by path or else return null
-    * */
-    @Override
-    public MediaQuery getMediaQueryByPath(Path path) {
-        return mediaQueriesList.stream()
-                .filter(mq -> mq.getFilePath().equals(path.toString()))
-                .findFirst()
-                .orElse(null);
-    }
 
     @Override
     public Page<MediaQuery> getPageableQueries(Pageable pageable, List<MediaQuery> mediaQueryList) {
         return pagination.getPage(pageable, mediaQueryList);
     }
 
-    @Override
-    public void setCurrentMediaQueries(List<MediaQuery> mediaQueries) {
-        this.mediaQueriesList = mediaQueries;
-    };
-
+    @SuppressWarnings("unchecked")
     @Override
     public List<MediaQuery> getProcessList() {
-        return groupedQueriesToProcess;
+        return getFromCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_PROCESS_LIST, List.class);
+//        return Optional.ofNullable(cacheManager.getCache(CacheConfig.PROCESS_QUERIES))
+//                .map(cache -> cache.get(MEDIA_QUERY_PROCESS_KEY, List.class))
+//                .map(list -> (List<MediaQuery>) list)
+//                .orElse(List.of());
+//        return liveDataService.getGroupedQueriesToProcess();
     }
 
     @Override
     public List<MediaQuery> addQueryToProcess(MediaQuery mediaQuery) {
-        groupedQueriesToProcess = List.of(mediaQuery);
+        updateCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_PROCESS_LIST, List.of(mediaQuery));
+        return List.of(mediaQuery);
+    }
+
+    public List<MediaQuery> setGroupedQueriesToProcess(List<MediaQuery> groupedQueriesToProcess) {
+        updateCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_PROCESS_LIST, groupedQueriesToProcess);
         return groupedQueriesToProcess;
-    };
+    }
 
     @Override
     public List<MediaQuery> addQueriesToProcess(List<MultiPartElement> multiPartElementsList) {
-        groupedQueriesToProcess = new LinkedList<>();
+        LinkedList<MediaQuery> groupedQueriesToProcess = new LinkedList<>();
         int counter = multiPartElementsList.size();
         for (MediaQuery mq : getCurrentMediaQueries()) {
             for (MultiPartElement mpe : multiPartElementsList) {
@@ -183,25 +159,31 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 }
             }
             if (counter == 0) break;
-        }
-        if (groupedQueriesToProcess.isEmpty()) {
-            addQueryToProcess(getReferenceQuery());
-        }
-        return groupedQueriesToProcess;
+        } // TODO assuming this list has at least one element
+        return setGroupedQueriesToProcess(groupedQueriesToProcess);
+
     }
 
     @Override
     public MediaQuery getQueryById(Long id) {
-        return mediaQueriesList
+        return getCurrentMediaQueries()
                 .stream()
                 .filter(x -> x.getQueryId() == id)
                 .findFirst()
                 .orElse(null);
     }
 
+    /*
+     * get media query by path or else return null
+     * */
     @Override
-    public MediaQuery findQueryByFilePath(String filepath) {
-        return mediaQueriesList
+    public MediaQuery getMediaQueryByPath(Path path) {
+        return getQueryByFilePath(path.toString());
+    }
+
+    @Override
+    public MediaQuery getQueryByFilePath(String filepath) {
+        return getCurrentMediaQueries()
                 .stream()
                 .filter(x -> x.getFilePath().equals(filepath))
                 .findFirst()

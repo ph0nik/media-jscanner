@@ -1,6 +1,6 @@
 package service;
 
-import app.EnvValidator;
+import app.config.EnvValidator;
 import com.google.gson.Gson;
 import model.QueryResult;
 import org.junit.jupiter.api.BeforeAll;

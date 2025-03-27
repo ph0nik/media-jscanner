@@ -1,6 +1,5 @@
 package app.controller;
 
-import model.LastRequest;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
@@ -221,12 +220,10 @@ public class QueryController {
      * */
     @GetMapping(value = {SELECT_QUERY, SEARCH_WITH_YEAR})
     public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
-        LastRequest latestMediaQuery = mediaLinksService.getLatestMediaQueryRequest();
-        if (latestMediaQuery == null) return "redirect:/";
-//        MediaQuery lastMediaQuery = latestMediaQuery.getLastMediaQuery();
-        model.addAttribute("result_list", latestMediaQuery.getLastRequest());
+        if (mediaLinksService.getLatestMediaQueryRequest().isEmpty()) return "redirect:/";
+        model.addAttribute("result_list", mediaLinksService.getLatestMediaQueryRequest());
         model.addAttribute("query_result", new QueryResult());
-        model.addAttribute("query", latestMediaQuery.getLastMediaQuery());
+        model.addAttribute("query", movieQueryService.getReferenceQuery());
         return "result_selection";
     }
 
@@ -238,7 +235,7 @@ public class QueryController {
         List<MediaLink> fileLink = mediaLinksService.createFileLink(queryResult,
                 mediaIdentity,
                 movieQueryService);
-        movieQueryService.setMediaLinksToProcess(fileLink);
+        mediaLinksService.setMediaLinksToProcess(fileLink);
         model.addAttribute("file_link_to_process", fileLink);
         return "link_creation_confirm";
     }
@@ -246,7 +243,7 @@ public class QueryController {
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
         mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
-        movieQueryService.clearMediaLinksToProcess();
+        mediaLinksService.clearMediaLinksToProcess(); // move to media links service
         return "redirect:" + CommonHandler.MOVIE;
     }
 
@@ -265,7 +262,7 @@ public class QueryController {
 
     @GetMapping(value = CommonHandler.SCAN_FOR_MEDIA)
     public String scanFolders() {
-        movieQueryService.scanForNewMediaQueries();
+        movieQueryService.scanForNewMediaQueries(); // TODO empty list on scan
         tvQueryService.scanForNewMediaQueries();
         return "redirect:/";
     }
@@ -280,7 +277,7 @@ public class QueryController {
 
     @GetMapping(value = AUTO_MATCH_FINISH)
     public String autoMatchShowLinks(Model model) {
-        List<MediaLink> fileLink = movieQueryService.getMediaLinksToProcess();
+        List<MediaLink> fileLink = mediaLinksService.getMediaLinksToProcess();
         model.addAttribute("file_link_to_process", fileLink);
         return "link_creation_confirm";
     }
