@@ -42,10 +42,11 @@ public class ConfigController {
         model.addAttribute("movie_new_source", MOVIE_NEW_SOURCE_PATH);
         model.addAttribute("movie_delete_target", MOVIE_DELETE_SOURCE_PATH);
         model.addAttribute("tv_new_link", TV_NEW_LINK_PATH);
-        model.addAttribute("tv_new_target", TV_NEW_SOURCE_PATH);
+        model.addAttribute("tv_new_source", TV_NEW_SOURCE_PATH);
         model.addAttribute("tv_delete_target", TV_DELETE_SOURCE_PATH);
         model.addAttribute("clear_folders", CLEAR_FOLDERS);
         model.addAttribute("backup_database", BACKUP_DATABASE);
+        model.addAttribute("current_menu", 5);
     }
     @ModelAttribute("extensions")
     public List<String> getCurrentExtensions() {

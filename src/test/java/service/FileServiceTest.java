@@ -5,7 +5,7 @@ import com.google.common.jimfs.Jimfs;
 import model.QueryResult;
 import model.validator.RequiredFieldException;
 import org.junit.jupiter.api.*;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 import util.MediaType;
 
 import java.io.FileNotFoundException;
@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 //@Disabled
+
 class FileServiceTest {
 
     private FileSystem fileSystem;
@@ -72,44 +73,55 @@ class FileServiceTest {
     @Test
     @DisplayName("Check path creation with correct parameters")
     void linkPathCreation_proper() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
-        Path movieLinkPath = fileService.createMovieLinkPath_new(queryResult, MediaIdentity.IMDB, linksPath);
+        Path movieLinkPath = fileService.createMovieLinkPath(queryResult, MediaIdentifier.IMDB, linksPath);
         Assertions.assertNotNull(movieLinkPath);
         Assertions.assertEquals(movieLinkPath.getFileName().toString(), "The Matrix-cd2.mkv");
     }
 
     @Test
-    @DisplayName("Check possible null or empty fields of incoming objects")
-    void linkPathCreation_nullCheck() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
+    @DisplayName("Check for possible null or empty fields of incoming objects")
+    void linkPathCreation_nullCheckType() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
         queryResult.setMediaType(null);
         Assertions.assertThrows(
                 RequiredFieldException.class,
-                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentifier.IMDB, linksPath),
                 "media type field should be null"
         );
+    }
+
+    @Test
+    @DisplayName("Check for possible null or empty fields of incoming objects")
+    void linkPathCreation_nullCheckTitle() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
         queryResult.setTitle(null);
         Assertions.assertThrowsExactly(
                 RequiredFieldException.class,
-                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentifier.IMDB, linksPath),
                 "title field should be null"
         );
+    }
+
+    @Test
+    void linkPathCreation_nullCheckYear() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
         setProperQueryResult();
         queryResult.setYear(null);
         Assertions.assertThrowsExactly(
                 RequiredFieldException.class,
-                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentifier.IMDB, linksPath),
                 "year field should be null"
         );
-        System.out.println("media identity null");
-        setProperQueryResult();
-        Assertions.assertNull(fileService.createMovieLinkPath(queryResult, null, linksPath));
+    }
 
+    @Test
+    void linkPathCreation_nullCheckPath() throws FileNotFoundException, RequiredFieldException, IllegalAccessException {
+        setProperQueryResult();
         queryResult.setOriginalPath(null);
         Assertions.assertThrowsExactly(
                 RequiredFieldException.class,
-                () -> fileService.createMovieLinkPath(queryResult, MediaIdentity.IMDB, linksPath),
+                () -> fileService.createMovieLinkPath(queryResult, MediaIdentifier.IMDB, linksPath),
                 "original path field should be null"
         );
     }
+
 
     @Disabled
     @Test
@@ -152,5 +164,6 @@ class FileServiceTest {
                 throw new RuntimeException(e);
             }
         }
+
     }
 }

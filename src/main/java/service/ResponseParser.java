@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import service.parser.*;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 import util.MediaType;
 
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class ResponseParser {
             // extract description text
             String resultSnippet = el.getElementsByClass("result__snippet").select("a[href]").text();
             // get the id
-            String externalDbId = getTheMovieDbId(url, MediaIdentity.IMDB);
+            String externalDbId = getTheMovieDbId(url, MediaIdentifier.IMDB);
             // check for valid imdb id, not greater than 9 characters, some search results return invalid identifier
 //            if (mediaIdentity == MediaIdentity.IMDB && externalDbId != null && externalDbId.length() > 9)
 //                externalDbId = null;
@@ -145,12 +145,12 @@ public class ResponseParser {
     /*
      * Extract theMovieDb id from given url
      * */
-    private String getTheMovieDbId(String url, MediaIdentity mediaIdentity) {
+    private String getTheMovieDbId(String url, MediaIdentifier mediaIdentifier) {
         String pattern = null;
-        if (mediaIdentity.equals(MediaIdentity.TMDB)) {
+        if (mediaIdentifier.equals(MediaIdentifier.TMDB)) {
             pattern = ".+/movie/\\d+";
         }
-        if (mediaIdentity.equals(MediaIdentity.IMDB)) {
+        if (mediaIdentifier.equals(MediaIdentifier.IMDB)) {
             pattern = ".+title/tt\\d+";
         }
         Matcher m = Pattern.compile(pattern).matcher(url);
@@ -299,17 +299,20 @@ public class ResponseParser {
         }
         try {
             FindResults movieResults = new Gson().fromJson(responseJson, FindResults.class);
-            if (movieResults.getMovieResults().size() != 0) {
+            if (!movieResults.getMovieResults().isEmpty()) {
                 MovieItem movieItem = movieResults.getMovieResults().get(0);
                 queryResult.setTheMovieDbId(movieItem.getId());
                 queryResult.setTitle(movieItem.getTitle());
                 queryResult.setYear(String.valueOf(LocalDate.parse(movieItem.getDate()).getYear()));
                 return queryResult;
             }
-            TvItem movieItem = movieResults.getTvResults().get(0);
-            queryResult.setTheMovieDbId(movieItem.getId());
-            queryResult.setTitle(movieItem.getTitle());
-            queryResult.setYear(String.valueOf(LocalDate.parse(movieItem.getDate()).getYear()));
+            if (movieResults.getTvResults().isEmpty()) {
+                TvItem movieItem = movieResults.getTvResults().get(0);
+                queryResult.setTheMovieDbId(movieItem.getId());
+                queryResult.setTitle(movieItem.getTitle());
+                queryResult.setYear(String.valueOf(LocalDate.parse(movieItem.getDate()).getYear()));
+                return queryResult;
+            }
             return queryResult;
         } catch (JsonSyntaxException ex) {
             LOG.error("[ json_parser ] No a json object, {}", ex.getMessage());

@@ -6,7 +6,7 @@ import model.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 
 import java.nio.file.Path;
 
@@ -19,18 +19,17 @@ public class FileService {
     private static final String FILE_NAME_PATTERN = "%title%%special%%part%.%extension%";
     private final String whitespace = " ";
 
-    public Path createMovieLinkPath_new(QueryResult queryResult,
-                                         MediaIdentity mediaIdentity,
-                                         Path rootLinksFolder) throws RequiredFieldException, IllegalAccessException {
+    public Path createMovieLinkPath(QueryResult queryResult,
+                                    MediaIdentifier mediaIdentifier,
+                                    Path rootLinksFolder) throws RequiredFieldException, IllegalAccessException {
         // query result validation should be outside of this method
         // TITLE (YEAR) [imdbid-IMDBID]/TITLE - [SPECIAL]-cdPART.EXT
-        // TODO if one of ids is missing select the second one
         Validator.validateForNulls(queryResult); // check for null fields
         String part = (queryResult.getMultipart() > 0)
                 ? "-cd" + queryResult.getMultipart()
                 : "";
         String title = replaceIllegalCharacters(queryResult.getTitle());
-        String movieId = (mediaIdentity == MediaIdentity.IMDB)
+        String movieId = (mediaIdentifier == MediaIdentifier.IMDB)
                 ? queryResult.getImdbId()
                 : String.valueOf(queryResult.getTheMovieDbId());
         String extension = getExtension(queryResult.getOriginalPath());
@@ -48,52 +47,52 @@ public class FileService {
         return rootLinksFolder.resolve(folderName).resolve(fileName);
     }
 
-    public Path createMovieLinkPath(QueryResult queryResult,
-                                    MediaIdentity mediaIdentity,
-                                    Path linksRootFolder) throws RequiredFieldException, IllegalAccessException {
-        Validator.validateForNulls(queryResult);
-        String imdbPattern = "[imdbid-%imdb_id%]";
-        int discNumber = queryResult.getMultipart();
-        String part = (discNumber > 0) ? "-cd" + discNumber : "";
-        if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
-            LOG.error("[ file_service ] Empty title field.");
-            return null;
-        }
-        String title = replaceIllegalCharacters(queryResult.getTitle());
-        if (queryResult.getYear() == null || queryResult.getYear().isEmpty()) {
-            LOG.error("[ file_service ] Empty year field");
-            return null;
-        }
-        String yearFormatted = whitespace + "(" + queryResult.getYear() + ")";
-        String idFormatted = "";
-        if (mediaIdentity == null) {
-            LOG.error("[ file_service ] No media identity provided");
-            return null;
-        }
-        if (mediaIdentity == MediaIdentity.TMDB) {
-            idFormatted = " [tmdbid-" + queryResult.getTheMovieDbId() + "]";
-        }
-        if (mediaIdentity == MediaIdentity.IMDB) {
-            idFormatted = " [imdbid-" + queryResult.getImdbId() + "]";
-        }
-        if (queryResult.getOriginalPath() == null || queryResult.getOriginalPath().isEmpty()) {
-            LOG.error("[ file_service ] Original path not found");
-            return null;
-        }
-        String extension = getExtension(queryResult.getOriginalPath());
-        // get special identifier for movie extras
-        String special = checkForSpecialDescriptor(queryResult.getOriginalPath());
-        String group = ""; //
-        String specialWithGroup = (special + whitespace + group).trim();
-        specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : whitespace + "-" + whitespace + "[" + specialWithGroup + "]";
-        // build path names
-        LOG.info("[ file_service ] creating path names...");
-        String movieFolder = title + yearFormatted + idFormatted;
-        LOG.info("[ file_service ] folder: {}", movieFolder);
-        String movieName = title + specialWithGroup + part + "." + extension;
-        LOG.info("[ file_service ] file: {}", movieName);
-        return linksRootFolder.resolve(movieFolder).resolve(movieName);
-    }
+//    public Path createMovieLinkPath(QueryResult queryResult,
+//                                    MediaIdentifier mediaIdentifier,
+//                                    Path linksRootFolder) throws RequiredFieldException, IllegalAccessException {
+//        Validator.validateForNulls(queryResult);
+//        String imdbPattern = "[imdbid-%imdb_id%]";
+//        int discNumber = queryResult.getMultipart();
+//        String part = (discNumber > 0) ? "-cd" + discNumber : "";
+//        if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
+//            LOG.error("[ file_service ] Empty title field.");
+//            return null;
+//        }
+//        String title = replaceIllegalCharacters(queryResult.getTitle());
+//        if (queryResult.getYear() == null || queryResult.getYear().isEmpty()) {
+//            LOG.error("[ file_service ] Empty year field");
+//            return null;
+//        }
+//        String yearFormatted = whitespace + "(" + queryResult.getYear() + ")";
+//        String idFormatted = "";
+//        if (mediaIdentifier == null) {
+//            LOG.error("[ file_service ] No media identity provided");
+//            return null;
+//        }
+//        if (mediaIdentifier == MediaIdentifier.TMDB) {
+//            idFormatted = " [tmdbid-" + queryResult.getTheMovieDbId() + "]";
+//        }
+//        if (mediaIdentifier == MediaIdentifier.IMDB) {
+//            idFormatted = " [imdbid-" + queryResult.getImdbId() + "]";
+//        }
+//        if (queryResult.getOriginalPath() == null || queryResult.getOriginalPath().isEmpty()) {
+//            LOG.error("[ file_service ] Original path not found");
+//            return null;
+//        }
+//        String extension = getExtension(queryResult.getOriginalPath());
+//        // get special identifier for movie extras
+//        String special = checkForSpecialDescriptor(queryResult.getOriginalPath());
+//        String group = ""; //
+//        String specialWithGroup = (special + whitespace + group).trim();
+//        specialWithGroup = (specialWithGroup.trim().isEmpty()) ? "" : whitespace + "-" + whitespace + "[" + specialWithGroup + "]";
+//        // build path names
+//        LOG.info("[ file_service ] creating path names...");
+//        String movieFolder = title + yearFormatted + idFormatted;
+//        LOG.info("[ file_service ] folder: {}", movieFolder);
+//        String movieName = title + specialWithGroup + part + "." + extension;
+//        LOG.info("[ file_service ] file: {}", movieName);
+//        return linksRootFolder.resolve(movieFolder).resolve(movieName);
+//    }
 
 
 //    public Path createExtrasLinkPath(QueryResult queryResult, MediaTransferData mediaTransferData,
@@ -126,7 +125,7 @@ public class FileService {
 //    }
 
     public Path createExtrasLinkPath(QueryResult queryResult,
-                                     MediaIdentity mediaIdentity,
+                                     MediaIdentifier mediaIdentifier,
                                      Path linksRootFolder) {
         if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
             LOG.error("[ file_service ] Empty title field.");
@@ -139,14 +138,14 @@ public class FileService {
         }
         String yearFormatted = whitespace + "(" + queryResult.getYear() + ")";
         String idFormatted = "";
-        if (mediaIdentity == null) {
+        if (mediaIdentifier == null) {
             LOG.error("[ file_service ] No media identity provided");
             return null;
         }
-        if (mediaIdentity == MediaIdentity.TMDB) {
+        if (mediaIdentifier == MediaIdentifier.TMDB) {
             idFormatted = " [tmdbid-" + queryResult.getTheMovieDbId() + "]";
         }
-        if (mediaIdentity == MediaIdentity.IMDB) {
+        if (mediaIdentifier == MediaIdentifier.IMDB) {
             idFormatted = " [imdbid-" + queryResult.getImdbId() + "]";
         }
         if (queryResult.getOriginalPath() == null || queryResult.getOriginalPath().isEmpty()) {
@@ -166,7 +165,7 @@ public class FileService {
     }
 
     public Path createTvEpisodePath(QueryResult queryResult, int seasonNumber,
-                                    int episodeNumber, MediaIdentity mediaIdentity,
+                                    int episodeNumber, MediaIdentifier mediaIdentifier,
                                     Path linksRootFolder) {
         if (queryResult.getMultipart() < episodeNumber) return null;
         if (queryResult.getTitle() == null || queryResult.getTitle().isEmpty()) {
@@ -177,7 +176,7 @@ public class FileService {
             LOG.error("[ file_service ] Empty year field");
             return null;
         }
-        if (mediaIdentity == null) {
+        if (mediaIdentifier == null) {
             LOG.error("[ file_service ] No media identity provided");
             return null;
         }
@@ -190,10 +189,10 @@ public class FileService {
         String season = (seasonNumber < 10) ? "0" + seasonNumber : Integer.toString(seasonNumber);
         String episode = (episodeNumber < 10) ? "E0" + episodeNumber : "E" + episodeNumber;
         String idFormatted = "";
-        if (mediaIdentity == MediaIdentity.TMDB) {
+        if (mediaIdentifier == MediaIdentifier.TMDB) {
             idFormatted = whitespace + "[tmdbid-" + queryResult.getTheMovieDbId() + "]";
         }
-        if (mediaIdentity == MediaIdentity.IMDB) {
+        if (mediaIdentifier == MediaIdentifier.IMDB) {
             idFormatted = whitespace + "[imdbid-" + queryResult.getImdbId() + "]";
         }
         String extension = getExtension(queryResult.getOriginalPath());

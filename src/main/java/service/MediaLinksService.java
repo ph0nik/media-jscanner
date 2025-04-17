@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import service.query.TvQueryService;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,20 +26,25 @@ public interface MediaLinksService {
      * Return results or empty list if nothing was found.
      * On connection error it returns query result elements with error description.
      * */
-    List<QueryResult> executeMediaQuery(String customQuery, MediaIdentity mediaIdentity,
+    List<QueryResult> executeMediaQuery(String customQuery, MediaIdentifier mediaIdentifier,
                                         MediaQueryService mediaQueryService) throws NetworkException;
 
     List<QueryResult> searchTmdbWithTitleAndYear(String customQuery,
-                                                 MediaIdentity mediaIdentity,
+                                                 MediaIdentifier mediaIdentifier,
                                                  int year,
                                                  MediaQueryService mediaQueryService) throws NetworkException;
 
     List<QueryResult> searchWithImdbId(String imdbId,
-                                       MediaIdentity mediaIdentity,
+                                       MediaIdentifier mediaIdentifier,
                                        MediaQueryService mediaQueryService) throws NetworkException;
 
 
-    // TODO create new service for getting info only, extend it with media query service
+    List<QueryResult> multiSearchTmdb(
+            String customQuery,
+            MediaIdentifier mediaIdentifier,
+            MediaQueryService mediaQueryService
+    ) throws NetworkException;
+
     QueryResult getTvDetails(QueryResult queryResult, int seasonNumber) throws NetworkException;
 
     /*
@@ -55,11 +60,14 @@ public interface MediaLinksService {
 
     void setLatestMediaQueryRequest(List<QueryResult> latestMediaQueryRequest);
 
+    @SuppressWarnings("unchecked")
+    List<MediaLink> getDuplicateLinks();
+
     /*
      * Create symlink with specified query result and link properties
      * */
     List<MediaLink> createFileLink(QueryResult queryResult,
-                                   MediaIdentity mediaIdentity,
+                                   MediaIdentifier mediaIdentifier,
                                    MediaQueryService mediaQueryService) throws NetworkException;
 
     void persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
@@ -83,7 +91,7 @@ public interface MediaLinksService {
     * */
     List<MediaLink> getMediaIgnoredList();
 
-    void clearInvalidIgnoreAndLinks();
+    List<MediaLink> clearInvalidIgnoreAndLinks();
 
     /*
     * Remove link and add target path back to the queue

@@ -66,6 +66,7 @@ public class QueryTvController {
         model.addAttribute("tv_search_year", tvWithYear);
         model.addAttribute("tv_imdb", tvImdbSearch);
         model.addAttribute("tv_new_ignore", tvNewIgnore);
+        model.addAttribute("current_menu", 1);
     }
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;

@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import service.exceptions.NetworkException;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,16 +20,25 @@ import java.net.SocketTimeoutException;
 public class RequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(RequestService.class);
-    private PropertiesService propertiesService;
+    private final PropertiesService propertiesService;
 
     public RequestService(PropertiesService propertiesService) {
         this.propertiesService = propertiesService;
     }
 
     String tmdbMultiSearch(DeductedQuery deductedQuery) throws NetworkException {
+        return tmdbMultiSearch(deductedQuery.getPhrase());
+//        LOG.info("[ tmdb_multisearch ] Creating request for multisearch...");
+//        String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_multisearch")
+//                .replace("<<query>>", deductedQuery.getPhrase());
+//        LOG.info("[ tmdb_multisearch ] {}", apiRequest);
+//        return tmdbApiGeneralRequest(apiRequest);
+    }
+
+    String tmdbMultiSearch(String query) throws NetworkException {
         LOG.info("[ tmdb_multisearch ] Creating request for multisearch...");
         String apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_multisearch")
-                .replace("<<query>>", deductedQuery.getPhrase());
+                .replace("<<query>>", query);
         LOG.info("[ tmdb_multisearch ] {}", apiRequest);
         return tmdbApiGeneralRequest(apiRequest);
     }
@@ -95,7 +104,7 @@ public class RequestService {
     /*
      * TheMovieDB API request, returns json object as string.
      * */
-    String tmdbApiRequestWithSpecifiedId(QueryResult queryResult, MediaIdentity mediaIdentity) throws NetworkException {
+    String tmdbApiRequestWithSpecifiedId(QueryResult queryResult, MediaIdentifier mediaIdentifier) throws NetworkException {
         if (queryResult == null) {
             LOG.error("[ request_service ] tmdbApiRequest error, query result is null");
             return "";
@@ -107,11 +116,11 @@ public class RequestService {
             return "";
         }
         String apiRequest = "";
-        if (mediaIdentity == MediaIdentity.IMDB) {
+        if (mediaIdentifier == MediaIdentifier.IMDB) {
             apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_search_with_imdb")
                     .replace("<<imdb_id>>", queryResult.getImdbId());
         }
-        if (mediaIdentity == MediaIdentity.TMDB) {
+        if (mediaIdentifier == MediaIdentifier.TMDB) {
             apiRequest = propertiesService.getNetworkProperties().getProperty("tmdb_search_with_tmdb")
                     .replace("<<tmdb_id>>", Integer.toString(queryResult.getTheMovieDbId()));
         }

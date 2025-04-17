@@ -15,10 +15,9 @@ public class ExceptionController {
             FileNotFoundException.class,
             NetworkException.class,
             ConfigurationException.class,
-            NoApiKeyException.class
+            NoApiKeyException.class,
+            Exception.class // temp
     })
-    // TODO  Exception evaluating SpringEL expression: "query_list_movie.size()>0" (template: "error" - line 30, col 31)
-    // query list is null when showing error
     protected String getErrorMessage(Exception ex, Model model) {
         model.addAttribute("error_msg", ex.getMessage());
         return "error";

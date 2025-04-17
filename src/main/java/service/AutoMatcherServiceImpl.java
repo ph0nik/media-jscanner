@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 import util.MediaType;
 import util.TextExtractTools;
 import websocket.NotificationSender;
@@ -86,7 +86,6 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
         return new AsyncResult<>(mediaLinks);
     }
 
-    // TODO this sould be async as well as the function to create links
     @Async
     public Future<List<MediaLink>> autoMatchAndGetLinks() throws NetworkException {
         List<MediaQuery> mediaQueryList = movieQueryService.getCurrentMediaQueries();
@@ -212,7 +211,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             LOG.info("[ auto_matcher ] creating link for: {}", queryResults.get(0).getOriginalPath());
             return mediaLinksService.createFileLink(
                     queryResults.get(0),
-                    MediaIdentity.TMDB,
+                    MediaIdentifier.TMDB,
                     movieQueryService
             );
         }

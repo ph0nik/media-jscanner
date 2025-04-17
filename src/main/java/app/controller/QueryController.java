@@ -18,7 +18,7 @@ import service.PropertiesService;
 import service.exceptions.NetworkException;
 import service.query.MovieQueryService;
 import service.query.TvQueryService;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,11 +39,12 @@ public class QueryController {
     @Autowired
     private TvQueryService tvQueryService;
     @Autowired
-    private MediaConnectionService mediaConnectionService;
+    private MediaConnectionService movieConnectionService;
     private static final String SEARCH_WITH_QUERY = "/search-query/";
     private static final String SELECT_QUERY = "/select-query/";
     private static final String SET_MULTI_PART = "/set-multipart";
     private static final String SKIP_MULTI_PART = "/skip-multipart";
+    private static final String GENERAL_SEARCH = "/general-search/";
     private static final String SEARCH_WITH_YEAR = "/search-with-year/";
     private static final String SEARCH_WITH_IMDB_LINK = "/imdb-link/";
     private static final String AUTO_MATCH = "/auto";
@@ -57,6 +58,7 @@ public class QueryController {
         model.addAttribute("movie_select", SELECT_QUERY);
         model.addAttribute("movie_set_multi", SET_MULTI_PART);
         model.addAttribute("movie_skip_multi", SKIP_MULTI_PART);
+        model.addAttribute("movie_general_search", GENERAL_SEARCH);
         model.addAttribute("movie_search_year", SEARCH_WITH_YEAR);
         model.addAttribute("movie_imdb_id", SEARCH_WITH_IMDB_LINK);
         model.addAttribute("movie_auto", AUTO_MATCH);
@@ -64,6 +66,7 @@ public class QueryController {
         model.addAttribute("movie_new_ignore", MARK_AS_IGNORED);
         model.addAttribute("movie_new_links", PERSIST_NEW_MOVIE_LINKS);
         model.addAttribute("movie_auto_finish", AUTO_MATCH_FINISH);
+        model.addAttribute("current_menu", 0);
     }
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
@@ -86,10 +89,12 @@ public class QueryController {
         int pageSize = size.orElse(sessionPageSize);
         sessionPageSize = pageSize;
         int min = currentPage * pageSize - pageSize + 1;
-        int max = currentPage * pageSize;
+//        int max = currentPage * pageSize;
+        int max = Math.min(currentPage * pageSize, movieQueryService.getCurrentMediaQueries().size());
         Page<MediaQuery> paginatedMovieQueries = movieQueryService.getPageableQueries(
                 PageRequest.of(currentPage - 1, pageSize), movieQueryService.getCurrentMediaQueries()
         );
+
 //        Get Auto Matcher status
         // 1 * 20 - max, min - 1 * 20 - 20 + 1
         // 2 * 20 - max, min - 2 * 20 - 20 + 1
@@ -97,7 +102,7 @@ public class QueryController {
         // (currentPage + 1) * pageSize - pageSize + 1 "-" (currentPage + 1) * pageSize of queryList.size
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedMovieQueries);
-        model.addAttribute("future", autoMatcherStatus);
+//        model.addAttribute("future", autoMatcherStatus);
         model.addAttribute("page_min", min);
         model.addAttribute("page_max", max);
         model.addAttribute("current_page", page);
@@ -116,15 +121,31 @@ public class QueryController {
 //                movieQueryService.searchQuery(search));
         Page<MediaQuery> paginatedQueries = movieQueryService.getPageableQueries(
                 PageRequest.of(0, sessionPageSize),
-                movieQueryService.searchQuery(search));
+                movieQueryService.searchQuery(search)
+        );
 
         boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
-        model.addAttribute("future", autoMatcherStatus);
+//        model.addAttribute("future", autoMatcherStatus);
         model.addAttribute("page_min", min);
         model.addAttribute("page_max", max);
         return "query_list";
     }
+
+    // TODO solve the case of existing link
+
+    @PostMapping(value = CommonHandler.GLOBAL_SEARCH)
+    public String searchAllDatabase(@RequestParam("search") String search, Model model) {
+        List<MediaQuery> mediaQueriesSearchResult = movieQueryService.searchQuery(search);
+        List<MediaLink> mediaLinksSearchResult = mediaLinksService.searchMediaLinks(search);
+        List<MediaLink> mediaIgnoredSearchResult = mediaLinksService.searchMediaIgnoredList(search);
+        model.addAttribute("query_search", search);
+        model.addAttribute("query_list_search", mediaQueriesSearchResult);
+        model.addAttribute("link_list_search", mediaLinksSearchResult);
+        model.addAttribute("media_ignored_search", mediaIgnoredSearchResult);
+        return "search_internal";
+    }
+
 
     /*
      * For selected file perform online search for matching titles.
@@ -134,32 +155,21 @@ public class QueryController {
     @PostMapping(value = SELECT_QUERY)
     public String selectQuery(@RequestParam String custom,
                               @RequestParam UUID uuid, Model model) throws NetworkException {
-//        movieQueryService.setReferenceQuery(uuid);
-//        model.addAttribute("query", movieQueryService.getReferenceQuery());
-//        List<MediaQuery> groupedQueries = movieQueryService.getGroupedQueries(uuid);
-//        if (groupedQueries.size() > 1) {
-//            MultipartDto multipartDto = new MultipartDto();
-//            multipartDto.setQueryUuid(uuid);
-//            for (MediaQuery query : groupedQueries) {
-//                multipartDto.addMultiPartElement(new MultiPartElement(query.getFilePath()));
-//            }
-//            model.addAttribute("multipart_dto", multipartDto);
-//            return "query_multipart";
-//        }
-//        movieQueryService.addQueryToProcess(movieQueryService.getReferenceQuery());
-//        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery(custom,
-//                MediaIdentity.IMDB, movieQueryService);
-//        model.addAttribute("result_list", queryResults);
-//        model.addAttribute("query_result", new QueryResult());
-//        return "result_selection";
-
-        MultipartDto multiPartDto = mediaConnectionService.getMultiPartDto(uuid, movieQueryService);
+        movieQueryService.setReferenceQuery(uuid);
+/*
+ TODO select query > check multipart > set multipart > set reference queries > search web > result selection
+      select query > check multipart > set reference queries > search web > result selection
+          before search web save multipart state
+          abort option > clear process and reference query
+*/
+        MultipartDto multiPartDto = movieConnectionService.getMultiPartDto(uuid, movieQueryService);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         if (multiPartDto != null) {
             model.addAttribute("multipart_dto", multiPartDto);
             return "query_multipart";
         }
-        List<QueryResult> queryResults = mediaConnectionService.getResults(movieQueryService);
+
+        List<QueryResult> queryResults = movieConnectionService.getResults(movieQueryService);
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query_result", new QueryResult());
         return "result_selection";
@@ -168,10 +178,7 @@ public class QueryController {
 
     @PostMapping(value = SET_MULTI_PART)
     public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) throws NetworkException {
-//        movieQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
-//        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("",
-//                MediaIdentity.IMDB, movieQueryService);
-        List<QueryResult> queryResults = mediaConnectionService.getMovieResults(multipartDto, movieQueryService);
+        List<QueryResult> queryResults = movieConnectionService.getMultipleFilesResults(multipartDto, movieQueryService);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query_result", new QueryResult());
@@ -180,36 +187,43 @@ public class QueryController {
 
     @GetMapping(value = SKIP_MULTI_PART)
     public String skipMultiPart(Model model) throws NetworkException {
-//        movieQueryService.addQueryToProcess(movieQueryService.getReferenceQuery());
-//        List<QueryResult> queryResults = mediaLinksService.executeMediaQuery("",
-//                MediaIdentity.IMDB, movieQueryService);
-        List<QueryResult> queryResults = mediaConnectionService.getMovieResults(movieQueryService);
+        List<QueryResult> queryResults = movieConnectionService.getResults(movieQueryService);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
+
+//    @PostMapping(value = GENERAL_SEARCH)
+//    public String searchGeneral(@RequestParam String custom, Model model) throws NetworkException {
+//        List<QueryResult> queryResults = mediaConnectionService.getResultsCustomSearchWeb(movieQueryService, custom);
+//        System.out.println(queryResults);
+//        model.addAttribute("query", movieQueryService.getReferenceQuery());
+//        model.addAttribute("result_list", queryResults);
+//        model.addAttribute("query_result", new QueryResult());
+//        return "result_selection";
+//    }
 
     @PostMapping(value = SEARCH_WITH_YEAR)
     public String searchTmdbWithYear(@RequestParam String custom,
                                      @RequestParam Optional<Integer> year,
                                      Model model) throws NetworkException {
-        List<QueryResult> queryResults = mediaLinksService.searchTmdbWithTitleAndYear(custom,
-                MediaIdentity.IMDB,
-                year.orElse(0),
-                movieQueryService);
-        model.addAttribute("result_list", queryResults);
+        List<QueryResult> resultsCustomSearchTmdb = movieConnectionService.getResultsCustomSearchTmdb(
+                movieQueryService, custom, year
+        );
+        model.addAttribute("result_list", resultsCustomSearchTmdb);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("query_result", new QueryResult());
         return "result_selection";
     }
 
+    // TODO differentiate badges for query results depending on tv or movie
     @PostMapping(value = SEARCH_WITH_IMDB_LINK)
     public String passImdbLink(@RequestParam String imdbLink, Model model) throws NetworkException {
-        List<QueryResult> queryResults = mediaLinksService.searchWithImdbId(imdbLink,
-                MediaIdentity.IMDB,
-                movieQueryService);
-        model.addAttribute("result_list", queryResults);
+        List<QueryResult> resultsImdbLinkSearch = movieConnectionService.getResultsImdbLinkSearch(
+                imdbLink, movieQueryService
+        );
+        model.addAttribute("result_list", resultsImdbLinkSearch);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("query_result", new QueryResult());
         return "result_selection";
@@ -231,19 +245,18 @@ public class QueryController {
     public String createLinkPath(QueryResult queryResult,
                                  BindingResult bindingResult,
                                  Model model) throws NetworkException {
-        MediaIdentity mediaIdentity = (queryResult.getImdbId().isEmpty()) ? MediaIdentity.TMDB : MediaIdentity.IMDB;
-        List<MediaLink> fileLink = mediaLinksService.createFileLink(queryResult,
-                mediaIdentity,
+        MediaIdentifier mediaIdentifier = (queryResult.getImdbId().isEmpty()) ? MediaIdentifier.TMDB : MediaIdentifier.IMDB;
+        List<MediaLink> fileLinks = mediaLinksService.createFileLink(queryResult,
+                mediaIdentifier,
                 movieQueryService);
-        mediaLinksService.setMediaLinksToProcess(fileLink);
-        model.addAttribute("file_link_to_process", fileLink);
+        mediaLinksService.setMediaLinksToProcess(fileLinks);
+        model.addAttribute("file_link_to_process", fileLinks);
         return "link_creation_confirm";
     }
 
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
         mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
-        mediaLinksService.clearMediaLinksToProcess(); // move to media links service
         return "redirect:" + CommonHandler.MOVIE;
     }
 
@@ -262,9 +275,16 @@ public class QueryController {
 
     @GetMapping(value = CommonHandler.SCAN_FOR_MEDIA)
     public String scanFolders() {
-        movieQueryService.scanForNewMediaQueries(); // TODO empty list on scan
+        movieQueryService.scanForNewMediaQueries();
         tvQueryService.scanForNewMediaQueries();
         return "redirect:/";
+    }
+
+    @GetMapping(value = CommonHandler.WIZARD)
+    public String openWizard(Model model) {
+        model.addAttribute("current_menu", 4);
+        boolean autoMatcherStatus = future == null || future.isDone();
+        return "auto_matcher";
     }
 
     @GetMapping(value = AUTO_MATCH)

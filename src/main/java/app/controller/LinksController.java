@@ -47,6 +47,7 @@ public class LinksController {
         model.addAttribute("link_remove", REMOVE_LINK);
         model.addAttribute("link_delete_org", DELETE_SOURCE_FILE);
         model.addAttribute("link_restore_org", RESTORE_SOURCE_FILE);
+        model.addAttribute("current_menu", 2);
     }
 
     /*
@@ -69,8 +70,16 @@ public class LinksController {
         Comparator<MediaLink> comparator = (sort != null && sort.equals("link"))
                 ? Comparator.comparing(MediaLink::getLinkPath)
                 : Comparator.comparing(MediaLink::getOriginalPath);
-        List<MediaLink> allMediaLinks = mediaLinksService.getMediaLinks().stream().sorted(comparator).collect(Collectors.toList());
-        Page<MediaLink> paginatedLinks = mediaLinksService.getPageableLinks(PageRequest.of(currentPage - 1, pageSize), allMediaLinks);
+        List<MediaLink> allMediaLinks = mediaLinksService
+                .getMediaLinks()
+                .stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+        Page<MediaLink> paginatedLinks = mediaLinksService
+                .getPageableLinks(
+                        PageRequest.of(currentPage - 1, pageSize),
+                        allMediaLinks
+                );
         // TODO update all dead files on reload
         // TODO show only missing files
         model.addAttribute("page", paginatedLinks);
@@ -97,7 +106,7 @@ public class LinksController {
     }
 
     @PostMapping(value = REMOVE_LINK)
-    public String newLink(@RequestParam("id") long id, Model model) throws IOException {
+    public String removeLink(@RequestParam("id") long id, Model model) throws IOException {
         mediaLinksService.moveBackToQueue(id);
         return "redirect:" + CommonHandler.SCAN_FOR_MEDIA;
     }

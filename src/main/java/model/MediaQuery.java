@@ -73,7 +73,8 @@ public class MediaQuery {
         String fileName = Path.of(filePath).getFileName().toString();
 //        String fileName = path.getName(path.getNameCount() - 1).toString(); TODO
         String sub = fileName.substring(0, fileName.lastIndexOf("."));
-        return sub.replace(".", " ");
+        return sub.replaceAll("[^a-zA-Z0-9]+", " ");
+//        return sub.replace(".", " ");
     }
 
     public String getFilePath() {

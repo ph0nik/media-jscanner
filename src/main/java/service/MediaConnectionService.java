@@ -18,12 +18,17 @@ public interface MediaConnectionService {
 
     MediaLinkDto getMediaLinksDto(List<MediaLink> mediaLinks);
 
-    List<QueryResult> getMovieResults(MultipartDto multipartDto, MediaQueryService mediaQueryService) throws NetworkException;
+    List<QueryResult> getMultipleFilesResults(MultipartDto multipartDto, MediaQueryService mediaQueryService) throws NetworkException;
 
-    List<QueryResult> getMovieResults(MediaQueryService mediaQueryService) throws NetworkException;
+//    List<QueryResult> getMovieResults(MediaQueryService mediaQueryService) throws NetworkException;
 
     List<QueryResult> getResultsCustomSearchTmdb(MediaQueryService mediaQueryService,
                                                  String custom, Optional<Integer> year) throws NetworkException;
+
+    List<QueryResult> getResultsImdbLinkSearch(
+            String imdbLink,
+            MediaQueryService mediaQueryService
+    ) throws NetworkException;
 
     List<QueryResult> getResultsCustomSearchWeb(MediaQueryService mediaQueryService, String custom) throws NetworkException;
 

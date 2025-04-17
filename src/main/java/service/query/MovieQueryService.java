@@ -39,7 +39,6 @@ public class MovieQueryService extends GeneralQueryService {
         this.mediaTrackerDao = mediaTrackerDao;
         this.moviesFileScanner = moviesFileScanner;
         this.propertiesService = propertiesService;
-//        this.cacheManager = cacheManager;
     }
 
     // scan given paths and gather all files matching criteria

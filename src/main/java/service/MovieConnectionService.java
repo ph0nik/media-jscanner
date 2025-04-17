@@ -10,7 +10,7 @@ import model.multipart.MultipartDto;
 import org.springframework.stereotype.Service;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
-import util.MediaIdentity;
+import util.MediaIdentifier;
 import util.TextExtractTools;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class MovieConnectionService implements MediaConnectionService {
 
     @Override
     public MultipartDto getMultiPartDto(UUID uuid, MediaQueryService mediaQueryService) {
-        mediaQueryService.setReferenceQuery(uuid);
+//        mediaQueryService.setReferenceQuery(uuid);
         List<MediaQuery> groupedQueries = mediaQueryService.getGroupedQueriesWithId(uuid);
         if (groupedQueries.size() > 1) {
             MultipartDto multipartDto = new MultipartDto();
@@ -56,40 +56,58 @@ public class MovieConnectionService implements MediaConnectionService {
 
 
     @Override
-    public List<QueryResult> getMovieResults(MultipartDto multipartDto, MediaQueryService mediaQueryService) throws NetworkException {
+    public List<QueryResult> getMultipleFilesResults(MultipartDto multipartDto, MediaQueryService mediaQueryService) throws NetworkException {
         mediaQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
         return mediaLinksService.executeMediaQuery("",
-                MediaIdentity.IMDB, mediaQueryService);
+                MediaIdentifier.IMDB, mediaQueryService);
     }
 
-    @Override
-    public List<QueryResult> getMovieResults(MediaQueryService mediaQueryService) throws NetworkException {
-        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
-        return mediaLinksService.executeMediaQuery("",
-                MediaIdentity.IMDB, mediaQueryService);
-    }
-
-    @Override
-    public List<QueryResult> getResultsCustomSearchTmdb(MediaQueryService mediaQueryService,
-                                                        String custom,
-                                                        Optional<Integer> year) throws NetworkException {
-        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
-        return mediaLinksService.searchTmdbWithTitleAndYear(custom,
-                MediaIdentity.IMDB,
-                year.orElse(0),
-                mediaQueryService);
-    }
-
-    @Override
-    public List<QueryResult> getResultsCustomSearchWeb(MediaQueryService mediaQueryService, String custom) throws NetworkException {
-        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
-        return mediaLinksService.executeMediaQuery(custom, MediaIdentity.IMDB, mediaQueryService);
-    }
+//    @Override
+//    public List<QueryResult> getMovieResults(MediaQueryService mediaQueryService) throws NetworkException {
+//        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+//        return mediaLinksService.executeMediaQuery("",
+//                MediaIdentifier.IMDB, mediaQueryService);
+//    }
 
     @Override
     public List<QueryResult> getResults(MediaQueryService mediaQueryService) throws NetworkException {
         mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
         return mediaLinksService.executeMediaQuery("",
-                MediaIdentity.IMDB, mediaQueryService);
+                MediaIdentifier.IMDB, mediaQueryService);
     }
+
+    @Override
+    public List<QueryResult> getResultsCustomSearchTmdb(
+            MediaQueryService mediaQueryService, String custom, Optional<Integer> year) throws NetworkException {
+//        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+        if (mediaQueryService.getReferenceQuery() != null) {
+            return mediaLinksService.searchTmdbWithTitleAndYear(custom,
+                    MediaIdentifier.IMDB,
+                    year.orElse(0),
+                    mediaQueryService);
+        }
+        return List.of();
+    }
+
+    @Override
+    public List<QueryResult> getResultsImdbLinkSearch(
+            String imdbLink, MediaQueryService mediaQueryService) throws NetworkException {
+        // check if imdb link is valid
+        return mediaLinksService.searchWithImdbId(
+                imdbLink,
+                MediaIdentifier.IMDB,
+                mediaQueryService);
+    }
+
+    @Override
+    public List<QueryResult> getResultsCustomSearchWeb(
+            MediaQueryService mediaQueryService, String custom) throws NetworkException {
+//        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
+        if (mediaQueryService.getReferenceQuery() != null) {
+            return mediaLinksService.multiSearchTmdb(custom, MediaIdentifier.IMDB, mediaQueryService);
+        }
+        return List.of();
+    }
+
+
 }

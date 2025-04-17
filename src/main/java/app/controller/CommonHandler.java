@@ -29,16 +29,20 @@ public class CommonHandler {
     public static final String TV = "/tv";
     public static final String LINKS = "/links";
     public static final String IGNORED = "/ignored";
+    public static final String WIZARD = "/wizard";
     public static final String CONFIG = "/config";
     public static final String SCAN_FOR_MEDIA = "/scan-for-media";
+    public static final String GLOBAL_SEARCH = "/global-search/";
     @ModelAttribute
     private void setMenuLinks(Model model) {
+        model.addAttribute("tab_wizard", WIZARD);
         model.addAttribute("tab_movie", MOVIE);
         model.addAttribute("tab_tv", TV);
         model.addAttribute("tab_links", LINKS);
         model.addAttribute("tab_ignored", IGNORED);
         model.addAttribute("tab_config", CONFIG);
         model.addAttribute("movie_scan", SCAN_FOR_MEDIA);
+        model.addAttribute("global_search", GLOBAL_SEARCH);
     }
     @ModelAttribute
     private void getCommonData(Model model) {
@@ -57,34 +61,7 @@ public class CommonHandler {
                 || liveDataService.getAutoMatcherFutureTask().isDone());
     }
 
-//    @ModelAttribute("query_list_size")
-//    public int getAllQueriesSize() {
-//        return movieQueryService.getCurrentMediaQueries().size() + tvQueryService.getCurrentMediaQueries().size();
-//    }
-//    @ModelAttribute("query_list_movie")
-//    public List<MediaQuery> getAllMediaQueries() {
-//        return movieQueryService.getCurrentMediaQueries();
-//    }
-//    @ModelAttribute("query_list_tv")
-//    public List<MediaQuery> getTvQueries() {
-//        return tvQueryService.getParentFolders();
-//    }
-//    @ModelAttribute("link_list")
-//    public List<MediaLink> getAllMediaLinks() {
-//        return mediaLinksService.getMediaLinks();
-//    }
-//    @ModelAttribute("media_ignored")
-//    public List<MediaLink> getAllIgnoredMedia() {
-//        return mediaLinksService.getMediaIgnoredList();
-//    }
-//    @ModelAttribute("user_paths")
-//    public boolean checkForUserProvidedPaths() {
-//        return propertiesService.userMoviePathsExist();
-//    }
-//    @ModelAttribute("error")
-//    public String getCurrentResult() {
-//        return errorNotificationService.getCurrentResult();
-//    }
+
 
 
 }
