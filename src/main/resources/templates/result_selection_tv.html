@@ -2,12 +2,17 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      lang="en">
+      lang="en"
+      data-bs-theme="dark">
 
 <head>
     <title>media-jscanner | tv search results</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script type="text/javascript"
+            src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"
+            th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" type="text/css"
+          href="../bootstrap-5.3.3-dist/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
     <link href="../static/css/all.css" rel="stylesheet">
     <link th:href="@{/css/all.css}" rel="stylesheet"/>
     <link href="../static/style.css" rel="stylesheet">
@@ -15,137 +20,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
-
-<div class="row" id="top">
-    <nav class="nav navbar-light bg-light align-items-center">
-        <div class="col-auto">
-            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
-                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_movie.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_movie.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_tv.size()>0}" class="nav-link active" th:href="${tab_tv}">tv
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_tv.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_tv.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link" th:href="${tab_links}">links
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${link_list.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${link_list.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <!--ignored-->
-                <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
-                        ignored
-                        <span th:case="${true}" th:text="${media_ignored.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <span th:case="${false}" th:text="${media_ignored.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a class="nav-link" th:href="${tab_config}">settings</a>
-                </li>
-            </ul>
-        </div>
-        <div class="col"></div>
-        <div class="col-2">
-            <!--scan folders-->
-            <div class="col d-flex justify-content-center p-1">
-                <form action="#"
-                      th:action="@{__${movie_scan}__}"
-                      method="get">
-                    <input type="hidden">
-                    <button class="btn btn-success" type="submit">
-                        <span class="m-2">Refresh</span>
-                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
-                </form>
-            </div>
-        </div>
-    </nav>
-</div>
+<div th:replace="~{query_list :: top_menu}"></div>
 <div class="row">
     <div class="col-4">
-        <h2 class="col text-secondary">Results | TV</h2>
+        <h2 class="col text-secondary p-2">
+            <i class="fa-solid fa-tv mx-2"></i>Tv Shows > Results</h2>
     </div>
-    <!--error, no user paths found-->
-    <div class="col-auto">
-        <div th:if="${!user_paths}" class="row justify-content-center">
-            <div class="col-auto m-2 text-center alert alert-danger" role="alert">
-                User provided paths not found! Please, add proper paths in config tab.
-            </div>
-        </div>
-    </div>
-</div>
-<!-- info with file path -->
-<div class="row m-2 justify-content-start">
-    <div class="col">
-        <p class="light-text">Displaying search results for file:</p>
-        <p th:text="${query.filePath}" class="h5 fw-bold auto-matcher">
-            <i class="fa-solid fa-folder light-text"></i>
-            file path
-            </p>
-    </div>
-</div>
-<!-- web search with custom phrase-->
-<div class="row m-2 justify-content-center">
-    <nav class="navbar navbar-light bg-light rounded-3 py-0">
-        <div class="container-fluid">
-            <div class="col-auto navbar-brand mb-0 h1">
-                <span>Web search (DuckDuckGo)</span>
-            </div>
-            <div class="col navbar-text text-center">
-                <span>If no matching elements found, try general search with custom phrase:</span>
-            </div>
-            <div class="col-5">
-                <form class="d-flex"
-                      action="#"
-                      th:action="@{__${tv_custom_search}__}"
-                      method="post">
-                    <!--                    <input type="hidden" th:value="${query.queryUuid}" name="uuid">-->
-                    <input class="form-control form-control-sm me-2" type="search" placeholder="Custom web search"
-                           name="custom" id="custom_web"
-                           aria-label="Search">
-                    <button class="btn btn-primary btn-sm" type="submit">Search</button>
-                </form>
-            </div>
-        </div>
-    </nav>
 </div>
 <!-- tmdb search with title and optional year -->
-<div class="row m-2 justify-content-center">
-    <nav class="navbar navbar-dark navbar-head-bg rounded-3 py-0">
+<div class="row m-2">
+    <nav class="navbar navbar-dark navbar-head-bg rounded-2 py-0">
         <div class="container-fluid">
             <div class="col-auto navbar-brand mb-0 h1">
                 <span>The Movie Database (TMDB)</span>
             </div>
-            <div class="col navbar-text text-center">
-                <span>Perform tmdb search with title and year (optional):</span>
+            <div class="col navbar-text text-end me-2">
+                <span>Perform tmdb search with title and year:</span>
             </div>
             <div class="col-5">
                 <form class="d-flex"
                       action="#"
                       th:action="@{__${tv_search_year}__}"
                       method="post">
-                    <!--                    <input type="hidden" th:value="${query.queryUuid}" name="uuid">-->
                     <input class="form-control form-control-sm me-1" type="text" placeholder="title" name="custom"
                            id="custom_tmdb"
                            aria-label="Search">
@@ -166,8 +62,8 @@
             <div class="col-auto navbar-brand mb-0 h1">
                 <span>Page link (IMDB)</span>
             </div>
-            <div class="col navbar-text text-center">
-                <span>Or insert direct link to imdb page:</span>
+            <div class="col navbar-text text-end me-2">
+                <span>Insert direct link to imdb title page:</span>
             </div>
             <div class="col-5">
                 <form class="d-flex"
@@ -184,116 +80,201 @@
         </div>
     </nav>
 </div>
-
-<!-- result table -->
-<div class="row">
-    <table class="table table-dark table-sm table-striped table-borderless table-hover">
-        <!--        table head-->
-        <thead>
-        <tr class="text-white-50">
-            <th scope="col" width="3%" class="text-center">id</th>
-            <th scope="col" width="10%" class="text-center">poster</th>
-            <th scope="col" class="text-start">title</th>
-            <th scope="col" width="6%" class="text-center">tmdb</th>
-            <th scope="col" width="6%" class="text-center">imdb</th>
-            <th scope="col" width="6%" class="text-center">season</th>
-            <th scope="col" width="4%"></th>
-        </tr>
-        </thead>
-        <!--        table body-->
-        <tbody>
-        <tr th:switch="${result.theMovieDbId < 0}" th:each="result, iter : ${result_list}">
-            <form action="#"
-                  th:action="@{__${tv_match_ep}__}"
-                  th:object="${query_result}"
-                  method="post"
-                  id="selectresult"
-                  class="d-flex flex-row">
-                <td scope="row" class="text-center" th:text="${iter.index} + 1">
-                    <span th:text="${iter.index} + 1">no</span>
-                </td>
-                <!--poster-->
-                <td class="text-center" th:switch="${result.poster == null || result.poster.isEmpty()}">
-
-                    <img th:case="${false}" th:src="${result.poster}" th:alt="${result.poster}">
-                    <span th:case="${true}">n/a</span>
-                    <!--                       th:if="${result.poster != null || !result.poster.isEmpty()}" -->
-                </td>
-                <!--error result-->
-                <td th:switch="${result.theMovieDbId < 0}">
-                    <div th:case="${true}">
-                        <span th:text="${result.title}" class="fs-6 fw-bold text-danger">movie title</span>
-                        <p th:text="${result.description}" class="fs-7 fw-normal text-danger">description</p>
-                    </div>
-                    <div th:case="${false}">
-                        <div class="row">
-                            <!-- tv title -->
-                            <div class="col-auto">
-                                <span th:text="${result.title}" class="fs-6 fw-bold"></span>
+<!--results cards-->
+<div class="bd-example m-0 pb-4 border-0">
+    <div class="card">
+        <div class="card-header border-0 row align-items-center">
+            <div class="col text-white-50">
+                <i class="fa-solid fa-folder"></i>
+                <span th:text="${query.filePath}" class="">
+                    some_example_file_tv.mkv</span>
+            </div>
+        </div>
+        <div class="card-body row m-0 p-0">
+            <table class="table">
+                <thead>
+                <tr class="row mx-1">
+                    <th class="col-1 text-center text-muted">poster</th>
+                    <th class="col-9 text-muted">title</th>
+                    <th class="col-1 text-muted">season</th>
+                    <th class="col text-muted">action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="row mx-1" th:each="result, iter : ${result_list}">
+                    <form th:if="${result.mediaType == T(util.MediaType).TV}"
+                          action="#"
+                          th:action="@{__${tv_match_ep}__}"
+                          th:object="${query_result}"
+                          method="post"
+                          id="selectresult"
+                          class="d-flex flex-row">
+                        <td class="col-1 text-center" th:switch="${result.poster == null || result.poster.isEmpty()}">
+                            <img th:case="${false}" th:src="${result.poster}" alt="poster">
+                            <span th:case="${true}">n/a</span>
+                        </td>
+                        <!--error result-->
+                        <td class="col-9">
+                            <div class="row">
+                                <div class="col-auto">
+                                    <!-- title -->
+                                    <span th:text="${result.title}" class="fs-6 fw-bold">title</span>
+                                    <!-- year -->
+                                    <span th:if="${result.year != null && !result.year.isEmpty()}"
+                                          th:text="${'(' + result.year + ')'}"
+                                          class="fs-6 fw-bold"></span>
+                                    <span th:if="${result.mediaType == T(util.MediaType).TV}"
+                                          th:text="${result.mediaType}" class="badge text-bg-light">
+                                        tv show</span>
+                                    <span th:if="${result.mediaType == T(util.MediaType).MOVIE}"
+                                            th:text="${result.mediaType}" class="badge bg-info">
+                                        movie</span>
+                                </div>
+                                <!-- ids -->
+                                <div class="col-1 text-center" th:switch="${result.theMovieDbId == 0}">
+                                <span class="badge text-bg-success" th:case="${false}"
+                                      th:text="'tmdb: ' + ${result.theMovieDbId}">tmdb: 123435</span>
+                                    <span th:case="${true}" th:text="'-'">-</span>
+                                </div>
+                                <div class="col-1 text-center"
+                                     th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
+                                <span class="badge text-bg-warning" th:case="${false}"
+                                      th:text="'imdb: ' + ${result.imdbId}">imdb: tt12345</span>
+                                    <span th:case="${true}" th:text="'-'">-</span>
+                                </div>
                             </div>
-                            <!-- tv year -->
-                            <div class="col-auto">
-                            <span th:if="${result.year != null && !result.year.isEmpty()}"
-                                  th:text="${'(' + result.year + ')'}"
-                                  class="fs-6 fw-bold"></span>
+                            <div class="row">
+                                <div class="col-auto">
+                                    <!-- desc -->
+                                    <p th:text="${result.description}" class="fs-7 fw-normal">desc</p>
+                                </div>
                             </div>
-                        </div>
-                        <p th:text="${result.description}" class="fs-7 fw-normal">desc</p>
-                    </div>
-                </td>
-                <!-- tmdb id-->
-                <td class="text-center text-white-50 fs-6 fw-bold" th:switch="${result.theMovieDbId == 0}">
-                    <span th:case="${false}" th:text="${result.theMovieDbId}">123435</span>
-                    <span th:case="${true}" th:text="'-'">123435</span>
-                </td>
-                <!--imdb id-->
-                <td class="text-center text-white-50 fs-6 fw-bold"
-                    th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
-                    <span th:case="${false}" th:text="${result.imdbId}">tt12345</span>
-                    <span th:case="${true}" th:text="'-'">tt12345</span>
-                </td>
-                <!-- season input -->
-                <td class="d-flex justify-content-center">
-                    <div class="input-group input-group-sm w-50">
-                        <input type="number" class="form-control" id="title_no"
-                               min="0" max="50"
-                               th:value="${season}" name="multipart">
-                    </div>
-                </td>
-                <td>
-                    <!--                      th:object="${request_form}"-->
-                    <input type="hidden" th:value="${result.id}" name="id">
-                    <input type="hidden" th:value="${result.title}" name="title">
-                    <input type="hidden" th:value="${result.originalPath}" name="originalPath">
-                    <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
-                    <input type="hidden" th:value="${result.imdbId}" name="imdbId">
-                    <input type="hidden" th:value="${result.description}" name="description">
-                    <input type="hidden" th:value="${result.url}" name="url">
-                    <input type="hidden" th:value="${query.queryUuid}" name="queryId">
-                    <input type="hidden" th:value="${query.mediaType}" name="mediaType">
-                    <button class="btn btn-primary btn-sm" type="submit">Select</button>
-                </td>
-            </form>
-        </tr>
-        </tbody>
-    </table>
-</div>
-<div class="row m-2 justify-content-between">
-    <!--back to the top-->
-    <div class="col"></div>
-    <div class="col-2">
-        <nav aria-label="...">
-            <ul class="pagination pagination-sm float-end">
-                <li class="page-item" aria-current="page">
-                    <a class="page-link" href="#top">back to the top
-                        <i class="fa-solid fa-arrow-turn-up"></i></a>
-                </li>
-            </ul>
-        </nav>
+                        </td>
+                        <td class="col-1">
+                            <div class="input-group input-group-sm w-50">
+                                <input type="number" class="form-control" id="title_no"
+                                       min="0" max="50"
+                                       th:value="${season}" name="multipart">
+                            </div>
+                        </td>
+                        <td class="col">
+                            <!-- tv item -->
+                            <div th:if="${result.mediaType != T(util.MediaType).TV}">
+                                <p>Not possible to create tv link based of movie info.</p>
+                            </div>
+                            <!-- tv item -->
+                            <input type="hidden" th:value="${result.id}" name="id">
+                            <input type="hidden" th:value="${result.title}" name="title">
+                            <input type="hidden" th:value="${result.originalPath}" name="originalPath">
+                            <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">
+                            <input type="hidden" th:value="${result.imdbId}" name="imdbId">
+                            <input type="hidden" th:value="${result.description}" name="description">
+                            <input type="hidden" th:value="${result.url}" name="url">
+                            <input type="hidden" th:value="${query.queryUuid}" name="queryId">
+                            <input type="hidden" th:value="${query.mediaType}" name="mediaType">
+                            <button class="btn btn-primary btn-sm" type="submit">Select</button>
+                        </td>
+                    </form>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="~{query_list :: back_to_top}"></div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script>
+<!-- result table -->
+<!--<div class="row">-->
+<!--    <table class="table table-dark table-sm table-striped table-borderless table-hover">-->
+<!--        &lt;!&ndash;        table head&ndash;&gt;-->
+<!--        <thead>-->
+<!--        <tr class="text-white-50">-->
+<!--            <th scope="col" width="3%" class="text-center">id</th>-->
+<!--            <th scope="col" width="10%" class="text-center">poster</th>-->
+<!--            <th scope="col" class="text-start">title</th>-->
+<!--            <th scope="col" width="6%" class="text-center">tmdb</th>-->
+<!--            <th scope="col" width="6%" class="text-center">imdb</th>-->
+<!--            <th scope="col" width="6%" class="text-center">season</th>-->
+<!--            <th scope="col" width="4%"></th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        &lt;!&ndash;        table body&ndash;&gt;-->
+<!--        <tbody>-->
+<!--        <tr th:switch="${result.theMovieDbId < 0}" th:each="result, iter : ${result_list}">-->
+<!--            <form action="#"-->
+<!--                  th:action="@{__${tv_match_ep}__}"-->
+<!--                  th:object="${query_result}"-->
+<!--                  method="post"-->
+<!--                  id="selectresult"-->
+<!--                  class="d-flex flex-row">-->
+<!--                <td scope="row" class="text-center" th:text="${iter.index} + 1">-->
+<!--                    <span th:text="${iter.index} + 1">no</span>-->
+<!--                </td>-->
+<!--                &lt;!&ndash;poster&ndash;&gt;-->
+<!--                <td class="text-center" th:switch="${result.poster == null || result.poster.isEmpty()}">-->
+
+<!--                    <img th:case="${false}" th:src="${result.poster}" th:alt="${result.poster}">-->
+<!--                    <span th:case="${true}">n/a</span>-->
+<!--                    &lt;!&ndash;                       th:if="${result.poster != null || !result.poster.isEmpty()}" &ndash;&gt;-->
+<!--                </td>-->
+<!--                &lt;!&ndash;error result&ndash;&gt;-->
+<!--                <td th:switch="${result.theMovieDbId < 0}">-->
+<!--                    <div th:case="${true}">-->
+<!--                        <span th:text="${result.title}" class="fs-6 fw-bold text-danger">movie title</span>-->
+<!--                        <p th:text="${result.description}" class="fs-7 fw-normal text-danger">description</p>-->
+<!--                    </div>-->
+<!--                    <div th:case="${false}">-->
+<!--                        <div class="row">-->
+<!--                            &lt;!&ndash; tv title &ndash;&gt;-->
+<!--                            <div class="col-auto">-->
+<!--                                <span th:text="${result.title}" class="fs-6 fw-bold"></span>-->
+<!--                            </div>-->
+<!--                            &lt;!&ndash; tv year &ndash;&gt;-->
+<!--                            <div class="col-auto">-->
+<!--                            <span th:if="${result.year != null && !result.year.isEmpty()}"-->
+<!--                                  th:text="${'(' + result.year + ')'}"-->
+<!--                                  class="fs-6 fw-bold"></span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <p th:text="${result.description}" class="fs-7 fw-normal">desc</p>-->
+<!--                    </div>-->
+<!--                </td>-->
+<!--                &lt;!&ndash; tmdb id&ndash;&gt;-->
+<!--                <td class="text-center text-white-50 fs-6 fw-bold" th:switch="${result.theMovieDbId == 0}">-->
+<!--                    <span th:case="${false}" th:text="${result.theMovieDbId}">123435</span>-->
+<!--                    <span th:case="${true}" th:text="'-'">123435</span>-->
+<!--                </td>-->
+<!--                &lt;!&ndash;imdb id&ndash;&gt;-->
+<!--                <td class="text-center text-white-50 fs-6 fw-bold"-->
+<!--                    th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">-->
+<!--                    <span th:case="${false}" th:text="${result.imdbId}">tt12345</span>-->
+<!--                    <span th:case="${true}" th:text="'-'">tt12345</span>-->
+<!--                </td>-->
+<!--                &lt;!&ndash; season input &ndash;&gt;-->
+<!--                <td class="d-flex justify-content-center">-->
+<!--                    <div class="input-group input-group-sm w-50">-->
+<!--                        <input type="number" class="form-control" id="title_no"-->
+<!--                               min="0" max="50"-->
+<!--                               th:value="${season}" name="multipart">-->
+<!--                    </div>-->
+<!--                </td>-->
+<!--                <td>-->
+<!--                    &lt;!&ndash;                      th:object="${request_form}"&ndash;&gt;-->
+<!--                    <input type="hidden" th:value="${result.id}" name="id">-->
+<!--                    <input type="hidden" th:value="${result.title}" name="title">-->
+<!--                    <input type="hidden" th:value="${result.originalPath}" name="originalPath">-->
+<!--                    <input type="hidden" th:value="${result.theMovieDbId}" name="theMovieDbId">-->
+<!--                    <input type="hidden" th:value="${result.imdbId}" name="imdbId">-->
+<!--                    <input type="hidden" th:value="${result.description}" name="description">-->
+<!--                    <input type="hidden" th:value="${result.url}" name="url">-->
+<!--                    <input type="hidden" th:value="${query.queryUuid}" name="queryId">-->
+<!--                    <input type="hidden" th:value="${query.mediaType}" name="mediaType">-->
+<!--                    <button class="btn btn-primary btn-sm" type="submit">Select</button>-->
+<!--                </td>-->
+<!--            </form>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--    </table>-->
+<!--</div>-->
+<div th:replace="~{query_list :: back_to_top}"></div>
 </body>
 </html>

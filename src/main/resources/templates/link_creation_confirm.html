@@ -2,12 +2,16 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org"
-      lang="en">
-
+      lang="en"
+      data-bs-theme="dark">
 <head>
-    <title>media-jscanner | links</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <title>media-jscanner | link creator</title>
+    <script type="text/javascript"
+            src="../bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"
+            th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" type="text/css"
+          href="../bootstrap-5.3.3-dist/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
     <link href="../static/css/all.css" rel="stylesheet">
     <link th:href="@{/css/all.css}" rel="stylesheet"/>
     <link href="../static/style.css" rel="stylesheet">
@@ -15,144 +19,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
-
-<div class="row" id="top">
-    <!--    top menu-->
-    <nav class="nav navbar-light bg-light align-items-center">
-        <div class="col">
-            <ul class="nav nav-fill nav-tabs me-auto mb-2 mt-4 ms-4 mb-lg-0">
-                <span class="navbar-brand navbar-brand mb-0 h1">media-jscanner</span>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_movie.size()>0}" class="nav-link" th:href="${tab_movie}">movies
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_movie.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_movie.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${query_list_tv.size()>0}" class="nav-link" th:href="${tab_tv}">tv
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${query_list_tv.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${query_list_tv.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a th:switch="${link_list.size()>0}" class="nav-link active" th:href="${tab_links}">links
-                        <!--                         show if any new files are in the queue -->
-                        <span th:case="${true}" th:text="${link_list.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <!--                         for no links -->
-                        <span th:case="${false}" th:text="${link_list.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <!--ignored-->
-                <li class="nav-item px-2">
-                    <a th:switch="${media_ignored.size()>0}" class="nav-link" th:href="${tab_ignored}">
-                        ignored
-                        <span th:case="${true}" th:text="${media_ignored.size()}"
-                              class="badge bg-primary rounded-pill"></span>
-                        <span th:case="${false}" th:text="${media_ignored.size()}"
-                              class="badge bg-secondary rounded-pill"></span>
-                    </a>
-                </li>
-                <li class="nav-item px-2">
-                    <a class="nav-link" th:href="${tab_config}">settings</a>
-                </li>
-            </ul>
-        </div>
-        <div class="col"></div>
-        <div class="col-2">
-            <!--scan folders-->
-            <div class="col d-flex justify-content-center p-1">
-                <form action="#"
-                      th:action="@{__${movie_scan}__}"
-                      method="get">
-                    <input type="hidden">
-                    <button class="btn btn-success" type="submit">
-                        <span class="m-2">Refresh</span>
-                        <i class="fa-solid fa-arrows-rotate fa-lg"></i></button>
-                </form>
-            </div>
-        </div>
-    </nav>
+<div th:replace="~{query_list :: top_menu}"></div>
+<!--status message-->
+<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
+    <div class="col-1 text-end">
+        <span>[ status ]</span>
+    </div>
+    <div class="col">
+        <span th:text="${message}"></span>
+    </div>
 </div>
 <!-- menu title -->
 <div class="row">
-    <div class="col-4">
-        <h2 class="col text-secondary">Link creator</h2>
+    <div class="col">
+        <h2 class="col text-secondary p-2">
+            <i class="fa-solid fa-film mx-2"></i>Movies > Results > Link creator</h2>
     </div>
 </div>
-<div class="row">
-    <table class="table table-dark table-sm table-striped align-middle table-bordered">
-<!--    <table class="table table-dark table-hover table-sm table-striped table-borderless">-->
-        <!--        table head-->
-        <thead>
-        <tr>
-            <th colspan="2" class="text-left text-white-50 col-8">Links to be created</th>
-            <th class="col-2">
+<div class="bd-example m-0 pb-4 border-0">
+    <div class="card">
+        <div class="card-header border-0 row align-items-center">
+            <div class="col text-left text-white-50">
+                <span>Links to be created: </span>
+                <span th:text="${file_link_to_process.size()}"></span>
+            </div>
+            <div class="col-auto">
                 <!--confirm -->
                 <form action="#"
                       th:action="@{__${movie_new_links}__}"
                       method="get">
-                    <button class="btn btn-link link-success btn-sm" type="submit">
-                        <i class="fa-solid text-success fa-check"></i>
+                    <button class="btn btn-success" type="submit">
+                        <i class="fa-solid fa-check"></i>
                         Confirm
                     </button>
                 </form>
-            </th>
+            </div>
             <!--abort-->
-            <th colspan="col-2">
+            <div class="col-auto">
                 <form action="#"
                       th:action="@{__${tab_movie}__}"
                       method="get">
-                    <button class="btn btn-link link-danger btn-sm" type="submit"><i class="fa-solid fa-xmark"></i>
+                    <button class="btn btn-danger" type="submit"><i class="fa-solid fa-xmark"></i>
                         Abort
                     </button>
                 </form>
-            </th>
-        </tr>
-        </thead>
-        <!--        table body-->
-        <tbody>
-        <tr th:each="link, iter : ${file_link_to_process}">
-            <td colspan="1" class="text-center col-1">
-                <span th:text="${link.mediaId}">666</span>
-            </td>
-            <!--            paths-->
-            <td colspan="3">
-                <span th:text="${link.originalPath}" class="fs-6 fw-bold text-muted">
+            </div>
+        </div>
+        <div class="card-body row m-2 p-0">
+            <table>
+                <tbody>
+                <tr th:each="link, iter : ${file_link_to_process}">
+                    <td class="text-center col-1">
+                        <span th:text="${iter}">666</span>
+                    </td>
+                    <!--            paths-->
+                    <td class="border-bottom">
+                        <span th:text="${link.originalPath}" class="fs-5 fw-bold text-muted">
                         original path</span>
-                <div class="flex">
-                    <i class="fa-solid fa-link"></i>
-                    <span th:text="${link.linkPath}" class="fs-6 fw-normal">
+                        <div class="flex ms-2">
+                            <span th:text="${link.linkPath}" class="fs-5 text-success-emphasis fw-normal">
+                                <i class="fa-solid fa-link"></i>
                         link path</span>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-<!--page selection-->
-<div class="row justify-content-between">
-    <div class="col-2">
-    </div>
-    <!--back to the top-->
-    <div class="col-2">
-        <nav aria-label="...">
-            <ul class="pagination pagination-sm float-end">
-                <li class="page-item" aria-current="page">
-                    <a class="page-link" href="#top">back to the top
-                        <i class="fa-solid fa-arrow-turn-up"></i></a>
-                </li>
-            </ul>
-        </nav>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:replace="~{query_list :: back_to_top}"></div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"

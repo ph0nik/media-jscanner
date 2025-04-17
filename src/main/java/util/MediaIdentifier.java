@@ -1,5 +1,5 @@
 package util;
 
-public enum MediaIdentity {
+public enum MediaInfoSource {
     IMDB, TMDB
 }

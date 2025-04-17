@@ -25,11 +25,11 @@ color: #548CA8;
 .gray-text {
 color: #eaeaea;
 }
-
-*//*.query-table-title {
+*/
+.query-table-title {
 background-color: #548CA8;
 color: white;
-}*//*
+}
 
 .navbar-head-bg {
 background-color: #476072;
@@ -47,7 +47,7 @@ color: white;
 .ignore-table-title {
 background-color: #476072;
 color: white;
-}*/
+}
 
 /*
 input[type="checkbox"]:checked + #row-selected {
