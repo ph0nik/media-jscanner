@@ -1,7 +1,10 @@
 package util;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
 public class DummyStructureService {
@@ -13,10 +16,28 @@ public class DummyStructureService {
         targetFilePath = target;
     }
 
+    public DummyStructureService() {
+        dummyRootPath = Path.of("");
+        targetFilePath = Path.of("");
+    }
+
     public void execute() throws IOException {
         Files.walkFileTree(targetFilePath, new SimpleFileReader());
     }
 
+    public void listPathsFromFile(String input, String rootFolder) throws IOException {
+        String fileContent = Files.readString(Path.of(input));
+        int range = 20;
+        for (String line : fileContent.split("\n")) {
+
+            Files.createDirectories(Path.of(rootFolder).resolve(Path.of(line.substring(2)).getParent()));
+            try {
+                Files.createFile(Path.of(rootFolder).resolve(Path.of(line.substring(2))));
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+        }
+    }
 
     class SimpleFileReader implements FileVisitor<Path> {
 

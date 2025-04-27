@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -47,7 +48,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private final RequestService requestService;
     private final Pagination<MediaLink> pagination;
     private final MediaIdentifier linkIdentifier = MediaIdentifier.IMDB;
-//    private QueryResult currentQueryResult;
+    //    private QueryResult currentQueryResult;
     private final CacheManager cacheManager;
 
     public MediaLinksServiceImpl(@Qualifier("jpa") MediaTrackerDao dao,
@@ -71,6 +72,30 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     @Override
     public Page<MediaLink> getPageableLinks(Pageable pageable, List<MediaLink> mediaLinkList) {
         return pagination.getPage(pageable, mediaLinkList);
+    }
+
+    private Comparator<MediaLink> getComparator(SortingType sortingType) {
+        Comparator<MediaLink> comparator;
+        if (sortingType == SortingType.LINK_PATH) {
+            comparator = Comparator.comparing(MediaLink::getLinkPath);
+        } else if (sortingType == SortingType.SOURCE_PATH) {
+            comparator = Comparator.comparing(MediaLink::getOriginalPath);
+        } else {
+            comparator = Comparator.comparing(MediaLink::isOriginalPresent)
+                    .reversed()
+                    .thenComparing(MediaLink::getLinkPath);
+        }
+        return comparator;
+    }
+
+    @Override
+    public Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortingType sortingType) {
+        getComparator(sortingType);
+        List<MediaLink> allMediaLinks = getMediaLinks()
+                .stream()
+                .sorted(getComparator(sortingType))
+                .collect(Collectors.toList());
+        return pagination.getPage(pageable, allMediaLinks);
     }
 
     private void updateCache(String cacheKey, Object value) {
@@ -296,9 +321,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         updateCache(LAST_REQUEST_KEY, latestMediaQueryRequest);
     }
 
-    // TODO check if link already exist
-    // change link name, add [dupe_x] for each another duplicate
-    // combine a list of existing links and present to user to accept
+// TODO check if link already exist
+// change link name, add [dupe_x] for each another duplicate
+// combine a list of existing links and present to user to accept
 
     private void setDuplicateLinks(List<MediaLink> duplicateLinks) {
         updateCache(DUPLICATE_LINKS_KEY, duplicateLinks);
@@ -374,8 +399,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     /*
-    * Checks if link with the same path already exist
-    * */
+     * Checks if link with the same path already exist
+     * */
     boolean linkRecordExist(MediaLink mediaLink) {
         return getMediaLinks().stream()
                 .anyMatch(ml ->
@@ -549,7 +574,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     // TODO rescan existing links to update link status
-    // TODO when scanning for new files show creation date (last modified) and file size
+// TODO when scanning for new files show creation date (last modified) and file size
     @Override
     public void moveBackToQueue(long mediaLinkId) throws IOException {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);

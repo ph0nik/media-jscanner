@@ -16,6 +16,8 @@ import java.util.List;
 
 public interface MediaLinksService {
 
+    Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortingType sortingType);
+
     public List<MediaLink> getMediaLinksToProcess();
 
     public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);

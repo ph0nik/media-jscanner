@@ -21,4 +21,12 @@ public class CreateDummyFileTreeTest {
         }
 
     }
+
+
+    void readPathsFromFile() throws IOException {
+        String root = "R:\\media-jscanner-test\\local_movies";
+        String path = "test-folder/local_movies.txt";
+        DummyStructureService dss = new DummyStructureService();
+        dss.listPathsFromFile(path, root);
+    }
 }
