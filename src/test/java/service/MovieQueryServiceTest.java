@@ -42,8 +42,7 @@ class MovieQueryServiceTest {
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(
                 mediaTrackerDao, mediaFilesScanner,
-                propertiesService, pagination,
-                new LiveDataService(), cacheManager);
+                propertiesService, pagination, cacheManager);
     }
 
     @Test

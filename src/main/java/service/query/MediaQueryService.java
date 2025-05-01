@@ -38,12 +38,14 @@ public interface MediaQueryService {
 
     Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList);
 
-    Path getMatchingPath(MediaQuery mediaQuery);
+    Path getMatchingParentPath(MediaQuery mediaQuery);
 
     /*
      * Group media query element ids by parent folder
      * */
 //    void groupByParentPath(MediaQuery mediaQuery, List<FilePath> targetFolderList);
+
+    List<MediaQuery> extractParentPath(MediaQuery selectedMediaQuery, List<MediaQuery> mediaQueryList);
 
     /*
      * Returns list of media queries of elements sharing the same folder at the same file tree level.

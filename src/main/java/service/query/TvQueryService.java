@@ -150,7 +150,7 @@ public class TvQueryService extends GeneralQueryService {
      * Not needed here TODO
      * */
     @Override
-    public Path getMatchingPath(MediaQuery mediaQuery) {
+    public Path getMatchingParentPath(MediaQuery mediaQuery) {
         List<FilePath> targetFolderListTv = propertiesService.getTargetFolderListTv();
         return targetFolderListTv
                 .stream()

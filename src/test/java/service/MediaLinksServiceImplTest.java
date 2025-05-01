@@ -79,7 +79,7 @@ class MediaLinksServiceImplTest {
         requestService = new RequestService(propertiesService);
         responseParser = new ResponseParser(propertiesService);
         mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
-                propertiesService, queryPagination, new LiveDataService(), cacheManager);
+                propertiesService, queryPagination, cacheManager);
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService,
                 cleanerService, fileService, linkPagination,
                 requestService, responseParser, cacheManager);

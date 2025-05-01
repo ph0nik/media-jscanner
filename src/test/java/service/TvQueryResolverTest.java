@@ -65,7 +65,7 @@ class TvQueryResolverTest {
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao,
                 moviesFileScanner, propertiesService, pagination,
-                new LiveDataService(), cacheManager);
+                cacheManager);
         tvQueryResolver = new TvQueryResolver(movieQueryService);
     }
 

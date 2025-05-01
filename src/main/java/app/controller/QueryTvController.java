@@ -5,7 +5,6 @@ import model.MediaQuery;
 import model.QueryResult;
 import model.links.MediaLinkDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
@@ -35,37 +34,27 @@ public class QueryTvController {
     private MediaConnectionService mediaConnectionService;
     @Autowired
     private TvQueryService tvQueryService;
-    @Autowired
-    private ErrorNotificationService errorNotificationService;
-    @Value("${go.tv.search}")
-    private String tvQuerySearch;
-    @Value("${go.tv.select}")
-    private String tvQuerySelect;
-    @Value("${go.tv.search-custom}")
-    private String tvQueryCustom;
-    @Value("${go.tv.episodes}")
-    private String tvMatchEpisodes;
-    @Value("${go.tv.setmulti}")
-    private String tvSetMulti;
-    @Value("${go.tv.skipmulti}")
-    private String tvSkipMulti;
-    @Value("${go.tv.withyear}")
-    private String tvWithYear;
-    @Value("${go.tv.imdb}")
-    private String tvImdbSearch;
-    @Value("${go.tv.ignore}")
-    private String tvNewIgnore;
+    private static final String SELECT_QUERY = "/select-tv-query/";
+    private static final String SEARCH_WITH_QUERY = "/search-query-tv/";
+    private static final String SEARCH_WITH_CUSTOM = "/search-query-tv-custom/";
+    private static final String SELECT_EPISODES = "/select-tv-episodes/";
+    private static final String SET_MULTI_PART = "/set-tv-multipart";
+    private static final String SKIP_MULTI_PART = "/skip-tv-multipart";
+    private static final String SEARCH_WITH_YEAR = "/search-tv-with-year/";
+    private static final String SEARCH_WITH_IMDB_LINK = "/tv-imdb-link/";
+    private static final String NEW_TV_LINK = "/new-link-tv/";
+    private static final String NEW_TV_IGNORE = "/new-ignore-tv/";
     @ModelAttribute
     private void setMenuLinks(Model model) {
-        model.addAttribute("tv_search", tvQuerySearch);
-        model.addAttribute("tv_select", tvQuerySelect);
-        model.addAttribute("tv_custom_search", tvQueryCustom);
-        model.addAttribute("tv_match_ep", tvMatchEpisodes);
-        model.addAttribute("tv_set_multi", tvSetMulti);
-        model.addAttribute("tv_skip_multi", tvSkipMulti);
-        model.addAttribute("tv_search_year", tvWithYear);
-        model.addAttribute("tv_imdb", tvImdbSearch);
-        model.addAttribute("tv_new_ignore", tvNewIgnore);
+        model.addAttribute("tv_search", SEARCH_WITH_QUERY);
+        model.addAttribute("tv_select", SELECT_QUERY);
+        model.addAttribute("tv_custom_search", SEARCH_WITH_CUSTOM);
+        model.addAttribute("tv_match_ep", SELECT_EPISODES);
+        model.addAttribute("tv_set_multi", SET_MULTI_PART);
+        model.addAttribute("tv_skip_multi", SKIP_MULTI_PART);
+        model.addAttribute("tv_search_year", SEARCH_WITH_YEAR);
+        model.addAttribute("tv_imdb", SEARCH_WITH_IMDB_LINK);
+        model.addAttribute("tv_new_ignore", NEW_TV_IGNORE);
         model.addAttribute("current_menu", 1);
     }
     private Future<List<MediaLink>> future;
@@ -75,7 +64,7 @@ public class QueryTvController {
     // TODO after selecting title for file, check if this id exist and
     // ask weather to change existing link to a new one or create new link
 
-    @GetMapping("${tab.tv}")
+    @GetMapping(value = CommonHandler.TV)
     public String queryList(@RequestParam("page") Optional<Integer> page,
                             @RequestParam("size") Optional<Integer> size,
                             Model model) {
@@ -101,7 +90,7 @@ public class QueryTvController {
         return "query_tv_list";
     }
 
-    @PostMapping("${go.tv.search}")
+    @PostMapping(value = SEARCH_WITH_QUERY)
     public String searchQuery(@RequestParam("search") String search,
                               Model model) {
         paginatedTvQueries = tvQueryService.getPageableQueries(
@@ -115,7 +104,7 @@ public class QueryTvController {
         return "query_tv_list";
     }
 
-    @PostMapping("${go.tv.select}")
+    @PostMapping(value = SELECT_QUERY)
     public String selectQuery(@RequestParam String path, Model model) throws NoQueryFoundException, NetworkException {
         tvQueryService.setUpQueryReference(path);
         List<QueryResult> queryResults = mediaConnectionService.getResults(tvQueryService);
@@ -126,7 +115,7 @@ public class QueryTvController {
         return "result_selection_tv";
     }
 
-    @PostMapping("${go.tv.search-custom}")
+    @PostMapping(value = SEARCH_WITH_CUSTOM)
     public String customTvSearchWeb(@RequestParam String custom,
                                     Model model) throws NetworkException {
         System.out.println("try custom: " + custom);
@@ -138,7 +127,7 @@ public class QueryTvController {
         return "result_selection_tv";
     }
 
-    @PostMapping("${go.tv.withyear}")
+    @PostMapping(value = SEARCH_WITH_YEAR)
     public String customTvSearchWithYear(@RequestParam String custom,
                                          @RequestParam Optional<Integer> year,
                                          Model model) throws NetworkException {
@@ -151,7 +140,7 @@ public class QueryTvController {
         return "result_selection_tv";
     }
 
-    @PostMapping("${go.tv.episodes}")
+    @PostMapping(value = SELECT_EPISODES)
     public String selectEpisodes(@ModelAttribute("query_result") QueryResult queryResult, Model model)
             throws FileNotFoundException, NetworkException {
         int seasonNumber = queryResult.getMultipart();
@@ -168,7 +157,7 @@ public class QueryTvController {
         return "episode_selection";
     }
 
-    @PostMapping("${go.tv.setmulti}")
+    @PostMapping(value = SET_MULTI_PART)
     public String checkEpisodes(@ModelAttribute MediaLinkDto mediaLinksDto,
                                 @ModelAttribute("query_result") QueryResult queryResult,
                                 Model model) {
@@ -193,7 +182,7 @@ public class QueryTvController {
         return "redirect:/tv";
     }
 
-    @PostMapping("${go.tv.ignore}")
+    @PostMapping(value = NEW_TV_IGNORE)
     public String addToIgnoreList(@RequestParam UUID uuid, Model model)  {
         System.out.println("ignore tv" + uuid);
         tvQueryService.setReferenceQuery(uuid);

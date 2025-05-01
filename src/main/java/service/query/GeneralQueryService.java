@@ -86,9 +86,9 @@ public abstract class GeneralQueryService implements MediaQueryService {
     }
 
     /*
-    * Returns media query by its uuid
-    * If element is not found returns null
-    * */
+     * Returns media query by its uuid
+     * If element is not found returns null
+     * */
     @Override
     public MediaQuery getQueryByUuid(UUID uuid) {
         return getCurrentMediaQueries()
@@ -96,6 +96,11 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 .filter(x -> x.getQueryUuid().equals(uuid))
                 .findFirst().orElse(null);
     }
+
+    @Override
+    public List<MediaQuery> extractParentPath(MediaQuery selectedMediaQuery, List<MediaQuery> mediaQueryList) {
+        return null; // TODO
+    };
 
     @Override
     public abstract List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid);
@@ -110,7 +115,7 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 .collect(Collectors.toList());
     }
 
-//    @Override
+    //    @Override
     public boolean containsAllWords(String[] words, String filePath) {
         return Arrays
                 .stream(words)
@@ -190,6 +195,9 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 .orElse(null);
     }
 
+    /*
+     * Checks if media query is part of media set, needed for auto matcher wizard.
+     * */
     @Override
     public boolean isMultipart(MediaQuery mediaQuery) {
         return getGroupedQueriesWithId(mediaQuery.getQueryUuid()).size() > 1;

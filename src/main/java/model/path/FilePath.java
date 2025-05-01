@@ -2,6 +2,7 @@ package model.path;
 
 import java.nio.file.Path;
 
+// TODO remove and get rid of user defined
 public class FilePath {
 
     private Path path;

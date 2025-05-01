@@ -50,7 +50,7 @@
                     <!--previous-->
                     <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                         <a th:if="${page.getNumber() > 0}"
-                           th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber()})}"
+                           th:href="@{__${tab_tv}__(size=${page.size}, page=${page.getNumber()})}"
                            class="page-link">< Previous</a>
                         <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
                     </li>
@@ -62,7 +62,7 @@
                     <!--next-->
                     <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
                         <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
-                           th:href="@{__${tab_movie}__/(size=${page.size}, page=${page.getNumber() + 2})}"
+                           th:href="@{__${tab_tv}__(size=${page.size}, page=${page.getNumber() + 2})}"
                            class="page-link">Next ></a>
                         <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
                               class="page-link disabled">Next ></span>

@@ -1,5 +1,8 @@
 package model.multipart;
 
+import model.MediaQuery;
+import util.MediaType;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -20,8 +23,11 @@ public class MultipartDto {
         this.multiPartElementList = multiPartElementList;
     }
 
-    public void addMultiPartElement(MultiPartElement multiPartElement) {
-        multiPartElementList.add(multiPartElement);
+    public void addMultiPartElement(
+            MediaQuery mediaQuery,
+            int counter,
+            MediaType mediaType) {
+        multiPartElementList.add(new MultiPartElement(mediaQuery, counter, mediaType));
     }
 
     public UUID getQueryUuid() {

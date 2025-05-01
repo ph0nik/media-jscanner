@@ -17,7 +17,8 @@ public class MultiPartElement {
         this.filePath = mediaQueryFilePath;
     }
 
-    public MultiPartElement(MediaQuery mediaQuery, int partNumber) {
+    public MultiPartElement(MediaQuery mediaQuery, int partNumber, MediaType mediaType) {
+        this.mediaType = mediaType;
         this.filePath = mediaQuery.getFilePath();
         this.partNumber = partNumber;
     }

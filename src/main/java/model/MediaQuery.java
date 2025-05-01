@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.UUID;
 
+
 public class MediaQuery {
     private long queryId;
     private UUID queryUuid;

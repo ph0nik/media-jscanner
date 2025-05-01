@@ -5,12 +5,12 @@ import model.MediaQuery;
 import model.QueryResult;
 import model.links.MediaLinkDto;
 import model.links.TvMediaLinkDto;
-import model.multipart.MultiPartElement;
 import model.multipart.MultipartDto;
 import org.springframework.stereotype.Service;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import util.MediaIdentifier;
+import util.MediaType;
 import util.TextExtractTools;
 
 import java.util.List;
@@ -28,16 +28,19 @@ public class MovieConnectionService implements MediaConnectionService {
     }
 
     @Override
-    public MultipartDto getMultiPartDto(UUID uuid, MediaQueryService mediaQueryService) {
+    public MultipartDto multiPartDtoBuilder(
+            UUID uuid,
+            MediaQueryService mediaQueryService,
+            MediaType mediaType
+    ) {
 //        mediaQueryService.setReferenceQuery(uuid);
         List<MediaQuery> groupedQueries = mediaQueryService.getGroupedQueriesWithId(uuid);
         if (groupedQueries.size() > 1) {
             MultipartDto multipartDto = new MultipartDto();
             multipartDto.setQueryUuid(uuid);
             int counter = 1;
-            for (MediaQuery query : groupedQueries) {
-//                multipartDto.addMultiPartElement(new MultiPartElement(query.getFilePath()));
-                multipartDto.addMultiPartElement(new MultiPartElement(query, counter++));
+            for (MediaQuery mediaQuery : groupedQueries) {
+                multipartDto.addMultiPartElement(mediaQuery, counter++, mediaType);
             }
             return multipartDto;
         }

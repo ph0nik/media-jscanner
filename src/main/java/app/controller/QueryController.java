@@ -19,6 +19,7 @@ import service.exceptions.NetworkException;
 import service.query.MovieQueryService;
 import service.query.TvQueryService;
 import util.MediaIdentifier;
+import util.MediaType;
 
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,8 @@ public class QueryController {
 //        int max = currentPage * pageSize;
         int max = Math.min(currentPage * pageSize, movieQueryService.getCurrentMediaQueries().size());
         Page<MediaQuery> paginatedMovieQueries = movieQueryService.getPageableQueries(
-                PageRequest.of(currentPage - 1, pageSize), movieQueryService.getCurrentMediaQueries()
+                PageRequest.of(currentPage - 1, pageSize),
+                movieQueryService.getCurrentMediaQueries()
         );
 
 //        Get Auto Matcher status
@@ -100,9 +102,7 @@ public class QueryController {
         // 2 * 20 - max, min - 2 * 20 - 20 + 1
         // 1 – 25 of 106
         // (currentPage + 1) * pageSize - pageSize + 1 "-" (currentPage + 1) * pageSize of queryList.size
-        boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedMovieQueries);
-//        model.addAttribute("future", autoMatcherStatus);
         model.addAttribute("page_min", min);
         model.addAttribute("page_max", max);
         model.addAttribute("current_page", page);
@@ -114,19 +114,11 @@ public class QueryController {
                                        Model model) {
         int min = 1;
         int max = sessionPageSize;
-        // TODO move media query list to service and single object instance
-        // after moving all live data to single object unify pagable
-//        Page<MediaQuery> paginatedQueries = movieQueryService.findPaginatedQueries(
-//                PageRequest.of(0, sessionPageSize),
-//                movieQueryService.searchQuery(search));
         Page<MediaQuery> paginatedQueries = movieQueryService.getPageableQueries(
                 PageRequest.of(0, sessionPageSize),
                 movieQueryService.searchQuery(search)
         );
-
-        boolean autoMatcherStatus = future == null || future.isDone();
         model.addAttribute("page", paginatedQueries);
-//        model.addAttribute("future", autoMatcherStatus);
         model.addAttribute("page_min", min);
         model.addAttribute("page_max", max);
         return "query_list";
@@ -146,6 +138,7 @@ public class QueryController {
         return "search_internal";
     }
 
+    // TODO add edit of existing link
 
     /*
      * For selected file perform online search for matching titles.
@@ -162,7 +155,9 @@ public class QueryController {
           before search web save multipart state
           abort option > clear process and reference query
 */
-        MultipartDto multiPartDto = movieConnectionService.getMultiPartDto(uuid, movieQueryService);
+        MultipartDto multiPartDto = movieConnectionService.multiPartDtoBuilder(
+                uuid, movieQueryService, MediaType.MOVIE
+        );
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         if (multiPartDto != null) {
             model.addAttribute("multipart_dto", multiPartDto);
@@ -177,8 +172,11 @@ public class QueryController {
     }
 
     @PostMapping(value = SET_MULTI_PART)
-    public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model) throws NetworkException {
-        List<QueryResult> queryResults = movieConnectionService.getMultipleFilesResults(multipartDto, movieQueryService);
+    public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model)
+            throws NetworkException {
+        List<QueryResult> queryResults = movieConnectionService.getMultipleFilesResults(
+                multipartDto, movieQueryService
+        );
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
         model.addAttribute("query_result", new QueryResult());

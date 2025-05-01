@@ -10,13 +10,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import scanner.MediaFilesScanner;
-import service.LiveDataService;
 import service.Pagination;
 import service.PropertiesService;
 import util.MediaType;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component("movieQuery")
@@ -33,7 +34,6 @@ public class MovieQueryService extends GeneralQueryService {
                              MediaFilesScanner moviesFileScanner,
                              PropertiesService propertiesService,
                              Pagination<MediaQuery> pagination,
-                             LiveDataService liveDataService,
                              CacheManager cacheManager) {
         super(pagination, cacheManager);
         this.mediaTrackerDao = mediaTrackerDao;
@@ -83,70 +83,144 @@ public class MovieQueryService extends GeneralQueryService {
     @Override
     public Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
         List<FilePath> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
-        Map<Path, List<UUID>> collect = mediaQueryList
+        return mediaQueryList
                 .stream()
-                .filter(mq -> targetFolderListMovie.stream().noneMatch(
-                        t -> t.getPath().equals(Path.of(mq.getFilePath()).getParent())
-                ))
-                .collect(Collectors.groupingBy(
-                        this::getMatchingPath,
-                        Collectors.mapping(MediaQuery::getQueryUuid, Collectors.toList())
-                ));
-        return collect;
+                .filter(
+                        mq -> targetFolderListMovie.stream().noneMatch(
+                                t -> t.getPath().equals(Path.of(mq.getFilePath()).getParent())
+                        )
+                )
+                .collect(
+                        Collectors.groupingBy(
+                                this::getMatchingParentPath,
+                                Collectors.mapping(
+                                        MediaQuery::getQueryUuid, Collectors.toList()
+                                )
+                        )
+                );
 //        liveDataService.setMediaQueriesByRootMap(collect); TODO
     }
 
     /*
-     * Return root path that matches give media query element
+     * Return parent path that matches given media query element
      * If given query doesn't match any of provided paths empty path is returned
      * */
     @Override
-    public Path getMatchingPath(MediaQuery mediaQuery) {
-        List<FilePath> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
-        return targetFolderListMovie
+    public Path getMatchingParentPath(MediaQuery mediaQuery) {
+        List<FilePath> sourceFolderListMovie = propertiesService.getTargetFolderListMovie();
+        return sourceFolderListMovie
                 .stream()
                 .map(FilePath::getPath)
-                .filter(path -> Path.of(mediaQuery.getFilePath()).startsWith(path))
-                .map(p -> p.getRoot().resolve(Path.of(mediaQuery.getFilePath()).subpath(0, p.getNameCount() + 1)))
+                .filter(
+                        path -> Path.of(mediaQuery.getFilePath())
+                                .startsWith(path)
+                )
+                .map(
+                        p -> p.getRoot().resolve(Path.of(mediaQuery.getFilePath())
+                                .subpath(0, p.getNameCount() + 1))
+                )
                 .findFirst()
                 .orElse(Path.of(""));
     }
 
     /*
-     * Group media query element ids by parent folder
+     * From given list of paths returns path that is common for all of them
      * */
-//    @Override
-//    public void groupByParentPath(MediaQuery mediaQuery, List<FilePath> targetFolderList) {
-//        Path parent = Path.of(mediaQuery.getFilePath()).getParent();
-//        if (targetFolderList.stream().noneMatch(target -> target.getPath().equals(parent))) {
-//            List<UUID> uuids = (mediaQueriesByRootMap.get(parent) == null)
-//                    ? new LinkedList<>()
-//                    : mediaQueriesByRootMap.get(parent);
-//            uuids.add(mediaQuery.getQueryUuid());
-//            mediaQueriesByRootMap.put(parent, uuids);
-//        }
-//    }
+    private Path findCommonPath(List<Path> paths) {
+        if (paths == null || paths.isEmpty()) return null;
+        if (paths.size() == 1) {
+            return paths.get(0).getParent() != null ? paths.get(0).getParent() : paths.get(0);
+        }
+        Path[] normalizedPaths = paths
+                .stream()
+                .map(Path::normalize)
+                .toArray(Path[]::new);
+        int minLength = paths
+                .stream()
+                .mapToInt(Path::getNameCount)
+                .min()
+                .orElse(0);
+        Path firstPath = normalizedPaths[0];
+        int commonLength = minLength;
+        for (int i = 0; i < minLength; i++) {
+            Path component = firstPath.getName(i);
+            for (int j = 1; j < normalizedPaths.length; j++) {
+                if (!normalizedPaths[j].getName(i).equals(component)) {
+                    commonLength = i;
+                    break;
+                }
+            }
+            if (commonLength == i) {
+                break;
+            }
+        }
+        return commonLength == 0 ? null : firstPath.subpath(0, commonLength);
+    }
+
+    @Override
+    public List<MediaQuery> extractParentPath(MediaQuery selectedMediaQuery, List<MediaQuery> mediaQueryList) {
+        Path selectedParent = Path.of(selectedMediaQuery.getFilePath()).getParent();
+        List<Path> sourceRootArray = propertiesService
+                .getTargetFolderListMovie()
+                .stream()
+                .map(FilePath::getPath)
+                .toList();
+
+        // if any of the root paths equals to given parent path
+        if (sourceRootArray
+                .stream()
+                .anyMatch(path -> path.equals(selectedParent)))
+            return List.of(selectedMediaQuery);
+
+        // select root path that matches selected parent
+        Path rootPathMatchingSelection = sourceRootArray
+                .stream()
+                .filter(selectedParent::startsWith)
+                .findFirst()
+                .orElse(null);
+        if (rootPathMatchingSelection == null) return List.of(selectedMediaQuery);
+
+        // get list of queries that starts with given root
+        List<Path> queriesWithSelectedRoot = mediaQueryList
+                .stream()
+                .filter(mq -> Path.of(mq.getFilePath()).startsWith(rootPathMatchingSelection))
+                .map(mq -> Path.of(mq.getFilePath()))
+                .toList();
+
+        // find common path for queries
+        Path commonRootPath = findCommonPath(queriesWithSelectedRoot);
+
+        return (selectedParent.equals(commonRootPath))
+                ? List.of(selectedMediaQuery)
+                : mediaQueryList
+                .stream()
+                .filter(path -> Path.of(path.getParentPath()).equals(selectedParent))
+                .peek(System.out::println)
+                .toList();
+    }
 
     /*
      * Returns list of media queries of elements sharing the same folder at the same file tree level.
      * */
     @Override
     public List<MediaQuery> getGroupedQueriesWithId(UUID mediaQueryUuid) {
-        // TODO rework
         MediaQuery queryByUuid = getQueryByUuid(mediaQueryUuid);
-        if (queryByUuid == null) return List.of();
-        Path parentPath = getMatchingPath(queryByUuid);
-        Map<Path, List<UUID>> pathListMap = groupByParentPathBatch(getCurrentMediaQueries());
-        if (pathListMap == null) return List.of(queryByUuid);
-        List<UUID> uuids = pathListMap.get(parentPath);
-        if (uuids == null) return List.of(queryByUuid);
-        return uuids.stream()
-                .map(this::getQueryByUuid)
-                // after creating link other files within the same folder are ignored,
-                // so they won't appear here
-                .filter(query -> query.getMultipart() == -1)
-                .sorted(Comparator.comparing(MediaQuery::getFilePath))
-                .collect(Collectors.toList());
+        return (queryByUuid == null)
+                ? List.of()
+                : extractParentPath(queryByUuid, getCurrentMediaQueries());
+//        if (queryByUuid == null) return List.of();
+//        Path parentPath = getMatchingParentPath(queryByUuid);
+//        Map<Path, List<UUID>> pathListMap = groupByParentPathBatch(getCurrentMediaQueries());
+//        if (pathListMap == null) return List.of(queryByUuid);
+//        List<UUID> uuids = pathListMap.get(parentPath);
+//        if (uuids == null) return List.of(queryByUuid);
+//        return uuids.stream()
+//                .map(this::getQueryByUuid)
+//                // after creating link other files within the same folder are ignored,
+//                // so they won't appear here
+//                .filter(query -> query.getMultipart() == -1)
+//                .sorted(Comparator.comparing(MediaQuery::getFilePath))
+//                .collect(Collectors.toList());
     }
 
 }

@@ -46,19 +46,19 @@
                     <!--previous-->
                     <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                         <a th:if="${page.getNumber() > 0}"
-                           th:href="@{/links(size=${page.size}, page=${page.getNumber()})}"
+                           th:href="@{__${tab_ignored}__(size=${page.size}, page=${page.getNumber()})}"
                            class="page-link"><< Previous</a>
                         <span th:if="${page.getNumber() <= 0}" class="page-link disabled"><< Previous</span>
                     </li>
                     <!--number of pages-->
                     <li class="page-item disabled" aria-current="page">
                             <span class="page-link"
-                                  th:text="${page_min + ' - ' + page_max + ' of ' + link_list.size()}"></span>
+                                  th:text="${page_min + ' - ' + page_max + ' of ' + media_ignored.size()}"></span>
                     </li>
                     <!--next-->
                     <li th:class="${page.getNumber() + 1 == page.getTotalPages() ? 'page-item disabled' : 'page-item'}">
                         <a th:if="${page.getNumber() + 1 < page.getTotalPages()}"
-                           th:href="@{/links(size=${page.size}, page=${page.getNumber() + 2})}"
+                           th:href="@{__${tab_ignored}__(size=${page.size}, page=${page.getNumber() + 2})}"
                            class="page-link">Next >></a>
                         <span th:if="${page.getNumber() + 1 == page.getTotalPages()}"
                               class="page-link disabled">Next >></span>
@@ -88,13 +88,13 @@
                     </span>
                     </li>
                     <li th:class="${page.size != 25 ? 'page-item' : 'page-item disabled'}">
-                        <a class="page-link" href="#" th:href="@{/(size=25, page=1)}">25</a>
+                        <a class="page-link" href="#" th:href="@{__${tab_ignored}__(size=25, page=1)}">25</a>
                     </li>
                     <li th:class="${page.size != 50 ? 'page-item' : 'page-item disabled'}">
-                        <a class="page-link" href="#" th:href="@{/(size=50, page=1)}">50</a>
+                        <a class="page-link" href="#" th:href="@{__${tab_ignored}__(size=50, page=1)}">50</a>
                     </li>
                     <li th:class="${page.size != 100 ? 'page-item' : 'page-item disabled'}">
-                        <a class="page-link" href="#" th:href="@{/(size=100, page=1)}">100</a>
+                        <a class="page-link" href="#" th:href="@{__${tab_ignored}__(size=100, page=1)}">100</a>
                     </li>
                 </ul>
             </div>

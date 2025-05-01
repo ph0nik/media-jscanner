@@ -62,11 +62,5 @@ public class IgnoredController {
         return "redirect:" + CommonHandler.IGNORED;
     }
 
-    @PostMapping("${go.ignore.search}")
-    public String searchWithGivenPhrase(@RequestParam String query, Model model) {
-
-        return "ignored";
-    }
-
 
 }

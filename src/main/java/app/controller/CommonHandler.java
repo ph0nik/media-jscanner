@@ -25,10 +25,10 @@ public class CommonHandler {
     private LiveDataService liveDataService;
     @Autowired
     private ErrorNotificationService errorNotificationService;
-    public static final String MOVIE = "/movie";
-    public static final String TV = "/tv";
-    public static final String LINKS = "/links";
-    public static final String IGNORED = "/ignored";
+    public static final String MOVIE = "/movie/";
+    public static final String TV = "/tv/";
+    public static final String LINKS = "/links/";
+    public static final String IGNORED = "/ignored/";
     public static final String WIZARD = "/wizard";
     public static final String CONFIG = "/config";
     public static final String SCAN_FOR_MEDIA = "/scan-for-media";
