@@ -1,7 +1,7 @@
 package service;
 
 import app.config.EnvValidator;
-import model.path.FilePath;
+import model.form.SourcePathDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,8 @@ public class PropertiesServiceImpl implements PropertiesService {
     private final String apiKeyPropertyKey = "api_key_v4";
     private Properties networkProperties;
     private Properties mediaFilesProperties;
-    private Map<String, List<FilePath>> targetFolderMap;
+//    private Map<String, List<FilePath>> targetFolderMap;
+    private Map<String, List<Path>> sourceFolderMap;
 
     private String tmdbApiToken;
 
@@ -158,13 +159,13 @@ public class PropertiesServiceImpl implements PropertiesService {
         if (mediaType == MediaType.MOVIE && userMoviePathsExist()) {
             return getTargetFolderListMovie()
                     .stream()
-                    .anyMatch(p -> Files.exists(p.getPath()))
+                    .anyMatch(Files::exists)
                     && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_MOVIE)));
         }
         if (mediaType == MediaType.TV && userTvPathsExist()) {
             return getTargetFolderListTv()
                     .stream()
-                    .anyMatch(p -> Files.exists(p.getPath()))
+                    .anyMatch(Files::exists)
                     && Files.exists(Path.of(mediaFilesProperties.getProperty(USER_LINKS_TV)));
         }
         return false;
@@ -174,11 +175,27 @@ public class PropertiesServiceImpl implements PropertiesService {
         return userMoviePathsExist() && userTvPathsExist();
     }
 
+    @Override
+    public List<SourcePathDto> getSourcePathsDto(MediaType mediaType) {
+        if (mediaType == MediaType.MOVIE) {
+            return getTargetFolderListMovie()
+                    .stream().map(SourcePathDto::new).toList();
+        } else {
+            return getTargetFolderListTv()
+                    .stream().map(SourcePathDto::new).toList();
+        }
+    }
+
     void loadFolderProperties() {
-        targetFolderMap = new HashMap<>();
-        targetFolderMap.put(USER_TARGET_MOVIE,
+//        targetFolderMap = new HashMap<>();
+//        targetFolderMap.put(USER_TARGET_MOVIE,
+//                loadTargetFolders(USER_TARGET_MOVIE, DEFAULT_TARGET_MOVIE));
+//        targetFolderMap.put(USER_TARGET_TV,
+//                loadTargetFolders(USER_TARGET_TV, DEFAULT_TARGET_TV));
+        sourceFolderMap = new HashMap<>();
+        sourceFolderMap.put(USER_TARGET_MOVIE,
                 loadTargetFolders(USER_TARGET_MOVIE, DEFAULT_TARGET_MOVIE));
-        targetFolderMap.put(USER_TARGET_TV,
+        sourceFolderMap.put(USER_TARGET_TV,
                 loadTargetFolders(USER_TARGET_TV, DEFAULT_TARGET_TV));
     }
 
@@ -203,7 +220,7 @@ public class PropertiesServiceImpl implements PropertiesService {
 //                .map(p -> new FilePath(Path.of(p), true))
 //                .collect(Collectors.toList());
 //    }
-    List<FilePath> loadTargetFolders(String userKey, String defaultKey) {
+    List<Path> loadTargetFolders(String userKey, String defaultKey) {
         LOG.info("[ props ] Loading paths for: {}", userKey);
         String targetFolder = mediaFilesProperties.getProperty(userKey);
         if (isPropertyEmpty(mediaFilesProperties, userKey)) {
@@ -213,7 +230,7 @@ public class PropertiesServiceImpl implements PropertiesService {
             LOG.info("[ props ] User target paths found:");
             return Arrays.stream(targetFolder.split(";"))
                     .peek(p -> LOG.info("[ props ] \t {}", p))
-                    .map(p -> new FilePath(Path.of(p), true))
+                    .map(Path::of)
                     .collect(Collectors.toList());
         }
     }
@@ -258,13 +275,13 @@ public class PropertiesServiceImpl implements PropertiesService {
      * Returns list of folders to be scanned.
      * */
     @Override
-    public List<FilePath> getTargetFolderListMovie() {
-        return targetFolderMap.get(USER_TARGET_MOVIE);
+    public List<Path> getTargetFolderListMovie() {
+        return sourceFolderMap.get(USER_TARGET_MOVIE);
     }
 
     @Override
-    public List<FilePath> getTargetFolderListTv() {
-        return targetFolderMap.get(USER_TARGET_TV);
+    public List<Path> getTargetFolderListTv() {
+        return sourceFolderMap.get(USER_TARGET_TV);
     }
 
     @Override

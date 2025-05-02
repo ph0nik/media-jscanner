@@ -1,6 +1,6 @@
 package service;
 
-import model.path.FilePath;
+import model.form.SourcePathDto;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import util.MediaType;
@@ -24,13 +24,15 @@ public interface PropertiesService {
     /*
      * Returns list of folders to be watched.
      * */
-    public List<FilePath> getTargetFolderListMovie();
+    public List<Path> getTargetFolderListMovie();
+
+    List<SourcePathDto> getSourcePathsDto(MediaType mediaType);
 
     /*
      * Returns folder where symlinks should be stored.
      * */
     public Path getLinksFolderMovie();
-    List<FilePath> getTargetFolderListTv();
+    List<Path> getTargetFolderListTv();
     /*
      * Add target folder path to path list.
      * */

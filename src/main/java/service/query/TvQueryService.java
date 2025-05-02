@@ -3,7 +3,6 @@ package service.query;
 import app.config.CacheConfig;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
-import model.path.FilePath;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
@@ -92,11 +91,7 @@ public class TvQueryService extends GeneralQueryService {
                 .map(Path::of)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
-        List<Path> rootPaths = propertiesService.getTargetFolderListTv()
-                .stream()
-                .map(FilePath::getPath)
-                .collect(Collectors.toList());
-        mediaQueriesByRootMap = findCommonFolderForSortedPaths(collect, rootPaths);
+        mediaQueriesByRootMap = findCommonFolderForSortedPaths(collect, propertiesService.getTargetFolderListTv());
         return Collections.emptyMap(); // TODO temp
     }
 
@@ -151,10 +146,9 @@ public class TvQueryService extends GeneralQueryService {
      * */
     @Override
     public Path getMatchingParentPath(MediaQuery mediaQuery) {
-        List<FilePath> targetFolderListTv = propertiesService.getTargetFolderListTv();
+        List<Path> targetFolderListTv = propertiesService.getTargetFolderListTv();
         return targetFolderListTv
                 .stream()
-                .map(FilePath::getPath)
                 .filter(path -> Path.of(mediaQuery.getFilePath()).startsWith(path))
                 .map(p -> Path.of(mediaQuery.getParentPath()))
                 .findFirst()

@@ -3,7 +3,6 @@ package service.query;
 import app.config.CacheConfig;
 import dao.MediaTrackerDao;
 import model.MediaQuery;
-import model.path.FilePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -82,12 +81,12 @@ public class MovieQueryService extends GeneralQueryService {
 
     @Override
     public Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
-        List<FilePath> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
+        List<Path> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
         return mediaQueryList
                 .stream()
                 .filter(
                         mq -> targetFolderListMovie.stream().noneMatch(
-                                t -> t.getPath().equals(Path.of(mq.getFilePath()).getParent())
+                                t -> t.equals(Path.of(mq.getFilePath()).getParent())
                         )
                 )
                 .collect(
@@ -107,10 +106,9 @@ public class MovieQueryService extends GeneralQueryService {
      * */
     @Override
     public Path getMatchingParentPath(MediaQuery mediaQuery) {
-        List<FilePath> sourceFolderListMovie = propertiesService.getTargetFolderListMovie();
+        List<Path> sourceFolderListMovie = propertiesService.getTargetFolderListMovie();
         return sourceFolderListMovie
                 .stream()
-                .map(FilePath::getPath)
                 .filter(
                         path -> Path.of(mediaQuery.getFilePath())
                                 .startsWith(path)
@@ -161,10 +159,7 @@ public class MovieQueryService extends GeneralQueryService {
     public List<MediaQuery> extractParentPath(MediaQuery selectedMediaQuery, List<MediaQuery> mediaQueryList) {
         Path selectedParent = Path.of(selectedMediaQuery.getFilePath()).getParent();
         List<Path> sourceRootArray = propertiesService
-                .getTargetFolderListMovie()
-                .stream()
-                .map(FilePath::getPath)
-                .toList();
+                .getTargetFolderListMovie();
 
         // if any of the root paths equals to given parent path
         if (sourceRootArray

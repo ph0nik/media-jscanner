@@ -15,6 +15,7 @@ import service.exceptions.ConfigurationException;
 import service.exceptions.MissingFolderOrFileException;
 import service.exceptions.NoApiKeyException;
 import util.MediaFilter;
+import util.MediaType;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -64,8 +65,8 @@ public class ConfigController {
         model.addAttribute("links_folder_movie_exists", movieLinksPath.toFile().exists());
         model.addAttribute("links_folder_tv", tvLinksPath);
         model.addAttribute("links_folder_tv_exists", tvLinksPath.toFile().exists());
-        model.addAttribute("target_folder_movie", propertiesService.getTargetFolderListMovie());
-        model.addAttribute("target_folder_tv", propertiesService.getTargetFolderListTv());
+        model.addAttribute("target_folder_movie", propertiesService.getSourcePathsDto(MediaType.MOVIE));
+        model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.MOVIE));
         model.addAttribute("links_path_form", new LinksPathForm());
         return "config";
     }

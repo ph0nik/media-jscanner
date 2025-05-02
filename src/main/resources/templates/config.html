@@ -95,10 +95,10 @@
                                   th:action="@{__${movie_delete_target}__}"
                                   method="post"
                                   class="col-auto">
-                                <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>
+                                <span class="fw-normal font-monospace" th:text="${path.getSourcePath()}"></span>
                                 <span th:if="${!path.isExisting()}"
                                       class="fw-normal font-monospace text-danger">[invalid path]</span>
-                                <input type="hidden" th:value="${path.getPath()}" name="path">
+                                <input type="hidden" th:value="${path.getSourcePath()}" name="path">
                                 <button class="btn btn-primary btn-sm" type="submit">Delete path</button>
                             </form>
                             <form
@@ -106,7 +106,7 @@
                                     th:action="@{__${clear_folders}__}"
                                     method="post"
                                     class="col-auto">
-                                <input type="hidden" th:value="${path.getPath}" name="path">
+                                <input type="hidden" th:value="${path.getSourcePath()}" name="path">
                                 <!--                            <i class="fa-regular fa-trash-can"></i>-->
                                 <button class="btn btn-primary btn-sm" type="submit">
                                     Clear folder
@@ -254,10 +254,10 @@
                               th:action="@{__${tv_delete_target}__}"
                               method="post"
                               class="col-auto">
-                            <span class="fw-normal font-monospace" th:text="${path.getPath}"></span>
+                            <span class="fw-normal font-monospace" th:text="${path.getSourcePath()}"></span>
                             <span th:if="${!path.isExisting()}"
                                   class="fw-normal font-monospace text-danger">[invalid path]</span>
-                            <input type="hidden" th:value="${path.getPath()}" name="path">
+                            <input type="hidden" th:value="${path.getSourcePath()}" name="path">
                             <button class="btn btn-primary btn-sm" type="submit">Delete path</button>
                         </form>
                         <form
@@ -265,7 +265,7 @@
                                 th:action="@{__${clear_folders}__}"
                                 method="post"
                                 class="col-auto">
-                            <input type="hidden" th:value="${path.getPath}" name="path">
+                            <input type="hidden" th:value="${path.getSourcePath()}" name="path">
                             <!--                            <i class="fa-regular fa-trash-can"></i>-->
                             <button class="btn btn-primary btn-sm" type="submit">
                                 Clear empty folder

@@ -77,6 +77,10 @@ public class QueryController {
         return "redirect:" + CommonHandler.MOVIE;
     }
 
+    // TODO Allow user to add positions to basket for further grouping
+    // Add "Group files" option, and then let user select files to group
+    // group would be stored as basket until released from cache on regular basis
+    // or explicitly removed by user - one by one or by clearing basket
     /*
      * Show elements awaiting in the queue and let user select
      * file to process or let auto matcher guess correct movies.

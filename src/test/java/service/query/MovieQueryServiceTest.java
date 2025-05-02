@@ -54,7 +54,7 @@ class MovieQueryServiceTest {
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);
-        propertiesService.addTargetPathMovie(Path.of("E:\\Filmy SD\\"));
+//        propertiesService.addTargetPathMovie(Path.of("E:\\Filmy SD\\"));
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
                 propertiesService, pagination, cacheManager);
