@@ -16,7 +16,7 @@ public class ExceptionController {
             NetworkException.class,
             ConfigurationException.class,
             NoApiKeyException.class,
-            Exception.class // temp
+//            Exception.class // temp
     })
     protected String getErrorMessage(Exception ex, Model model) {
         model.addAttribute("error_msg", ex.getMessage());

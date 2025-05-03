@@ -65,7 +65,7 @@ public class TvQueryService extends GeneralQueryService {
 //            groupByParentPathBatch(getCurrentMediaQueries());
         }
 
-        return null;
+        return List.of();
     }
 
     public List<MediaQuery> getParentFolders() {

@@ -37,6 +37,7 @@ public class ConfigController {
     private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
     private static final String CLEAR_FOLDERS = "/config/clear-folders/";
     private static final String BACKUP_DATABASE = "/config/backup-database/";
+
     @ModelAttribute
     private void setConfigEndpoints(Model model) {
         model.addAttribute("movie_new_link", MOVIE_NEW_LINK_PATH);
@@ -49,14 +50,15 @@ public class ConfigController {
         model.addAttribute("backup_database", BACKUP_DATABASE);
         model.addAttribute("current_menu", 5);
     }
+
     @ModelAttribute("extensions")
     public List<String> getCurrentExtensions() {
         return MediaFilter.getExtensions();
     }
 
     /*
-    * Returns configuration panel
-    * */
+     * Returns configuration panel
+     * */
     @GetMapping(value = CommonHandler.CONFIG)
     public String configuration(Model model) {
         Path movieLinksPath = propertiesService.getLinksFolderMovie();
@@ -66,7 +68,7 @@ public class ConfigController {
         model.addAttribute("links_folder_tv", tvLinksPath);
         model.addAttribute("links_folder_tv_exists", tvLinksPath.toFile().exists());
         model.addAttribute("target_folder_movie", propertiesService.getSourcePathsDto(MediaType.MOVIE));
-        model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.MOVIE));
+        model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.TV));
         model.addAttribute("links_path_form", new LinksPathForm());
         return "config";
     }
@@ -81,8 +83,8 @@ public class ConfigController {
     }
 
     /*
-    * Delete selected target path for tv
-    * */
+     * Delete selected target path for tv
+     * */
     @PostMapping(value = TV_DELETE_SOURCE_PATH)
     public String deletePathTv(@RequestParam String path, Model model) throws ConfigurationException {
         propertiesService.removeTargetPathTv(Path.of(path));
@@ -90,8 +92,8 @@ public class ConfigController {
     }
 
     /*
-    * Add new target path for movie
-    * */
+     * Add new target path for movie
+     * */
     @PostMapping(value = MOVIE_NEW_SOURCE_PATH)
     public String addPathMovie(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathMovie(Path.of(path));
@@ -99,8 +101,8 @@ public class ConfigController {
     }
 
     /*
-    * Add new target path for tv
-    * */
+     * Add new target path for tv
+     * */
     @PostMapping(value = TV_NEW_SOURCE_PATH)
     public String addPathTv(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathTv(Path.of(path));
@@ -113,9 +115,12 @@ public class ConfigController {
     @PostMapping(value = MOVIE_NEW_LINK_PATH)
     public String addLinksPath(LinksPathForm linksPathForm, Model model) throws NoApiKeyException, ConfigurationException {
         Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
-        if (linksPathForm.isMoveContent()) {
-            mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolderMovie(), newLinksPath);
-        }
+//        if (linksPathForm.isMoveContent()) { // TODO
+//            mediaLinksService.moveLinksToNewLocation(
+//                    propertiesService.getLinksFolderMovie(),
+//                    newLinksPath
+//            );
+//        }
         propertiesService.setLinksPathMovie(newLinksPath);
         return "redirect:" + CommonHandler.CONFIG;
     }
@@ -124,7 +129,10 @@ public class ConfigController {
     public String addLinkTv(LinksPathForm linksPathForm, Model model) throws NoApiKeyException, ConfigurationException {
         Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
         if (linksPathForm.isMoveContent()) {
-            mediaLinksService.moveLinksToNewLocation(propertiesService.getLinksFolderMovie(), newLinksPath);
+            mediaLinksService.moveLinksToNewLocation(
+                    propertiesService.getLinksFolderMovie(),
+                    newLinksPath
+            );
         }
         propertiesService.setLinksPathTv(newLinksPath);
         return "redirect:" + CommonHandler.CONFIG;
@@ -139,7 +147,8 @@ public class ConfigController {
 
     @GetMapping(value = BACKUP_DATABASE)
     public String backupDatabase(Model model) throws MissingFolderOrFileException, IOException {
-        String dbBackupFileName = databaseMigrationService.backupDatabase(Path.of(propertiesService.getDataFolder()));
+        String dbBackupFileName = databaseMigrationService
+                .backupDatabase(propertiesService.getDataFolder());
         return "redirect:" + CommonHandler.CONFIG;
     }
 }

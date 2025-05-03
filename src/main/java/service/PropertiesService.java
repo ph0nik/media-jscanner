@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public interface PropertiesService {
 
-    public String getDataFolder();
+    public Path getDataFolder();
     public Properties getNetworkProperties();
 
     public boolean userMoviePathsExist();
@@ -37,8 +37,6 @@ public interface PropertiesService {
      * Add target folder path to path list.
      * */
     public PropertiesService addTargetPathMovie(Path targetPath) throws NoApiKeyException, ConfigurationException;
-
-    Boolean checkUserPath(Path path);
 
     public PropertiesService addTargetPathTv(Path targetPath) throws NoApiKeyException, ConfigurationException;
 
