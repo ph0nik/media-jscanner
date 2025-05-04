@@ -37,6 +37,11 @@ public class ConfigController {
     private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
     private static final String CLEAR_FOLDERS = "/config/clear-folders/";
     private static final String BACKUP_DATABASE = "/config/backup-database/";
+    private String webPagePosition = "";
+    private static final String POSITION_TV = "tv";
+    private static final String POSITION_MOVIE = "movie";
+    private static final String POSITION_BACKUP = "backup";
+    private static final String POSITION_EXTENSIONS = "extensions";
 
     @ModelAttribute
     private void setConfigEndpoints(Model model) {
@@ -70,6 +75,7 @@ public class ConfigController {
         model.addAttribute("target_folder_movie", propertiesService.getSourcePathsDto(MediaType.MOVIE));
         model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.TV));
         model.addAttribute("links_path_form", new LinksPathForm());
+        model.addAttribute("current_position", webPagePosition);
         return "config";
     }
 
@@ -77,8 +83,10 @@ public class ConfigController {
      * Delete selected target path for movie
      * */
     @PostMapping(value = MOVIE_DELETE_SOURCE_PATH)
-    public String deletePathMovie(@RequestParam String path, Model model) throws ConfigurationException {
+    public String deletePathMovie(@RequestParam String path, Model model)
+            throws ConfigurationException {
         propertiesService.removeTargetPathMovie(Path.of(path));
+        webPagePosition = POSITION_MOVIE;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
@@ -86,8 +94,10 @@ public class ConfigController {
      * Delete selected target path for tv
      * */
     @PostMapping(value = TV_DELETE_SOURCE_PATH)
-    public String deletePathTv(@RequestParam String path, Model model) throws ConfigurationException {
+    public String deletePathTv(@RequestParam String path, Model model)
+            throws ConfigurationException {
         propertiesService.removeTargetPathTv(Path.of(path));
+        webPagePosition = POSITION_TV;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
@@ -95,8 +105,10 @@ public class ConfigController {
      * Add new target path for movie
      * */
     @PostMapping(value = MOVIE_NEW_SOURCE_PATH)
-    public String addPathMovie(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
+    public String addPathMovie(@RequestParam String path, Model model)
+            throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathMovie(Path.of(path));
+        webPagePosition = POSITION_MOVIE;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
@@ -104,8 +116,10 @@ public class ConfigController {
      * Add new target path for tv
      * */
     @PostMapping(value = TV_NEW_SOURCE_PATH)
-    public String addPathTv(@RequestParam String path, Model model) throws NoApiKeyException, ConfigurationException {
+    public String addPathTv(@RequestParam String path, Model model)
+            throws NoApiKeyException, ConfigurationException {
         propertiesService.addTargetPathTv(Path.of(path));
+        webPagePosition = POSITION_TV;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
@@ -113,7 +127,8 @@ public class ConfigController {
      * Change current link path with option to move content to a new location
      * */
     @PostMapping(value = MOVIE_NEW_LINK_PATH)
-    public String addLinksPath(LinksPathForm linksPathForm, Model model) throws NoApiKeyException, ConfigurationException {
+    public String addLinksPath(LinksPathForm linksPathForm, Model model)
+            throws NoApiKeyException, ConfigurationException {
         Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
 //        if (linksPathForm.isMoveContent()) { // TODO
 //            mediaLinksService.moveLinksToNewLocation(
@@ -122,8 +137,16 @@ public class ConfigController {
 //            );
 //        }
         propertiesService.setLinksPathMovie(newLinksPath);
+        webPagePosition = POSITION_MOVIE;
         return "redirect:" + CommonHandler.CONFIG;
     }
+
+    /*
+    * TODO read addidtional parameter from form and set value in the controller
+    *  Then set it to the model so it gets set into invisible element as id
+    * for some class, then let js script pick up this value and scroll page
+    * to given id
+    * */
 
     @PostMapping(value = TV_NEW_LINK_PATH)
     public String addLinkTv(LinksPathForm linksPathForm, Model model) throws NoApiKeyException, ConfigurationException {
@@ -135,6 +158,7 @@ public class ConfigController {
             );
         }
         propertiesService.setLinksPathTv(newLinksPath);
+        webPagePosition = POSITION_TV;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
@@ -149,6 +173,7 @@ public class ConfigController {
     public String backupDatabase(Model model) throws MissingFolderOrFileException, IOException {
         String dbBackupFileName = databaseMigrationService
                 .backupDatabase(propertiesService.getDataFolder());
+        webPagePosition = POSITION_BACKUP;
         return "redirect:" + CommonHandler.CONFIG;
     }
 }

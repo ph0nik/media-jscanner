@@ -91,7 +91,7 @@
 </div>
 <!--status message-->
 <div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
-    <div class="col-1 text-end">
+    <div class="col-auto text-end">
         <span>[ status ]</span>
     </div>
     <div class="col">
@@ -111,7 +111,7 @@
         <div class="card border-0">
             <div class="card-header border-0 row justify-content-between">
                 <div class="col">
-                    <ul class="pagination pagination-sm mb-0">
+                    <ul class="pagination pagination-sm mb-2">
                         <!--previous-->
                         <li th:class="${page.getNumber() == 0 ? 'page-item disabled' : 'page-item'}">
                             <a th:if="${page.getNumber() > 0}"

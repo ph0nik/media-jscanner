@@ -20,9 +20,11 @@
     <script type="text/javascript" th:src="@{/js/sockjs.js}"></script>
     <script type="text/javascript" th:src="@{/js/stomp.js}"></script>
     <script type="text/javascript" th:src="@{/js/script.js}"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
+<div class="custom-page-scroll" th:id="${current_position}"></div>
 <div th:replace="~{query_list :: top_menu}"></div>
 <!--status message-->
 <div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
@@ -291,6 +293,7 @@
                 <div class="mb-3">
                     <label for="sourcepathtv" class="form-label">Insert new source path for media files:</label>
                     <input class="form-control form-control-sm bg-light-subtle" name="path" id="sourcepathtv"></input>
+                    <input type="hidden" value="tv" name="webPagePosition">
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary">Add new path</button>
             </form>
@@ -299,7 +302,7 @@
     </div>
 </div>
 <!--backup db-->
-<div class="bd-example m-0 pb-4 border-0" id="backup">
+<div class="bd-example m-0 pb-4 border-0" id="backup_db">
     <div class="card">
         <div class="card-header border-0">
             <i class="fa-solid fa-database fa-xl me-2"></i>
@@ -317,7 +320,7 @@
     </div>
 </div>
 <!--file info-->
-<div class="bd-example m-0 mb-2 border-0" id="extensions">
+<div class="bd-example m-0 mb-2 border-0" id="extensions_list">
     <div class="card">
         <div class="card-header border-0">
             <i class="fa-solid fa-file-video fa-xl me-2"></i>
@@ -325,12 +328,13 @@
         </div>
         <div class="card-body">
             <p class="card-text">Currently supported file extensions, that define element as media file.</p>
-            <ul class="list-group list-group-horizontal">
-                <li class="list-group-item" th:each="ext : ${extensions}" th:text="${ext}"></li>
+            <ul class="list-group list-group-horizontal row">
+                <li class="list-group-item col-auto" th:each="ext : ${extensions}" th:text="${ext}"></li>
             </ul>
         </div>
         <div th:replace="~{query_list :: back_to_top}"></div>
     </div>
 </div>
+<script type="text/javascript" src="../static/js/config.js" th:src="@{/js/config.js}"></script>
 </body>
 </html>
