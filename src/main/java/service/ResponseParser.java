@@ -35,9 +35,11 @@ public class ResponseParser {
     public List<QueryResult> parseTvWebResults(String document, String filePath) {
         return parseWebSearchResults(document, filePath, MediaType.TV);
     }
+
     public List<QueryResult> parseMovieWebResults(String document, String filePath) {
         return parseWebSearchResults(document, filePath, MediaType.MOVIE);
     }
+
     /*
      * Parses response html element.
      * Accepts string and path.
@@ -167,6 +169,7 @@ public class ResponseParser {
      * Parse single MovieItem object into QueryResult
      * */
     QueryResult parseMovieItem(MovieItem movieItem, QueryResult queryResult) {
+        System.out.println(movieItem);
         queryResult.setTheMovieDbId(movieItem.getId());
         queryResult.setTitle(movieItem.getTitle());
         queryResult.setDescription(movieItem.getDescription());
@@ -175,9 +178,11 @@ public class ResponseParser {
                 ? movieItem.getDate().substring(0, 4)
                 : movieItem.getDate();
         queryResult.setYear(queryYear);
-        String posterPath = (movieItem.getPoster() == null)
+        String posterPath = (movieItem.getPoster().isEmpty())
                 ? ""
-                : propertiesService.getNetworkProperties().getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
+                : propertiesService
+                .getNetworkProperties()
+                .getProperty(TMDB_POSTER_PREFIX) + movieItem.getPoster();
         queryResult.setPoster(posterPath);
         return queryResult;
     }
@@ -190,9 +195,13 @@ public class ResponseParser {
         queryResult.setTitle(tvItem.getTitle());
         queryResult.setMediaType(MediaType.TV);
         queryResult.setDescription(tvItem.getDescription());
-        String queryYear = (tvItem.getDate().length() >= 4) ? tvItem.getDate().substring(0, 4) : tvItem.getDate();
+        String queryYear = (tvItem.getDate().length() >= 4)
+                ? tvItem.getDate().substring(0, 4)
+                : tvItem.getDate();
         queryResult.setYear(queryYear);
-        String posterPath = (tvItem.getPoster() == null) ? "" : propertiesService.getNetworkProperties().getProperty(TMDB_POSTER_PREFIX) + tvItem.getPoster();
+        String posterPath = (tvItem.getPoster().isEmpty())
+                ? ""
+                : propertiesService.getNetworkProperties().getProperty(TMDB_POSTER_PREFIX) + tvItem.getPoster();
         queryResult.setPoster(posterPath);
         return queryResult;
     }

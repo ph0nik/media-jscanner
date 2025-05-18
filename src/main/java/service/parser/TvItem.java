@@ -15,7 +15,7 @@ public class TvItem {
     private String poster;
 
     public String getTitle() {
-        return title;
+        return (title == null) ? "" : title;
     }
 
     public void setTitle(String title) {
@@ -23,7 +23,7 @@ public class TvItem {
     }
 
     public String getDescription() {
-        return description;
+        return (description == null) ? "" : description;
     }
 
     public void setDescription(String description) {
@@ -31,7 +31,7 @@ public class TvItem {
     }
 
     public String getDate() {
-        return date;
+        return (date == null) ? "" : date;
     }
 
     public void setDate(String date) {
@@ -39,7 +39,7 @@ public class TvItem {
     }
 
     public String getPoster() {
-        return poster;
+        return (poster == null) ? "" : poster;
     }
 
     public void setPoster(String poster) {

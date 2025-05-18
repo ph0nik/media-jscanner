@@ -36,7 +36,8 @@ public class LinksController {
     private static final String REMOVE_LINK = "/remove-link/";
     private static final String DELETE_SOURCE_FILE = "/delete-original/";
     private static final String RESTORE_SOURCE_FILE = "/restore-original/";
-//    private static final String LINKS = "/links";
+
+    //    private static final String LINKS = "/links";
     @ModelAttribute
     private void setMenuLinks(Model model) {
 //        model.addAttribute("link_new", CREATE_NEW_LINK);
@@ -108,15 +109,14 @@ public class LinksController {
         return "redirect:" + CommonHandler.SCAN_FOR_MEDIA;
     }
 
-    // TODO check if parameter works
-    @PostMapping(value = DELETE_SOURCE_FILE + "{id}")
-    public String deleteOriginal(@PathVariable("id") long id, Model model) {
+    @PostMapping(value = DELETE_SOURCE_FILE)
+    public String deleteOriginal(@RequestParam("id") long id, Model model) {
         mediaLinksService.deleteOriginalFile(id);
         return "redirect:" + CommonHandler.LINKS;
     }
 
-    @PostMapping(value = RESTORE_SOURCE_FILE + "{id}")
-    public String restoreOriginal(@PathVariable("id") long id, Model model) throws IOException {
+    @PostMapping(value = RESTORE_SOURCE_FILE)
+    public String restoreOriginal(@RequestParam("id") long id, Model model) throws IOException {
         mediaLinksService.restoreOriginalFile(id);
         return "redirect:" + CommonHandler.LINKS;
     }

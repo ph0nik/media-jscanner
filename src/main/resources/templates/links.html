@@ -176,8 +176,9 @@
                         <form th:if="${link.originalPresent}"
                               action="#"
                               class="d-flex justify-content-start"
-                              th:action="@{__${link_delete_org}__{id}(id=${link.mediaId})}"
+                              th:action="@{__${link_delete_org}__}"
                               method="post">
+                            <input type="hidden" th:value="${link.mediaId}" name="id">
                             <button class="btn btn-link link-danger btn-sm" type="submit"><i
                                     class="fa-solid fa-xmark"></i>
                                 Delete source
@@ -186,8 +187,9 @@
                         <form th:if="${!link.originalPresent}"
                               action="#"
                               class="d-flex justify-content-start"
-                              th:action="@{__${link_restore_org}__{id}(id=${link.mediaId})}"
+                              th:action="@{__${link_restore_org}__}"
                               method="post">
+                            <input type="hidden" th:value="${link.mediaId}" name="id">
                             <button class="btn btn-link link-primary btn-sm" type="submit"><i
                                     class="fa-solid fa-trash-arrow-up"></i> Restore source
                             </button>

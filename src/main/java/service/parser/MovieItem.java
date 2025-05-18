@@ -17,7 +17,7 @@ public class MovieItem {
     private String imdbId;
 
     public String getImdbId() {
-        return imdbId;
+        return (imdbId == null) ? "" : imdbId;
     }
 
     public void setImdbId(String imdbId) {
@@ -25,7 +25,7 @@ public class MovieItem {
     }
 
     public String getTitle() {
-        return title;
+        return (title == null) ? "" : title;
     }
 
     public void setTitle(String title) {
@@ -33,7 +33,7 @@ public class MovieItem {
     }
 
     public String getDescription() {
-        return description;
+        return (description == null) ? "" : description;
     }
 
     public void setDescription(String description) {
@@ -41,7 +41,7 @@ public class MovieItem {
     }
 
     public String getDate() {
-        return date;
+        return (date == null) ? "" : date;
     }
 
     public void setDate(String date) {
@@ -49,7 +49,7 @@ public class MovieItem {
     }
 
     public String getPoster() {
-        return poster;
+        return (poster == null) ? "" : poster;
     }
 
     public void setPoster(String poster) {
