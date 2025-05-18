@@ -16,10 +16,12 @@ public class ExceptionController {
             NetworkException.class,
             ConfigurationException.class,
             NoApiKeyException.class,
+            MissingReferenceMediaQueryException.class
 //            Exception.class // temp
     })
     protected String getErrorMessage(Exception ex, Model model) {
-        model.addAttribute("error_msg", ex.getMessage());
+        model.addAttribute("error_details", ex.getMessage());
+        model.addAttribute("error_string", ex.toString());
         return "error";
     }
 

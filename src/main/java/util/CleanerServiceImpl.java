@@ -54,16 +54,21 @@ public class CleanerServiceImpl implements CleanerService {
     @Override
     public boolean deleteSingleFile(Path path) {
         try {
-            return deleteResult(path, Files.deleteIfExists(path));
+            return deleteResult(
+                    path,
+                    Files.isDirectory(path),
+                    Files.deleteIfExists(path)
+            );
         } catch (IOException e) {
             LOG.error("[ delete_element ] File: {}, Error:{}", path, e.getMessage());
         }
         return false;
     }
 
-    boolean deleteResult(Path f, boolean b) {
-        if (b) LOG.info("[ element_delete ] File deleted: {}", f);
-        else LOG.warn("[ element_delete ] File in use: {}", f);
+    boolean deleteResult(Path f, boolean isFolder, boolean b) {
+        String s = (isFolder) ? "directory" : "file";
+        if (b) LOG.info("[ element_delete ] {} deleted: {}", s,f);
+        else LOG.warn("[ element_delete ] {} doesn't exist or in use: {}", s,f);
         return b;
     }
 

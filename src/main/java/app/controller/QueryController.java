@@ -15,6 +15,7 @@ import service.AutoMatcherService;
 import service.MediaConnectionService;
 import service.MediaLinksService;
 import service.PropertiesService;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NetworkException;
 import service.query.MovieQueryService;
 import service.query.TvQueryService;
@@ -151,7 +152,8 @@ public class QueryController {
      * */
     @PostMapping(value = SELECT_QUERY)
     public String selectQuery(@RequestParam String custom,
-                              @RequestParam UUID uuid, Model model) throws NetworkException {
+                              @RequestParam UUID uuid, Model model)
+            throws NetworkException, MissingReferenceMediaQueryException {
         movieQueryService.setReferenceQuery(uuid);
 /*
  TODO select query > check multipart > set multipart > set reference queries > search web > result selection
@@ -177,7 +179,7 @@ public class QueryController {
 
     @PostMapping(value = SET_MULTI_PART)
     public String setMultiPart(@ModelAttribute MultipartDto multipartDto, Model model)
-            throws NetworkException {
+            throws NetworkException, MissingReferenceMediaQueryException {
         List<QueryResult> queryResults = movieConnectionService.getMultipleFilesResults(
                 multipartDto, movieQueryService
         );
@@ -188,7 +190,7 @@ public class QueryController {
     }
 
     @GetMapping(value = SKIP_MULTI_PART)
-    public String skipMultiPart(Model model) throws NetworkException {
+    public String skipMultiPart(Model model) throws NetworkException, MissingReferenceMediaQueryException {
         List<QueryResult> queryResults = movieConnectionService.getResults(movieQueryService);
         model.addAttribute("query", movieQueryService.getReferenceQuery());
         model.addAttribute("result_list", queryResults);
@@ -199,7 +201,7 @@ public class QueryController {
     @PostMapping(value = SEARCH_WITH_YEAR)
     public String searchTmdbWithYear(@RequestParam String custom,
                                      @RequestParam Optional<Integer> year,
-                                     Model model) throws NetworkException {
+                                     Model model) throws NetworkException, MissingReferenceMediaQueryException {
         List<QueryResult> resultsCustomSearchTmdb = movieConnectionService.getResultsCustomSearchTmdb(
                 movieQueryService, custom, year
         );
@@ -211,7 +213,8 @@ public class QueryController {
 
     // TODO differentiate badges for query results depending on tv or movie
     @PostMapping(value = SEARCH_WITH_IMDB_LINK)
-    public String passImdbLink(@RequestParam String imdbLink, Model model) throws NetworkException {
+    public String passImdbLink(@RequestParam String imdbLink, Model model)
+            throws NetworkException, MissingReferenceMediaQueryException {
         List<QueryResult> resultsImdbLinkSearch = movieConnectionService.getResultsImdbLinkSearch(
                 imdbLink, movieQueryService
         );
@@ -225,7 +228,8 @@ public class QueryController {
      * GET mapping as a protection measure in case user reloads page
      * */
     @GetMapping(value = {SELECT_QUERY, SEARCH_WITH_YEAR})
-    public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model) {
+    public String selectQueryGet(@PathVariable(value = "id", required = false) Long id, Model model)
+            throws MissingReferenceMediaQueryException {
         if (mediaLinksService.getLatestMediaQueryRequest().isEmpty()) return "redirect:/";
         model.addAttribute("result_list", mediaLinksService.getLatestMediaQueryRequest());
         model.addAttribute("query_result", new QueryResult());
@@ -258,7 +262,8 @@ public class QueryController {
     }
 
     @PostMapping(value = MARK_AS_IGNORED)
-    public String addToIgnoreList(@RequestParam UUID uuid, Model model)  {
+    public String addToIgnoreList(@RequestParam UUID uuid, Model model)
+            throws MissingReferenceMediaQueryException {
         movieQueryService.setReferenceQuery(uuid);
         movieQueryService.addQueryToProcess(movieQueryService.getReferenceQuery());
         mediaLinksService.ignoreMediaFile(movieQueryService);

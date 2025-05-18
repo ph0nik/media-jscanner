@@ -4,6 +4,7 @@ import model.MediaQuery;
 import model.multipart.MultiPartElement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import service.exceptions.MissingReferenceMediaQueryException;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.UUID;
 
 public interface MediaQueryService {
 
-    MediaQuery getReferenceQuery();
+    MediaQuery getReferenceQuery() throws MissingReferenceMediaQueryException;
 
     void setReferenceQuery(UUID mediaQueryUuid);
 

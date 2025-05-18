@@ -5,6 +5,7 @@ import model.QueryResult;
 import model.StatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import service.query.TvQueryService;
@@ -32,23 +33,23 @@ public interface MediaLinksService {
      * On connection error it returns query result elements with error description.
      * */
     List<QueryResult> executeMediaQuery(String customQuery, MediaIdentifier mediaIdentifier,
-                                        MediaQueryService mediaQueryService) throws NetworkException;
+                                        MediaQueryService mediaQueryService) throws NetworkException, MissingReferenceMediaQueryException;
 
     List<QueryResult> searchTmdbWithTitleAndYear(String customQuery,
                                                  MediaIdentifier mediaIdentifier,
                                                  int year,
-                                                 MediaQueryService mediaQueryService) throws NetworkException;
+                                                 MediaQueryService mediaQueryService) throws NetworkException, MissingReferenceMediaQueryException;
 
     List<QueryResult> searchWithImdbId(String imdbId,
                                        MediaIdentifier mediaIdentifier,
-                                       MediaQueryService mediaQueryService) throws NetworkException;
+                                       MediaQueryService mediaQueryService) throws NetworkException, MissingReferenceMediaQueryException;
 
 
     List<QueryResult> multiSearchTmdb(
             String customQuery,
             MediaIdentifier mediaIdentifier,
             MediaQueryService mediaQueryService
-    ) throws NetworkException;
+    ) throws NetworkException, MissingReferenceMediaQueryException;
 
     QueryResult getTvDetails(QueryResult queryResult, int seasonNumber) throws NetworkException;
 
@@ -84,7 +85,7 @@ public interface MediaLinksService {
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    int ignoreMediaFile(MediaQueryService mediaQueryService);
+    int ignoreMediaFile(MediaQueryService mediaQueryService) throws MissingReferenceMediaQueryException;
 
     /*
     * Filter all ignored results with given query

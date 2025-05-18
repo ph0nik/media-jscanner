@@ -13,7 +13,7 @@ public interface BackupService {
     * Created filename is based of current date and time.
     * Returns filename.
     * */
-    String exportRecords(Path dataDirectory, List<MediaLink> mediaLinkList) throws IOException, MissingFolderOrFileException; //TODO
+    String exportRecords(Path dataDirectory, List<MediaLink> mediaLinkList) throws IOException, MissingFolderOrFileException;
 
     /*
     * Imports list of MediaLink objects from a file.

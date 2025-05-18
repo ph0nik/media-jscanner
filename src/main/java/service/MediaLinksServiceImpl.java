@@ -1,6 +1,5 @@
 package service;
 
-import app.config.CacheConfig;
 import dao.MediaTrackerDao;
 import model.*;
 import model.validator.RequiredFieldException;
@@ -8,11 +7,11 @@ import model.validator.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import service.query.TvQueryService;
@@ -31,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class MediaLinksServiceImpl implements MediaLinksService {
+public class MediaLinksServiceImpl extends CounterCacheService implements MediaLinksService {
     private static final Logger LOG = LoggerFactory.getLogger(MediaLinksServiceImpl.class);
     private static final int DEFAULT_YEAR_VALUE = 0; // 1000
     private static final String LAST_REQUEST_KEY = "last-request";
@@ -58,6 +57,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                                  RequestService requestService,
                                  ResponseParser responseParser,
                                  CacheManager cacheManager) {
+        super(cacheManager);
         this.mediaTrackerDao = dao;
         this.propertiesService = propertiesService;
         this.cleanerService = cleanerService;
@@ -97,24 +97,6 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return pagination.getPage(pageable, allMediaLinks);
     }
 
-    private void updateCache(String cacheKey, Object value) {
-        if (value != null) {
-            Cache cache = cacheManager.getCache(CacheConfig.MEDIA_LINKS_SERVICE);
-            if (cache != null) {
-                cache.put(cacheKey, value);
-            }
-        }
-    }
-
-    private <T> T getFromCache(String cacheKey, Class<T> type) {
-        Cache cache = cacheManager.getCache(CacheConfig.MEDIA_LINKS_SERVICE);
-        return (cache != null) ? cache.get(cacheKey, type) : null;
-    }
-
-    private void clearCache(String cacheKey) {
-        Cache cache = cacheManager.getCache(CacheConfig.MEDIA_LINKS_SERVICE);
-        if (cache != null) cache.evict(cacheKey);
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -135,41 +117,6 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         );
     }
 
-    private int getChangedElementsCount(String cacheKey) {
-        Integer fromCache = getFromCache(
-                cacheKey,
-                Integer.class);
-        return (fromCache == null) ? 0 : fromCache;
-    }
-
-    private void setChangedLinksCount(Integer deletedLinks) {
-        updateCache(CHANGE_LINKS_KEY, deletedLinks);
-    }
-
-    private String getSignedValue(Integer value) {
-        if (value == null) return "0";
-        if (value > 0) {
-            return "+" + value;
-        }
-        if (value < 0) {
-            return "-" + value;
-        }
-        return "0";
-    }
-
-    private String getChangedLinksCount() {
-        int changedElementsCount = getChangedElementsCount(CHANGE_LINKS_KEY);
-        return getSignedValue(changedElementsCount);
-    }
-
-    private void setChangedIgnoreCount(Integer deletedIgnore) {
-        updateCache(CHANGE_IGNORE_KEY, deletedIgnore);
-    }
-
-    private String getChangedIgnoreCount() {
-        int changedElementsCount = getChangedElementsCount(CHANGE_IGNORE_KEY);
-        return getSignedValue(changedElementsCount);
-    }
 
     @Override
     public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess) {
@@ -189,7 +136,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     @Override
     public List<QueryResult> executeMediaQuery(String customQuery, MediaIdentifier mediaIdentifier,
                                                MediaQueryService mediaQueryService)
-            throws NetworkException {
+            throws NetworkException, MissingReferenceMediaQueryException {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
         List<QueryResult> combinedSearchResults = List.of();
         if (mediaQuery.getMediaType() == MediaType.MOVIE) {
@@ -215,7 +162,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                                                         MediaIdentifier mediaIdentifier,
                                                         int year,
                                                         MediaQueryService mediaQueryService)
-            throws NetworkException {
+            throws NetworkException, MissingReferenceMediaQueryException {
         LOG.info("[ search_with_year ] {} | {} | {}", customQuery, mediaIdentifier, year);
         MediaQuery referenceQuery = mediaQueryService.getReferenceQuery();
         if (referenceQuery.getMediaType() == MediaType.MOVIE) {
@@ -234,7 +181,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     public List<QueryResult> searchWithImdbId(String imdbLink,
                                               MediaIdentifier mediaIdentifier,
                                               MediaQueryService mediaQueryService)
-            throws NetworkException {
+            throws NetworkException, MissingReferenceMediaQueryException {
         String imdbId = TextExtractTools.getImdbIdFromLink(imdbLink);
         LOG.info("[ search_with_imdb_id ] {}", imdbId);
         return generalSearchRequest(imdbId, mediaQueryService.getReferenceQuery(),
@@ -246,7 +193,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
             String customQuery,
             MediaIdentifier mediaIdentifier,
             MediaQueryService mediaQueryService
-    ) throws NetworkException {
+    ) throws NetworkException, MissingReferenceMediaQueryException {
         LOG.info("[ multi_search ] {}", customQuery);
         return generalSearchRequest(customQuery, mediaQueryService.getReferenceQuery(),
                 mediaIdentifier, DEFAULT_YEAR_VALUE, SearchType.TMBD_MULTI_SEARCH);
@@ -345,15 +292,6 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         }
         return mediaLinks;
     }
-
-
-//    public List<MediaLink> editExistingMediaLinksTv(MediaLinkDto mediaLinkDto) {
-//        List<TvMediaLinkDto> mediaLinkDtos = mediaLinkDto.getMediaLinkDtos();
-//        for (TvMediaLinkDto tvMediaLinkDto : mediaLinkDtos) {
-//            MediaLink mediaLink = tvMediaLinkDto.getMediaLink();
-//
-//        }
-//    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -534,7 +472,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public int ignoreMediaFile(MediaQueryService mediaQueryService) {
+    public int ignoreMediaFile(MediaQueryService mediaQueryService)
+            throws MissingReferenceMediaQueryException {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
         MediaLink mediaIgnored = new MediaLink();
         mediaIgnored.setOriginalPath(mediaQuery.getFilePath());
@@ -560,7 +499,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return filterMediaLinks(true).collect(Collectors.toList());
     }
 
-    Stream<MediaLink> filterMediaLinks(boolean ignoredOnly) {
+    private Stream<MediaLink> filterMediaLinks(boolean ignoredOnly) {
         return (ignoredOnly)
                 ? getAllMediaLinks(ml -> ml.getLinkPath().equals("ignore"))
                 : getAllMediaLinks(ml -> !ml.getLinkPath().equals("ignore"));
@@ -633,6 +572,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     // TODO when scanning for new files show creation date (last modified) and file size
+    // add counter for processed files
     @Override
     public void moveBackToQueue(long mediaLinkId) throws IOException {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
@@ -644,6 +584,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         Path elementToBeRemoved = Path.of(mediaLink.getLinkPath());
         cleanerService.deleteSingleFile(elementToBeRemoved);
         cleanerService.clearEmptyFolders(elementToBeRemoved.getParent()); // clear parent folder
+        setChangedLinksCount(-1);
         LOG.info("[ remove_link ] Link removed for file: {}", mediaLink.getOriginalPath());
     }
 
@@ -704,7 +645,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     /*
-     * TODO
+     * TODO change creating links to moving files
      * */
     public void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder) {
         List<MediaLink> allMediaLinks = mediaTrackerDao.getAllMediaLinks();

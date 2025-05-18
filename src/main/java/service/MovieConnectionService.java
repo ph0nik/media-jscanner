@@ -7,6 +7,7 @@ import model.links.MediaLinkDto;
 import model.links.TvMediaLinkDto;
 import model.multipart.MultipartDto;
 import org.springframework.stereotype.Service;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import util.MediaIdentifier;
@@ -59,7 +60,8 @@ public class MovieConnectionService implements MediaConnectionService {
 
 
     @Override
-    public List<QueryResult> getMultipleFilesResults(MultipartDto multipartDto, MediaQueryService mediaQueryService) throws NetworkException {
+    public List<QueryResult> getMultipleFilesResults(MultipartDto multipartDto, MediaQueryService mediaQueryService)
+            throws NetworkException, MissingReferenceMediaQueryException {
         mediaQueryService.addQueriesToProcess(multipartDto.getMultiPartElementList());
         return mediaLinksService.executeMediaQuery("",
                 MediaIdentifier.IMDB, mediaQueryService);
@@ -73,7 +75,8 @@ public class MovieConnectionService implements MediaConnectionService {
 //    }
 
     @Override
-    public List<QueryResult> getResults(MediaQueryService mediaQueryService) throws NetworkException {
+    public List<QueryResult> getResults(MediaQueryService mediaQueryService)
+            throws NetworkException, MissingReferenceMediaQueryException {
         mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
         return mediaLinksService.executeMediaQuery("",
                 MediaIdentifier.IMDB, mediaQueryService);
@@ -81,7 +84,8 @@ public class MovieConnectionService implements MediaConnectionService {
 
     @Override
     public List<QueryResult> getResultsCustomSearchTmdb(
-            MediaQueryService mediaQueryService, String custom, Optional<Integer> year) throws NetworkException {
+            MediaQueryService mediaQueryService, String custom, Optional<Integer> year)
+            throws NetworkException, MissingReferenceMediaQueryException {
 //        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
         if (mediaQueryService.getReferenceQuery() != null) {
             return mediaLinksService.searchTmdbWithTitleAndYear(custom,
@@ -94,7 +98,8 @@ public class MovieConnectionService implements MediaConnectionService {
 
     @Override
     public List<QueryResult> getResultsImdbLinkSearch(
-            String imdbLink, MediaQueryService mediaQueryService) throws NetworkException {
+            String imdbLink, MediaQueryService mediaQueryService)
+            throws NetworkException, MissingReferenceMediaQueryException {
         // check if imdb link is valid
         return mediaLinksService.searchWithImdbId(
                 imdbLink,
@@ -104,7 +109,8 @@ public class MovieConnectionService implements MediaConnectionService {
 
     @Override
     public List<QueryResult> getResultsCustomSearchWeb(
-            MediaQueryService mediaQueryService, String custom) throws NetworkException {
+            MediaQueryService mediaQueryService, String custom)
+            throws NetworkException, MissingReferenceMediaQueryException {
 //        mediaQueryService.addQueryToProcess(mediaQueryService.getReferenceQuery());
         if (mediaQueryService.getReferenceQuery() != null) {
             return mediaLinksService.multiSearchTmdb(custom, MediaIdentifier.IMDB, mediaQueryService);

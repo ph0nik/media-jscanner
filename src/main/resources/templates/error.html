@@ -28,7 +28,8 @@
 <!--error, no user paths found-->
 <div class="row justify-content-center">
     <div class="col-auto m-2 text-center alert alert-danger" role="alert">
-        <span th:text="${error_msg}"></span>
+        <h3 th:text="${error_details}">Some error has occured</h3>
+        <h5 th:text="${error_string}">details</h5>
 
     </div>
 </div>

@@ -10,6 +10,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import service.Pagination;
+import service.exceptions.MissingReferenceMediaQueryException;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -35,10 +36,11 @@ public abstract class GeneralQueryService implements MediaQueryService {
         this.cacheManager = cacheManager;
     }
 
-    // TODO this might return null if value for this key was not set up
     @Override
-    public MediaQuery getReferenceQuery() {
-        return getFromCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_REFERENCE, MediaQuery.class);
+    public MediaQuery getReferenceQuery() throws MissingReferenceMediaQueryException {
+        MediaQuery fromCache = getFromCache(CacheConfig.MEDIA_QUERIES, MEDIA_QUERY_REFERENCE, MediaQuery.class);
+        if (fromCache == null) throw new MissingReferenceMediaQueryException();
+        else return fromCache;
     }
 
     @Override

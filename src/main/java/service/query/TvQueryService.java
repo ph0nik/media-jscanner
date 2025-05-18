@@ -10,6 +10,7 @@ import scanner.MediaFilesScanner;
 import service.LiveDataService;
 import service.Pagination;
 import service.PropertiesService;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NoQueryFoundException;
 import util.MediaType;
 import util.TextExtractTools;
@@ -137,7 +138,7 @@ public class TvQueryService extends GeneralQueryService {
      * Extract season number from file name if possible
      * Returns -1 in case of not matching right pattern.
      * */
-    public int getSeasonTv() {
+    public int getSeasonTv() throws MissingReferenceMediaQueryException {
         return TextExtractTools.extractSeasonNumber(getReferenceQuery().getFilePath());
     }
 

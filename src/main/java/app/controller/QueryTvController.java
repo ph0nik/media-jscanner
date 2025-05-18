@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import service.*;
+import service.exceptions.MissingReferenceMediaQueryException;
 import service.exceptions.NetworkException;
 import service.exceptions.NoQueryFoundException;
 import service.query.TvQueryService;
@@ -44,6 +45,7 @@ public class QueryTvController {
     private static final String SEARCH_WITH_IMDB_LINK = "/tv-imdb-link/";
     private static final String NEW_TV_LINK = "/new-link-tv/";
     private static final String NEW_TV_IGNORE = "/new-ignore-tv/";
+
     @ModelAttribute
     private void setMenuLinks(Model model) {
         model.addAttribute("tv_search", SEARCH_WITH_QUERY);
@@ -57,6 +59,7 @@ public class QueryTvController {
         model.addAttribute("tv_new_ignore", NEW_TV_IGNORE);
         model.addAttribute("current_menu", 1);
     }
+
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
     private Page<MediaQuery> paginatedTvQueries;
@@ -105,7 +108,8 @@ public class QueryTvController {
     }
 
     @PostMapping(value = SELECT_QUERY)
-    public String selectQuery(@RequestParam String path, Model model) throws NoQueryFoundException, NetworkException {
+    public String selectQuery(@RequestParam String path, Model model)
+            throws NoQueryFoundException, NetworkException, MissingReferenceMediaQueryException {
         tvQueryService.setUpQueryReference(path);
         List<QueryResult> queryResults = mediaConnectionService.getResults(tvQueryService);
         model.addAttribute("season", tvQueryService.getSeasonTv());
@@ -117,7 +121,8 @@ public class QueryTvController {
 
     @PostMapping(value = SEARCH_WITH_CUSTOM)
     public String customTvSearchWeb(@RequestParam String custom,
-                                    Model model) throws NetworkException {
+                                    Model model)
+            throws NetworkException, MissingReferenceMediaQueryException {
         System.out.println("try custom: " + custom);
         List<QueryResult> queryResults = mediaConnectionService.getResultsCustomSearchWeb(tvQueryService, custom);
         model.addAttribute("season", tvQueryService.getSeasonTv());
@@ -128,9 +133,12 @@ public class QueryTvController {
     }
 
     @PostMapping(value = SEARCH_WITH_YEAR)
-    public String customTvSearchWithYear(@RequestParam String custom,
-                                         @RequestParam Optional<Integer> year,
-                                         Model model) throws NetworkException {
+    public String customTvSearchWithYear(
+            @RequestParam String custom,
+            @RequestParam Optional<Integer> year,
+            Model model
+    )
+            throws NetworkException, MissingReferenceMediaQueryException {
         List<QueryResult> queryResults = mediaConnectionService.getResultsCustomSearchTmdb(tvQueryService,
                 custom, year);
         model.addAttribute("season", tvQueryService.getSeasonTv());
@@ -142,7 +150,7 @@ public class QueryTvController {
 
     @PostMapping(value = SELECT_EPISODES)
     public String selectEpisodes(@ModelAttribute("query_result") QueryResult queryResult, Model model)
-            throws FileNotFoundException, NetworkException {
+            throws FileNotFoundException, NetworkException, MissingReferenceMediaQueryException {
         int seasonNumber = queryResult.getMultipart();
         queryResult = mediaLinksService.getTvDetails(queryResult, seasonNumber);
         List<MediaLink> mediaLinksTv = mediaLinksService.createMediaLinksTv(queryResult, seasonNumber, tvQueryService);
@@ -183,7 +191,8 @@ public class QueryTvController {
     }
 
     @PostMapping(value = NEW_TV_IGNORE)
-    public String addToIgnoreList(@RequestParam UUID uuid, Model model)  {
+    public String addToIgnoreList(@RequestParam UUID uuid, Model model)
+            throws MissingReferenceMediaQueryException {
         System.out.println("ignore tv" + uuid);
         tvQueryService.setReferenceQuery(uuid);
         System.out.println(tvQueryService.getReferenceQuery());
