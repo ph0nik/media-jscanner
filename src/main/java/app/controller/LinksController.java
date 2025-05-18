@@ -10,7 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import service.MediaLinksService;
 import service.PropertiesService;
-import service.SortingType;
+import service.SortBy;
 import service.query.MediaQueryService;
 
 import java.io.IOException;
@@ -65,15 +65,14 @@ public class LinksController {
          * Optional request parameter is being evaluated and list is sorted
          * accordingly. If no argument is given sorting falls back to default.
          * */
-        SortingType sortingType;
-        if (sort == null || sort.equals("link")) sortingType = SortingType.LINK_PATH;
-        else if (sort.equals("target")) sortingType = SortingType.SOURCE_PATH;
-        else sortingType = SortingType.DELETED_SOURCE_PATH;
+        SortBy sortBy;
+        if (sort == null || sort.equals("link")) sortBy = SortBy.LINK_PATH;
+        else if (sort.equals("target")) sortBy = SortBy.SOURCE_PATH;
+        else sortBy = SortBy.DELETED_SOURCE_PATH;
 
-        // TODO fix items per page
         Page<MediaLink> paginatedLinks = mediaLinksService.getPageableLinksWithSorting(
                 PageRequest.of(currentPage - 1, pageSize),
-                sortingType
+                sortBy
         );
 
 //        Comparator<MediaLink> comparator = (sort != null && sort.equals("link"))
@@ -102,17 +101,6 @@ public class LinksController {
         mediaLinksService.clearInvalidIgnoreAndLinks();
         return "redirect:" + CommonHandler.LINKS;
     }
-
-//    @PostMapping(value = SEARCH_LINKS)
-//    public String searchLink(@RequestParam("search") String search, Model model) {
-//        int min = 1;
-//        int max = sessionPageSize;
-//        Page<MediaLink> paginatedLinks = mediaLinksService.getPageableLinks(PageRequest.of(0, sessionPageSize), mediaLinksService.searchMediaLinks(search));
-//        model.addAttribute("page", paginatedLinks);
-//        model.addAttribute("page_min", min);
-//        model.addAttribute("page_max", max);
-//        return "links";
-//    }
 
     @PostMapping(value = REMOVE_LINK)
     public String removeLink(@RequestParam("id") long id, Model model) throws IOException {

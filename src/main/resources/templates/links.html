@@ -22,61 +22,16 @@
 </head>
 <body class="container-fluid">
 <div th:replace="~{query_list :: top_menu}"></div>
-
-<!--<div class="row sticky-top" id="top">-->
-<!--    &lt;!&ndash;    top menu&ndash;&gt;-->
-<!--    <nav class="navbar-dark bg-dark bg-gradient">-->
-<!--        <a class="navbar-brand" href="#">media-jScanner</a>-->
-<!--    </nav>-->
-<!--    <nav class="navbar bg-secondary bg-gradient border-bottom border-secondary">-->
-<!--        <div class="container-fluid align-items-center">-->
-<!--            <ul class="nav nav-underline nav-fill">-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">-->
-<!--                        <i class="fa-solid fa-film"></i>movies</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_tv}">-->
-<!--                        <i class="fa-solid fa-tv"></i>tv</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link active" aria-current="true" th:href="${tab_links}">-->
-<!--                        <i class="fa-solid fa-link"></i>links</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">-->
-<!--                        <i class="fa-solid fa-ban"></i>ignored</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link" th:href="${tab_movie}">-->
-<!--                        <i class="fa-solid fa-hat-wizard"></i>wizard</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-dark-emphasis link-light icon-link"-->
-<!--                       th:href="${tab_config}">-->
-<!--                        <i class="fa-solid fa-gears"></i>settings</a>-->
-<!--                </li>-->
-<!--                <li class="nav-item px-2">-->
-<!--                    <a class="nav-link text-danger-emphasis link-light icon-link" th:href="${movie_scan}">-->
-<!--                        <i class="fa-solid fa-arrows-rotate fa-lg"></i>refresh</a>-->
-<!--                </li>-->
-<!--            </ul>-->
-<!--            <form class="d-flex ms-auto" role="search">-->
-<!--                <input class="form-control form-control-sm me-2" type="search" placeholder="Search" aria-label="Search">-->
-<!--                <button class="btn btn-outline-light btn-sm" type="submit">Search</button>-->
-<!--            </form>-->
-<!--        </div>-->
-<!--    </nav>-->
-<!--</div>-->
 <!--status message-->
-<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
+<div th:replace="~{query_list :: info_console}"></div>
+<!--<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
     <div class="col-1 text-end">
         <span>[ status ]</span>
     </div>
     <div class="col">
         <span th:text="${message}"></span>
     </div>
-</div>
+</div>-->
 
 <!--page title-->
 <div class="row">

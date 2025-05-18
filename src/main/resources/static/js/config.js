@@ -1,5 +1,8 @@
 window.onload = scrollToId();
 
+// TODO document.getElementBtId('id').getAttribute('class');
+// then search class element for value that determines last visited segment
+
 function scrollToId() {
     var select = document.getElementsByClassName("custom-page-scroll")[0].id;
     var element;

@@ -196,16 +196,6 @@ public class QueryController {
         return "result_selection";
     }
 
-//    @PostMapping(value = GENERAL_SEARCH)
-//    public String searchGeneral(@RequestParam String custom, Model model) throws NetworkException {
-//        List<QueryResult> queryResults = mediaConnectionService.getResultsCustomSearchWeb(movieQueryService, custom);
-//        System.out.println(queryResults);
-//        model.addAttribute("query", movieQueryService.getReferenceQuery());
-//        model.addAttribute("result_list", queryResults);
-//        model.addAttribute("query_result", new QueryResult());
-//        return "result_selection";
-//    }
-
     @PostMapping(value = SEARCH_WITH_YEAR)
     public String searchTmdbWithYear(@RequestParam String custom,
                                      @RequestParam Optional<Integer> year,

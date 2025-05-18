@@ -24,17 +24,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body class="container-fluid">
+<!--last viewed element-->
 <div class="custom-page-scroll" th:id="${current_position}"></div>
 <div th:replace="~{query_list :: top_menu}"></div>
 <!--status message-->
-<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
-    <div class="col-1 text-end">
-        <span>[ status ]</span>
-    </div>
-    <div class="col">
-        <span th:text="${message}"></span>
-    </div>
-</div>
+<div th:replace="~{query_list :: info_console}"></div>
+<!--<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">-->
+<!--    <div class="col-1 text-end">-->
+<!--        <span>[ status ]</span>-->
+<!--    </div>-->
+<!--    <div class="col">-->
+<!--        <span th:text="${message}"></span>-->
+<!--    </div>-->
+<!--</div>-->
 <!--page title-->
 <div class="row">
     <div class="col">

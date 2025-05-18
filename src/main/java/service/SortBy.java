@@ -1,5 +1,5 @@
 package service;
 
-public enum SortingType {
+public enum SortBy {
     SOURCE_PATH, LINK_PATH, DELETED_SOURCE_PATH
 }

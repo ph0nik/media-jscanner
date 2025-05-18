@@ -12,7 +12,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.*;
@@ -29,9 +28,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@SpringBootTest
+@SpringBootTest(classes = CacheConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(CacheConfig.class)
 class TvQueryServiceTest {
     static MediaQueryService mediaQueryService;
     static MediaTrackerDao mediaTrackerDao;

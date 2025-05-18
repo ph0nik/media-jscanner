@@ -2,10 +2,7 @@ package service;
 
 import app.config.CacheConfig;
 import dao.MediaTrackerDao;
-import model.MediaLink;
-import model.MediaQuery;
-import model.OperationResult;
-import model.QueryResult;
+import model.*;
 import model.validator.RequiredFieldException;
 import model.validator.Validator;
 import org.slf4j.Logger;
@@ -40,6 +37,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     private static final String LAST_REQUEST_KEY = "last-request";
     private static final String LINKS_TO_PROCESS_KEY = "links-to-process";
     private static final String DUPLICATE_LINKS_KEY = "duplicate-links";
+    private static final String CHANGE_LINKS_KEY = "change-links";
+    private static final String CHANGE_IGNORE_KEY = "change-ignored";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
@@ -74,11 +73,11 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         return pagination.getPage(pageable, mediaLinkList);
     }
 
-    private Comparator<MediaLink> getComparator(SortingType sortingType) {
+    private Comparator<MediaLink> getComparator(SortBy sortBy) {
         Comparator<MediaLink> comparator;
-        if (sortingType == SortingType.LINK_PATH) {
+        if (sortBy == SortBy.LINK_PATH) {
             comparator = Comparator.comparing(MediaLink::getLinkPath);
-        } else if (sortingType == SortingType.SOURCE_PATH) {
+        } else if (sortBy == SortBy.SOURCE_PATH) {
             comparator = Comparator.comparing(MediaLink::getOriginalPath);
         } else {
             comparator = Comparator.comparing(MediaLink::isOriginalPresent)
@@ -89,11 +88,11 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortingType sortingType) {
-        getComparator(sortingType);
+    public Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortBy sortBy) {
+        getComparator(sortBy);
         List<MediaLink> allMediaLinks = getMediaLinks()
                 .stream()
-                .sorted(getComparator(sortingType))
+                .sorted(getComparator(sortBy))
                 .collect(Collectors.toList());
         return pagination.getPage(pageable, allMediaLinks);
     }
@@ -124,6 +123,52 @@ public class MediaLinksServiceImpl implements MediaLinksService {
                 LINKS_TO_PROCESS_KEY,
                 List.class);
         return (fromCache == null) ? List.of() : fromCache;
+    }
+
+    @Override
+    public StatusDto getStatusDto() {
+        return new StatusDto(
+                getMediaLinks().size(),
+                getMediaIgnoredList().size(),
+                getChangedLinksCount(),
+                getChangedIgnoreCount()
+        );
+    }
+
+    private int getChangedElementsCount(String cacheKey) {
+        Integer fromCache = getFromCache(
+                cacheKey,
+                Integer.class);
+        return (fromCache == null) ? 0 : fromCache;
+    }
+
+    private void setChangedLinksCount(Integer deletedLinks) {
+        updateCache(CHANGE_LINKS_KEY, deletedLinks);
+    }
+
+    private String getSignedValue(Integer value) {
+        if (value == null) return "0";
+        if (value > 0) {
+            return "+" + value;
+        }
+        if (value < 0) {
+            return "-" + value;
+        }
+        return "0";
+    }
+
+    private String getChangedLinksCount() {
+        int changedElementsCount = getChangedElementsCount(CHANGE_LINKS_KEY);
+        return getSignedValue(changedElementsCount);
+    }
+
+    private void setChangedIgnoreCount(Integer deletedIgnore) {
+        updateCache(CHANGE_IGNORE_KEY, deletedIgnore);
+    }
+
+    private String getChangedIgnoreCount() {
+        int changedElementsCount = getChangedElementsCount(CHANGE_IGNORE_KEY);
+        return getSignedValue(changedElementsCount);
     }
 
     @Override
@@ -376,13 +421,16 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public void persistsCollectedMediaLinks(MediaQueryService mediaQueryService) {
+    public int persistsCollectedMediaLinks(MediaQueryService mediaQueryService) {
+        int links = 0;
         for (MediaLink ml : getMediaLinksToProcess()) {
             try {
                 Validator.validateForNulls(ml);
+                mediaTrackerDao.addNewLink(ml);
                 if (createHardLinkWithDirectories(ml)) {
-                    mediaTrackerDao.addNewLink(ml);
+//                    mediaTrackerDao.addNewLink(ml); // TODO moved
                     mediaQueryService.removeQueryByFilePath(ml.getOriginalPath());
+                    links++;
                 }
             } catch (RequiredFieldException | IllegalAccessException e) {
                 LOG.error("[ media_links_service ] Empty media link field: {}", e.getMessage());
@@ -392,6 +440,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         }
         clearMediaLinksToProcess();
         clearDuplicateLinks();
+        setChangedLinksCount(links);
+        return links;
     }
 
     void checkForExistingMediaLinks(List<MediaLink> mediaLinks) {
@@ -402,7 +452,8 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      * Checks if link with the same path already exist
      * */
     boolean linkRecordExist(MediaLink mediaLink) {
-        return getMediaLinks().stream()
+        return getMediaLinks()
+                .stream()
                 .anyMatch(ml ->
                         ml.getLinkPath().equals(mediaLink.getLinkPath()) &&
                                 ml.getOriginalPath().equals(mediaLink.getOriginalPath()));
@@ -483,7 +534,7 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public MediaLink ignoreMediaFile(MediaQueryService mediaQueryService) {
+    public int ignoreMediaFile(MediaQueryService mediaQueryService) {
         MediaQuery mediaQuery = mediaQueryService.getReferenceQuery();
         MediaLink mediaIgnored = new MediaLink();
         mediaIgnored.setOriginalPath(mediaQuery.getFilePath());
@@ -494,7 +545,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
         mediaTrackerDao.addNewLink(mediaIgnored);
         LOG.info("[ ignore ] Ignored element: {}", mediaQuery.getFilePath());
         mediaQueryService.removeQueryFromQueue(mediaQuery);
-        return mediaTrackerDao.getMediaLinkByTargetPath(mediaQuery.getFilePath());
+        setChangedIgnoreCount(1);
+        return 1;
+//        return mediaTrackerDao.getMediaLinkByTargetPath(mediaQuery.getFilePath());
     }
 
     @Override
@@ -545,19 +598,13 @@ public class MediaLinksServiceImpl implements MediaLinksService {
 
     @Override
     public List<MediaLink> clearInvalidIgnoreAndLinks() {
-        clearInvalidLinks()
-                .addAll(clearInvalidIgnore());
-        return clearInvalidLinks();
-    }
-
-    /*
-     * Remove ignore media record if original file is no longer present.
-     * */
-    List<MediaLink> clearInvalidIgnore() {
-        return getMediaIgnoredList().stream()
-                .filter(mi -> !mi.isOriginalPresent())
-                .peek(mi -> mediaTrackerDao.removeLink(mi.getMediaId()))
-                .collect(Collectors.toList());
+        List<MediaLink> deletedLinks = clearInvalidLinks();
+        List<MediaLink> deletedIgnore = clearInvalidIgnore();
+        setChangedIgnoreCount(-deletedIgnore.size());
+        setChangedLinksCount(-deletedLinks.size());
+        deletedLinks
+                .addAll(deletedIgnore);
+        return deletedLinks;
     }
 
     /*
@@ -565,16 +612,27 @@ public class MediaLinksServiceImpl implements MediaLinksService {
      * Returns list of removed media links
      * */
     List<MediaLink> clearInvalidLinks() {
-        // TODO add log info about deleted links
         return getMediaLinks().stream()
                 .filter(ml -> !ml.isOriginalPresent())
                 .filter(ml -> !fileService.doesPathExist(ml.getLinkPath()))
-                .peek(ml -> mediaTrackerDao.removeLink(ml.getMediaId()))
+                .peek(ml -> {
+                    mediaTrackerDao.removeLink(ml.getMediaId());
+                    LOG.info("[ remove_link ] Link removed for file: {}", ml);
+                })
                 .collect(Collectors.toList());
     }
 
-    // TODO rescan existing links to update link status
-// TODO when scanning for new files show creation date (last modified) and file size
+    List<MediaLink> clearInvalidIgnore() {
+        return getMediaIgnoredList().stream()
+                .filter(mi -> !mi.isOriginalPresent())
+                .peek(mi -> {
+                    mediaTrackerDao.removeLink(mi.getMediaId());
+                    LOG.info("[ remove_ignore ] Link removed for file: {}", mi);
+                })
+                .collect(Collectors.toList());
+    }
+
+    // TODO when scanning for new files show creation date (last modified) and file size
     @Override
     public void moveBackToQueue(long mediaLinkId) throws IOException {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);
@@ -613,8 +671,9 @@ public class MediaLinksServiceImpl implements MediaLinksService {
     }
 
     @Override
-    public void unIgnoreMedia(long mediaIgnoreId) {
+    public void undoIgnoreMedia(long mediaIgnoreId) {
         mediaTrackerDao.removeLink(mediaIgnoreId);
+        setChangedIgnoreCount(-1);
         LOG.info("[ remove_link ] Link removed for file: {}", mediaIgnoreId);
 
     }

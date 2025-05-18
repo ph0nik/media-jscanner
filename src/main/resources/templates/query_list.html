@@ -90,9 +90,19 @@
     </nav>
 </div>
 <!--status message-->
-<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
-    <div class="col-auto text-end">
-        <span>[ status ]</span>
+<div class="row console-bar justify-content-start text-secondary-emphasis"
+     id="console" th:fragment="info_console">
+    <div class="col-auto text-end font-monospace">
+        <span th:text="|links: ${links_status.getCurrentLinks()}|"></span>
+        <span th:class="${links_status.getNewlyAddedLinks()} != 0
+              ? (${links_status.getNewlyAddedLinks()} > 0 ? 'text-success' : 'text-danger')
+              : 'text-secondary'"
+              th:text="|(${links_status.getNewlyAddedLinks()})|"></span>
+        <span th:text="| -- ignored: ${links_status.getCurrentIgnore()} |"></span>
+        <span th:class="${links_status.getNewlyAddedIgnore()} != 0
+              ? (${links_status.getNewlyAddedIgnore()} > 0 ? 'text-success' : 'text-danger')
+              : 'text-secondary'"
+              th:text="|(${links_status.getNewlyAddedIgnore()})|"></span>
     </div>
     <div class="col">
         <span th:text="${message}"></span>

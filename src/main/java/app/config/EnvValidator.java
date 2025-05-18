@@ -26,7 +26,7 @@ public class EnvValidator {
     public void validateEnvironmentVariables() {
         if (tmdbApiToken == null || tmdbApiToken.trim().isEmpty()) {
             System.err.println("Environment variable API_TOKEN is not set");
-            System.err.println("Please set API_TOKEN and restart application");
+            System.err.println("Run application with API_TOKEN=<token> parameter");
             SpringApplication.exit(context, () -> 1);
             System.exit(1);
         }

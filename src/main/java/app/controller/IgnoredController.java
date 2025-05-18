@@ -58,7 +58,7 @@ public class IgnoredController {
 
     @PostMapping(value = DELETE_IGNORED)
     public String removeFromIgnoredList(@RequestParam("id") long id, Model model) {
-        mediaLinksService.unIgnoreMedia(id);
+        mediaLinksService.undoIgnoreMedia(id);
         return "redirect:" + CommonHandler.IGNORED;
     }
 

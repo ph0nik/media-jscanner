@@ -2,6 +2,7 @@ package service;
 
 import model.MediaLink;
 import model.QueryResult;
+import model.StatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import service.exceptions.NetworkException;
@@ -16,9 +17,11 @@ import java.util.List;
 
 public interface MediaLinksService {
 
-    Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortingType sortingType);
+    Page<MediaLink> getPageableLinksWithSorting(Pageable pageable, SortBy sortBy);
 
     public List<MediaLink> getMediaLinksToProcess();
+
+    StatusDto getStatusDto();
 
     public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);
 
@@ -72,7 +75,7 @@ public interface MediaLinksService {
                                    MediaIdentifier mediaIdentifier,
                                    MediaQueryService mediaQueryService) throws NetworkException;
 
-    void persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
+    int persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
 
     boolean createHardLinkWithDirectories(MediaLink mediaLink) throws IOException;
 
@@ -81,7 +84,7 @@ public interface MediaLinksService {
     * This is intended for video files that user don't want to include in his collection,
     * for example trailers or video samples.
     * */
-    MediaLink ignoreMediaFile(MediaQueryService mediaQueryService);
+    int ignoreMediaFile(MediaQueryService mediaQueryService);
 
     /*
     * Filter all ignored results with given query
@@ -110,7 +113,7 @@ public interface MediaLinksService {
     /*
     * Remove ignore flag and move back media file into the media queue.
     * */
-    void unIgnoreMedia(long mediaIgnoreId);
+    void undoIgnoreMedia(long mediaIgnoreId);
 
     /*
     * Returns list of existing media links

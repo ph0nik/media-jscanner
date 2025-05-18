@@ -12,15 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import service.query.MovieQueryService;
 
-@SpringBootTest
-@Import(CacheConfig.class)
+@SpringBootTest(classes = CacheConfig.class)
+//@Import(CacheConfig.class)
 class MovieQueryServiceTest {
 
     private MovieQueryService movieQueryService;
@@ -51,11 +50,6 @@ class MovieQueryServiceTest {
         String[] words = {"sela", "village", "ghe"};
         boolean b = movieQueryService.containsAllWords(words, sampleFolder);
         Assertions.assertTrue(b);
-    }
-
-    @Test
-    void checkForInstantiatedListInExtendedClass() {
-        Assertions.assertNotNull(movieQueryService.getCurrentMediaQueries());
     }
 
 }

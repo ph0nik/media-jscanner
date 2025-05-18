@@ -21,14 +21,10 @@ public class PropertiesServiceImpl implements PropertiesService {
     private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE = "data/mediafolders.properties";
     private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK = "data/mediafolders.properties.bak";
     private final String NETWORK_PROPERTIES_FILE = "network.properties";
-    private final String DEFAULT_TARGET_MOVIE = "defaultTargetFolderMovie";
     private final String USER_TARGET_MOVIE = "targetFolderMovie";
-    private final String DEFAULT_LINKS_MOVIE = "defaultLinkFolderMovie";
     private final String USER_LINKS_MOVIE = "linkFolderMovie";
     private final String USER_LINKS_TV = "linkFolderSeries";
     private final String USER_TARGET_TV = "targetFolderSeries";
-    private final String DEFAULT_TARGET_TV = "defaultTargetFolderShows";
-    private final String DEFAULT_LINKS_TV = "defaultLinkFolderShows";
     private final String API_KEY = "api_key_v4";
     private Properties networkProperties;
     private Properties mediaFilesProperties;

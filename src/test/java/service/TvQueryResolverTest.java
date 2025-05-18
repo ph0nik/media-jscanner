@@ -2,8 +2,9 @@ package service;
 
 import app.config.CacheConfig;
 import app.config.EnvValidator;
+import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
-import dao.SpringHibernateBootstrapDao;
+import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Import;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
@@ -29,9 +29,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-@SpringBootTest
+@SpringBootTest(classes = CacheConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(CacheConfig.class)
 class TvQueryResolverTest {
 
     private MediaTrackerDao mediaTrackerDao;
@@ -47,6 +46,9 @@ class TvQueryResolverTest {
     @Autowired
     private CacheManager cacheManager;
 
+    @Autowired
+    private MediaLinkRepository mediaLinkRepository;
+
     @BeforeAll
     void readAllPathsFromFile() throws IOException, NoApiKeyException, ConfigurationException {
         String listPath = "src/test/resources/seriale_lista.txt";
@@ -58,7 +60,7 @@ class TvQueryResolverTest {
     }
 
     void initService() throws NoApiKeyException, ConfigurationException {
-        mediaTrackerDao = new SpringHibernateBootstrapDao();
+        mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         moviesFileScanner = new MoviesFileScanner();
         envValidator = new EnvValidator(null);
         propertiesService = new PropertiesServiceImpl(envValidator);
