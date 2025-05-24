@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
@@ -83,7 +82,8 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             }
         }
         setMatcherFinalMessageAndSend(mediaQueryList.size(), index);
-        return new AsyncResult<>(mediaLinks);
+//        return new AsyncResult<>(mediaLinks);
+        return CompletableFuture.completedFuture(mediaLinks);
     }
 
     @Async
@@ -209,7 +209,7 @@ public class AutoMatcherServiceImpl extends NotificationSender<AutoMatcherStatus
             List<QueryResult> queryResults) throws NetworkException {
         if (queryResults.size() == 1) {
             LOG.info("[ auto_matcher ] creating link for: {}", queryResults.get(0).getOriginalPath());
-            return mediaLinksService.createFileLink(
+            return mediaLinksService.createFileLinks(
                     queryResults.get(0),
                     MediaIdentifier.TMDB,
                     movieQueryService

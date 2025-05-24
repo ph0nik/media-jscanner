@@ -52,6 +52,7 @@ class MediaLinksServiceImplTest {
     private MediaFilesScanner mediaFilesScanner;
     private RequestService requestService;
     private ResponseParser responseParser;
+    private DuplicateResolverServiceImpl duplicateResolverService;
     private List<String> testFiles;
     private Path incomingPath;
     private Path linksPath;
@@ -76,13 +77,14 @@ class MediaLinksServiceImplTest {
         fileService = new FileService();
         linkPagination = new PaginationImpl<>();
         queryPagination = new PaginationImpl<>();
+        duplicateResolverService = new DuplicateResolverServiceImpl();
         requestService = new RequestService(propertiesService);
         responseParser = new ResponseParser(propertiesService);
         mediaQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
                 propertiesService, queryPagination, cacheManager);
         mediaLinksService = new MediaLinksServiceImpl(mediaTrackerDao, propertiesService,
                 cleanerService, fileService, linkPagination,
-                requestService, responseParser, cacheManager);
+                requestService, responseParser, duplicateResolverService, cacheManager);
     }
 
     @BeforeEach

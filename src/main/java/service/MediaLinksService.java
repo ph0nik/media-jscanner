@@ -3,6 +3,7 @@ package service;
 import model.MediaLink;
 import model.QueryResult;
 import model.StatusDto;
+import model.duplicates.DuplicateMediaLinkDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import service.exceptions.MissingReferenceMediaQueryException;
@@ -25,6 +26,8 @@ public interface MediaLinksService {
     StatusDto getStatusDto();
 
     public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess);
+
+    void addMediaLinkToProcess(MediaLink mediaLink);
 
     public void clearMediaLinksToProcess();
     /*
@@ -69,12 +72,18 @@ public interface MediaLinksService {
     @SuppressWarnings("unchecked")
     List<MediaLink> getDuplicateLinks();
 
+    // TODO get single dto, prompt user for change, check if there are more
+    // and repeat until end of the list is reached
+    DuplicateMediaLinkDto getNextDuplicateDto();
+
+    void setDuplicateLinkToProcess(DuplicateMediaLinkDto duplicateDto);
+
     /*
      * Create symlink with specified query result and link properties
      * */
-    List<MediaLink> createFileLink(QueryResult queryResult,
-                                   MediaIdentifier mediaIdentifier,
-                                   MediaQueryService mediaQueryService) throws NetworkException;
+    List<MediaLink> createFileLinks(QueryResult queryResult,
+                                    MediaIdentifier mediaIdentifier,
+                                    MediaQueryService mediaQueryService) throws NetworkException;
 
     int persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
 
@@ -129,4 +138,5 @@ public interface MediaLinksService {
 
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 
+    void resetProcessLists();
 }

@@ -2,6 +2,7 @@ package service;
 
 import dao.MediaTrackerDao;
 import model.*;
+import model.duplicates.DuplicateMediaLinkDto;
 import model.validator.RequiredFieldException;
 import model.validator.Validator;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,16 +40,16 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     private static final String DUPLICATE_LINKS_KEY = "duplicate-links";
     private static final String CHANGE_LINKS_KEY = "change-links";
     private static final String CHANGE_IGNORE_KEY = "change-ignored";
+    private static final String DUPLICATE_LINK_INDEX_KEY = "duplicate-link-index";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
     private final FileService fileService;
     private final ResponseParser responseParser;
     private final RequestService requestService;
+    private final DuplicateResolverServiceImpl duplicateResolverService;
     private final Pagination<MediaLink> pagination;
     private final MediaIdentifier linkIdentifier = MediaIdentifier.IMDB;
-    //    private QueryResult currentQueryResult;
-    private final CacheManager cacheManager;
 
     public MediaLinksServiceImpl(@Qualifier("jpa") MediaTrackerDao dao,
                                  PropertiesService propertiesService,
@@ -56,6 +58,7 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
                                  Pagination<MediaLink> pagination,
                                  RequestService requestService,
                                  ResponseParser responseParser,
+                                 DuplicateResolverServiceImpl duplicateResolverService,
                                  CacheManager cacheManager) {
         super(cacheManager);
         this.mediaTrackerDao = dao;
@@ -65,7 +68,8 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
         this.pagination = pagination;
         this.requestService = requestService;
         this.responseParser = responseParser;
-        this.cacheManager = cacheManager;
+        this.duplicateResolverService = duplicateResolverService;
+        //    private QueryResult currentQueryResult;
     }
 
     @Override
@@ -121,6 +125,19 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     @Override
     public void setMediaLinksToProcess(List<MediaLink> mediaLinksToProcess) {
         updateCache(LINKS_TO_PROCESS_KEY, mediaLinksToProcess);
+    }
+
+    @Override
+    public void addMediaLinkToProcess(MediaLink mediaLink) {
+        System.out.println("\t" + mediaLink);
+        if (getMediaLinksToProcess() == null) {
+            setMediaLinksToProcess(List.of(mediaLink));
+        } else {
+            System.out.println(getMediaLinksToProcess());
+            List<MediaLink> mediaLinksToProcess = new ArrayList<>(getMediaLinksToProcess());
+            mediaLinksToProcess.add(mediaLink);
+            setMediaLinksToProcess(mediaLinksToProcess);
+        }
     }
 
     @Override
@@ -304,12 +321,16 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
         updateCache(LAST_REQUEST_KEY, latestMediaQueryRequest);
     }
 
-// TODO check if link already exist
-// change link name, add [dupe_x] for each another duplicate
-// combine a list of existing links and present to user to accept
-
     private void setDuplicateLinks(List<MediaLink> duplicateLinks) {
         updateCache(DUPLICATE_LINKS_KEY, duplicateLinks);
+    }
+
+    private void removeFromDuplicateLinks(MediaLink mediaLink) {
+        List<MediaLink> list = getDuplicateLinks()
+                .stream()
+                .filter(ml -> !ml.getOriginalPath().equals(mediaLink.getOriginalPath()))
+                .toList();
+        setDuplicateLinks(list);
     }
 
     private void clearDuplicateLinks() {
@@ -323,9 +344,50 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     }
 
     @Override
-    public List<MediaLink> createFileLink(QueryResult queryResult,
-                                          MediaIdentifier mediaIdentifier,
-                                          MediaQueryService mediaQueryService)
+    public DuplicateMediaLinkDto getNextDuplicateDto() {
+        if (getDuplicateLinks().isEmpty()) {
+            return null;
+        }
+        MediaLink duplicateMediaLink = getDuplicateLinks()
+                .stream()
+                .findFirst()
+                .orElse(null);
+        MediaLink existingMediaLink =
+                duplicateResolverService.linkRecordExist(getMediaLinks(), duplicateMediaLink);
+        return (duplicateMediaLink != null)
+                ? duplicateResolverService.getDuplicateDto(existingMediaLink, duplicateMediaLink)
+                : null;
+    }
+
+    @Override
+    public void setDuplicateLinkToProcess(DuplicateMediaLinkDto duplicateDto) {
+        MediaLink duplicateMediaLink = getDuplicateLinks()
+                .stream()
+                .filter(ml -> ml.getOriginalPath().equals(duplicateDto.getNewSourcePath()))
+                .findFirst()
+                .orElse(null);
+        if (duplicateMediaLink != null) {
+            String newLinkPath = Path
+                    .of(duplicateDto.getExistingParentFolder())
+                    .resolve(duplicateDto.getNewLinkFileName())
+                    .toString();
+            removeFromDuplicateLinks(duplicateMediaLink); // TODO
+            duplicateMediaLink.setLinkPath(newLinkPath);
+            addMediaLinkToProcess(duplicateMediaLink);
+            LOG.info("[ link ] Changed link for duplicate");
+        }
+    }
+
+    @Override
+    public void resetProcessLists() {
+        clearMediaLinksToProcess();
+        clearDuplicateLinks();
+    }
+
+    @Override
+    public List<MediaLink> createFileLinks(QueryResult queryResult,
+                                           MediaIdentifier mediaIdentifier,
+                                           MediaQueryService mediaQueryService)
             throws NetworkException {
         List<MediaLink> mediaLinksToProcess = new LinkedList<>();
         List<MediaLink> duplicateLinks = new LinkedList<>();
@@ -333,8 +395,11 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
             MediaLink mediaLink = createFileLink(queryResult, mediaIdentifier, mq, mediaQueryService);
             // if some data needed to create filename is missing, skip it
             if (mediaLink != null) {
-                if (linkRecordExist(mediaLink)) duplicateLinks.add(mediaLink);
-                mediaLinksToProcess.add(mediaLink);
+                MediaLink existingMediaLink =
+                        duplicateResolverService.linkRecordExist(getMediaLinks(), mediaLink);
+                if (existingMediaLink != null) {
+                    duplicateLinks.add(mediaLink);
+                } else mediaLinksToProcess.add(mediaLink);
             }
         }
         setDuplicateLinks(duplicateLinks);
@@ -377,24 +442,9 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
             }
         }
         clearMediaLinksToProcess();
-        clearDuplicateLinks();
+//        clearDuplicateLinks();
         setChangedLinksCount(links);
         return links;
-    }
-
-    void checkForExistingMediaLinks(List<MediaLink> mediaLinks) {
-        // TODO
-    }
-
-    /*
-     * Checks if link with the same path already exist
-     * */
-    boolean linkRecordExist(MediaLink mediaLink) {
-        return getMediaLinks()
-                .stream()
-                .anyMatch(ml ->
-                        ml.getLinkPath().equals(mediaLink.getLinkPath()) &&
-                                ml.getOriginalPath().equals(mediaLink.getOriginalPath()));
     }
 
     MediaLink createLinkPath(QueryResult queryResult)
@@ -572,7 +622,6 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     }
 
     // TODO when scanning for new files show creation date (last modified) and file size
-    // add counter for processed files
     @Override
     public void moveBackToQueue(long mediaLinkId) throws IOException {
         MediaLink mediaLink = mediaTrackerDao.getLinkById(mediaLinkId);

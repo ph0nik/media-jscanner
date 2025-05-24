@@ -3,6 +3,7 @@ package app.controller;
 import model.MediaLink;
 import model.MediaQuery;
 import model.QueryResult;
+import model.duplicates.DuplicateMediaLinkDto;
 import model.multipart.MultipartDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,6 +55,9 @@ public class QueryController {
     private static final String PERSIST_NEW_MOVIE_LINKS = "/persist-new-links/";
     private static final String MARK_AS_IGNORED = "/new-ignore-movie/";
     private static final String AUTO_MATCH_FINISH = "/auto-match-finish/";
+    private static final String RESOLVE_DUPLICATE_LINKS = "/resolve-duplicate-links/";
+    private static final String ACCEPT_RENAMED_LINKS = "/accept-renamed-links/";
+    private static final String ABORT_CREATING_LINKS = "/abort-creating-links";
     @ModelAttribute
     private void setMenuLinks(Model model) {
         model.addAttribute("movie_search", SEARCH_WITH_QUERY);
@@ -68,8 +72,11 @@ public class QueryController {
         model.addAttribute("movie_new_ignore", MARK_AS_IGNORED);
         model.addAttribute("movie_new_links", PERSIST_NEW_MOVIE_LINKS);
         model.addAttribute("movie_auto_finish", AUTO_MATCH_FINISH);
+        model.addAttribute("accept_renamed_links", ACCEPT_RENAMED_LINKS);
+        model.addAttribute("abort_creating_links", ABORT_CREATING_LINKS);
         model.addAttribute("current_menu", 0);
     }
+
     private Future<List<MediaLink>> future;
     private int sessionPageSize = 25;
 
@@ -241,23 +248,68 @@ public class QueryController {
     public String createLinkPath(QueryResult queryResult,
                                  BindingResult bindingResult,
                                  Model model) throws NetworkException {
-        MediaIdentifier mediaIdentifier = (queryResult.getImdbId().isEmpty()) ? MediaIdentifier.TMDB : MediaIdentifier.IMDB;
-        List<MediaLink> fileLinks = mediaLinksService.createFileLink(queryResult,
+        MediaIdentifier mediaIdentifier = (queryResult.getImdbId().isEmpty())
+                ? MediaIdentifier.TMDB
+                : MediaIdentifier.IMDB;
+        List<MediaLink> fileLinks = mediaLinksService.createFileLinks(
+                queryResult,
                 mediaIdentifier,
-                movieQueryService);
-        mediaLinksService.setMediaLinksToProcess(fileLinks);
-        model.addAttribute("file_link_to_process", fileLinks);
-        return "link_creation_confirm";
+                movieQueryService
+        );
+        if (!fileLinks.isEmpty()) {
+            mediaLinksService.setMediaLinksToProcess(fileLinks);
+            model.addAttribute("file_link_to_process", fileLinks);
+            return "link_creation_confirm";
+        }
+        return "redirect:" + RESOLVE_DUPLICATE_LINKS;
+    }
+
+    @GetMapping(value = RESOLVE_DUPLICATE_LINKS)
+    public String resolveDuplicateLinks(Model model) {
+        DuplicateMediaLinkDto duplicateDto = mediaLinksService.getNextDuplicateDto();
+        if (duplicateDto == null) { // if no duplicates go to confirm
+            model.addAttribute("file_link_to_process", mediaLinksService.getMediaLinksToProcess());
+            return "link_creation_confirm";
+        } // else go to resolver
+        model.addAttribute("duplicates_size", mediaLinksService.getDuplicateLinks().size());
+        model.addAttribute("duplicate_dto", duplicateDto);
+        return "link_duplication_resolver";
+    }
+
+    @GetMapping(value = ABORT_CREATING_LINKS)
+    public String abortCreatingLinks(Model model) {
+        mediaLinksService.resetProcessLists();
+        return "redirect:" + CommonHandler.MOVIE;
+    }
+
+    @PostMapping(value = ACCEPT_RENAMED_LINKS)
+    public String acceptRenamedLinks(
+            @ModelAttribute DuplicateMediaLinkDto duplicateDto,
+            Model model
+    ) {
+        // if file name didn't change repeat
+        if (duplicateDto.getExistingLinkFileName().equals(duplicateDto.getNewLinkFileName())) {
+            model.addAttribute("duplicates_size", mediaLinksService.getDuplicateLinks().size());
+            model.addAttribute("duplicate_dto", duplicateDto);
+            return "link_duplication_resolver";
+        }
+        // add duplicate to process list
+        mediaLinksService.setDuplicateLinkToProcess(duplicateDto);
+        return "redirect:" + RESOLVE_DUPLICATE_LINKS;
     }
 
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
         mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
+        // check for duplicates
+        if (!mediaLinksService.getDuplicateLinks().isEmpty())
+            // if found go to resolver
+            return "redirect:" + RESOLVE_DUPLICATE_LINKS;
         return "redirect:" + CommonHandler.MOVIE;
     }
 
     @GetMapping(value = NEW_MOVIE_LINK)
-    public String newLinkGet(){
+    public String newLinkGet() {
         return "redirect:" + CommonHandler.LINKS;
     }
 
