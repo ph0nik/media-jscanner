@@ -107,6 +107,26 @@
     <div class="col">
         <span th:text="${message}"></span>
     </div>
+    <div class="col-auto text-end" id="errorMediaLinks">
+        <a th:if="${!error_links.isEmpty()}" data-bs-toggle="collapse"
+           href="#"
+           data-bs-target="#errorMediaLinksContent" class="text-danger">Click to show errors</a>
+    </div>
+</div>
+<div class="collapse" id="errorMediaLinksContent">
+    <div class="card my-2 pb-4 border-0">
+        <div class="card-title p-2 border-0">
+            <h6 class="card-title">There were problems with creating following links:</h6>
+        </div>
+        <div class="card-body">
+            <ul class="list-group p-2">
+                <li th:each="query, iter : ${error_links}">
+                    <span th:text="|${query.getOriginalPath()} > ${query.getLinkPath}|"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
 </div>
 <div>
     <!--page title-->

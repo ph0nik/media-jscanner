@@ -60,6 +60,7 @@ public class CommonHandler {
         model.addAttribute("future", liveDataService.getAutoMatcherFutureTask() == null
                 || liveDataService.getAutoMatcherFutureTask().isDone());
         model.addAttribute("links_status", mediaLinksService.getStatusDto());
+        model.addAttribute("error_links", mediaLinksService.getErrorLinks());
         // TODO set color to status - blue / orange regular - green added - red removed
     }
 

@@ -71,6 +71,8 @@ public class LinksController {
         else if (sort.equals("target")) sortBy = SortBy.SOURCE_PATH;
         else sortBy = SortBy.DELETED_SOURCE_PATH;
 
+        // TODO sorting both ways
+
         Page<MediaLink> paginatedLinks = mediaLinksService.getPageableLinksWithSorting(
                 PageRequest.of(currentPage - 1, pageSize),
                 sortBy

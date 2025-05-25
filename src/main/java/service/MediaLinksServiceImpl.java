@@ -40,7 +40,7 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     private static final String DUPLICATE_LINKS_KEY = "duplicate-links";
     private static final String CHANGE_LINKS_KEY = "change-links";
     private static final String CHANGE_IGNORE_KEY = "change-ignored";
-    private static final String DUPLICATE_LINK_INDEX_KEY = "duplicate-link-index";
+    private static final String ERROR_LINKS_KEY = "error-links";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
@@ -321,6 +321,21 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
         updateCache(LAST_REQUEST_KEY, latestMediaQueryRequest);
     }
 
+    private void setErrorLinks(List<MediaLink> errorLinks) {
+        updateCache(ERROR_LINKS_KEY, errorLinks);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<MediaLink> getErrorLinks() {
+        List<MediaLink> fromCache = getFromCache(ERROR_LINKS_KEY, List.class);
+        return (fromCache == null) ? List.of() : fromCache;
+    }
+
+    private void clearErrorLinks() {
+        clearCache(ERROR_LINKS_KEY);
+    }
+
     private void setDuplicateLinks(List<MediaLink> duplicateLinks) {
         updateCache(DUPLICATE_LINKS_KEY, duplicateLinks);
     }
@@ -382,6 +397,7 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     public void resetProcessLists() {
         clearMediaLinksToProcess();
         clearDuplicateLinks();
+        LOG.info("[ duplicate_resolver ] Process lists cleared");
     }
 
     @Override
@@ -424,27 +440,30 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     }
 
     @Override
-    public int persistsCollectedMediaLinks(MediaQueryService mediaQueryService) {
+    public List<MediaLink> persistsCollectedMediaLinks(MediaQueryService mediaQueryService) {
         int links = 0;
+        List<MediaLink> errorMediaLinks = new LinkedList<>();
         for (MediaLink ml : getMediaLinksToProcess()) {
             try {
                 Validator.validateForNulls(ml);
-                mediaTrackerDao.addNewLink(ml);
+//                mediaTrackerDao.addNewLink(ml);
                 if (createHardLinkWithDirectories(ml)) {
-//                    mediaTrackerDao.addNewLink(ml); // TODO moved
+                    mediaTrackerDao.addNewLink(ml); // TODO moved
                     mediaQueryService.removeQueryByFilePath(ml.getOriginalPath());
                     links++;
                 }
             } catch (RequiredFieldException | IllegalAccessException e) {
                 LOG.error("[ media_links_service ] Empty media link field: {}", e.getMessage());
             } catch (IOException e) {
+                errorMediaLinks.add(ml);
                 LOG.error("[ media_links_service ] Error creating link: {}", e.getMessage());
             }
         }
         clearMediaLinksToProcess();
 //        clearDuplicateLinks();
         setChangedLinksCount(links);
-        return links;
+        setErrorLinks(errorMediaLinks);
+        return errorMediaLinks;
     }
 
     MediaLink createLinkPath(QueryResult queryResult)

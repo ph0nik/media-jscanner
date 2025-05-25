@@ -52,7 +52,7 @@ public class CounterCacheService {
             return "+" + value;
         }
         if (value < 0) {
-            return "-" + value;
+            return String.valueOf(value);
         }
         return "0";
     }

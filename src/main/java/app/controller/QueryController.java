@@ -273,6 +273,7 @@ public class QueryController {
         } // else go to resolver
         model.addAttribute("duplicates_size", mediaLinksService.getDuplicateLinks().size());
         model.addAttribute("duplicate_dto", duplicateDto);
+        model.addAttribute("duplicate_validator", false);
         return "link_duplication_resolver";
     }
 
@@ -291,6 +292,7 @@ public class QueryController {
         if (duplicateDto.getExistingLinkFileName().equals(duplicateDto.getNewLinkFileName())) {
             model.addAttribute("duplicates_size", mediaLinksService.getDuplicateLinks().size());
             model.addAttribute("duplicate_dto", duplicateDto);
+            model.addAttribute("duplicate_validator", true);
             return "link_duplication_resolver";
         }
         // add duplicate to process list
@@ -300,11 +302,13 @@ public class QueryController {
 
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
-        mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
+        List<MediaLink> errorMediaLinks = mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
+        System.out.println(errorMediaLinks);
         // check for duplicates
         if (!mediaLinksService.getDuplicateLinks().isEmpty())
             // if found go to resolver
             return "redirect:" + RESOLVE_DUPLICATE_LINKS;
+        model.addAttribute("error_links", errorMediaLinks);
         return "redirect:" + CommonHandler.MOVIE;
     }
 

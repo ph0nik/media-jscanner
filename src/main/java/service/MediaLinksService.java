@@ -69,6 +69,8 @@ public interface MediaLinksService {
 
     void setLatestMediaQueryRequest(List<QueryResult> latestMediaQueryRequest);
 
+    List<MediaLink> getErrorLinks();
+
     @SuppressWarnings("unchecked")
     List<MediaLink> getDuplicateLinks();
 
@@ -85,7 +87,7 @@ public interface MediaLinksService {
                                     MediaIdentifier mediaIdentifier,
                                     MediaQueryService mediaQueryService) throws NetworkException;
 
-    int persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
+    List<MediaLink> persistsCollectedMediaLinks(MediaQueryService mediaQueryService);
 
     boolean createHardLinkWithDirectories(MediaLink mediaLink) throws IOException;
 

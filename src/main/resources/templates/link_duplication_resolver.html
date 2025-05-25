@@ -38,14 +38,14 @@
             </div>
             <div class="col-auto">
                 <!--confirm -->
-<!--                <form action="#"-->
-<!--                      th:action="@{__${movie_new_links}__}"-->
-<!--                      method="get">-->
-<!--                    <button class="btn btn-success" type="submit" form="rename_link_file_name">-->
-<!--                        <i class="fa-solid fa-check"></i>-->
-<!--                        Confirm-->
-<!--                    </button>-->
-<!--                </form>-->
+                <!--                <form action="#"-->
+                <!--                      th:action="@{__${movie_new_links}__}"-->
+                <!--                      method="get">-->
+                <!--                    <button class="btn btn-success" type="submit" form="rename_link_file_name">-->
+                <!--                        <i class="fa-solid fa-check"></i>-->
+                <!--                        Confirm-->
+                <!--                    </button>-->
+                <!--                </form>-->
                 <button class="btn btn-success" type="submit" form="rename_link_file_name">
                     <i class="fa-solid fa-check"></i>
                     Confirm
@@ -63,33 +63,48 @@
             </div>
         </div>
         <div class="card-body row m-2 p-0">
-
             <form action="#"
                   th:action="@{__${accept_renamed_links}__}"
                   th:object="${duplicate_dto}"
                   method="post"
                   id="rename_link_file_name">
                 <fieldset>
-                        <span th:text="*{oldSourcePath}" class="fs-5 fw-bold text-muted">
+                    <div class="row">
+                        <div class="col-auto">
+                            <span>Existing file:</span>
+                        </div>
+                        <div class="col">
+                            <span th:text="|*{oldSourcePath}, |" class="fs-5 fw-bold text-muted">
                         old original path</span>
-                    <span th:text="*{getExistingFileSize()}" class="fs-5 fw-bold text-muted">
+                            <span th:text="|*{getExistingFileSize()} GB|" class="fs-5 fw-bold text-muted">
                         22.34 GB</span>
-                    <div class="flex ms-2">
+                            <div class="flex ms-2">
                                     <span th:text="*{existingLinkFileName}"
                                           class="fs-5 text-success-emphasis fw-normal">
                                         <i class="fa-solid fa-link"></i>
                                     link path</span>
+                            </div>
+                        </div>
                     </div>
-                    <!--new element-->
-                    <span th:text="*{newSourcePath}" class="fs-5 fw-bold text-muted">
+                    <div class="row">
+                        <div class="col-auto">
+                            <span>
+                                New file:
+                            </span>
+                        </div>
+                        <div class="col">
+                            <!--new element-->
+                            <span th:text="|*{newSourcePath}, |" class="fs-5 fw-bold text-muted">
                         new original path</span>
-                    <span th:text="*{getNewFileSize()}" class="fs-5 fw-bold text-muted">
+                            <span th:text="|*{getNewFileSize()} GB|" class="fs-5 fw-bold text-muted">
                         13.34 GB</span>
-                    <div class="flex ms-2">
+                            <div class="flex ms-2">
                                     <span th:text="*{existingLinkFileName}"
                                           class="fs-5 text-success-emphasis fw-normal">
                                         <i class="fa-solid fa-link"></i>
                                     current link path</span>
+                            </div>
+                        </div>
                     </div>
                     <input type="hidden" th:field="*{existingLinkFileName}">
                     <input type="hidden" th:field="*{existingParentFolder}">
@@ -97,10 +112,28 @@
                     <input type="hidden" th:field="*{oldSourcePath}">
                     <input type="hidden" th:field="*{existingFileSize}">
                     <input type="hidden" th:field="*{newFileSize}">
-                    <label for="newLinkPath">Rename link path:</label>
-                    <input th:field="*{newLinkFileName}"
-                           type="text"
-                           id="newLinkPath">
+                    <div class="col">
+                        <div class="input-group has-validation my-2">
+                        <span class="input-group-text" id="nameEditPrepend">
+                            Edit filename:
+                        </span>
+                            <input type="text"
+                                   class="form-control"
+                                   aria-label="Rename link Path"
+                                   aria-describedby="nameEditPrepend newLinkPathFeedback"
+                                   th:field="*{newLinkFileName}"
+                                   id="newLinkPath"
+                                   th:classappend="${duplicate_validator}? 'is-invalid'"
+                                    required>
+                            <div id="newLinkPathFeedback" class="invalid-feedback">
+                                New file name has to differ from the existing one.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--                    <input th:field="*{newLinkFileName}"-->
+                    <!--                           type="text"-->
+                    <!--                           id="newLinkPath">-->
                 </fieldset>
             </form>
         </div>
