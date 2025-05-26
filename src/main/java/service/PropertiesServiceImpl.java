@@ -4,9 +4,13 @@ import app.config.EnvValidator;
 import model.form.SourcePathDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import util.MediaType;
 
+import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,12 +33,23 @@ public class PropertiesServiceImpl implements PropertiesService {
     private Properties networkProperties;
     private Properties mediaFilesProperties;
 
+    @Autowired
+    private Environment env;
+
+    @Value("${server.port}")
+    private int serverPort;
+
     private final String tmdbApiToken;
 
     public PropertiesServiceImpl(EnvValidator envValidator) {
         this.tmdbApiToken = envValidator.getTmdbApiToken();
         loadPropertiesFromFiles();
         createDataFolder();
+    }
+
+    @PostConstruct
+    void showAppPath() {
+        LOG.info("\u001B[32m**** Application running at: http:\\\\localhost:{} ****\u001B[0m", serverPort);
     }
 
     public Path getDataFolder() {
@@ -307,9 +322,9 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     /*
-    * Backup current properties file
-    * Save current properties to file
-    * */
+     * Backup current properties file
+     * Save current properties to file
+     * */
     void saveAndReload(Properties props) {
         backupMediaPropertiesFile();
         try (final OutputStream outputStream = new FileOutputStream(EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE)) {
