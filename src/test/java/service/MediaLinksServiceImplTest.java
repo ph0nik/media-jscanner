@@ -13,7 +13,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Import;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
@@ -37,8 +36,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest
-@Import(CacheConfig.class)
+@SpringBootTest(classes = {CacheConfig.class})
 class MediaLinksServiceImplTest {
 
     private MediaTrackerDao mediaTrackerDao;

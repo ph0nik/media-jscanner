@@ -42,12 +42,10 @@ class TvQueryResolverTest {
     private Path rootPath = Path.of("Seriale");
     private List<String> fileList;
     private EnvValidator envValidator;
+    private MediaLinkRepository mediaLinkRepository;
 
     @Autowired
     private CacheManager cacheManager;
-
-    @Autowired
-    private MediaLinkRepository mediaLinkRepository;
 
     @BeforeAll
     void readAllPathsFromFile() throws IOException, NoApiKeyException, ConfigurationException {

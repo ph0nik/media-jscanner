@@ -21,9 +21,8 @@ import java.util.stream.Collectors;
 @Component
 public class PropertiesServiceImpl implements PropertiesService {
     private static final Logger LOG = LoggerFactory.getLogger(PropertiesServiceImpl.class);
-    private final String MEDIA_FOLDERS_PROPERTIES_FILE = "mediafolders.properties";
-    private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE = "data/mediafolders.properties";
-    private final String EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK = "data/mediafolders.properties.bak";
+    private String EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE = "data/mediafolders.properties";
+    private String EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK = "data/mediafolders.properties.bak";
     private final String NETWORK_PROPERTIES_FILE = "network.properties";
     private final String USER_TARGET_MOVIE = "targetFolderMovie";
     private final String USER_LINKS_MOVIE = "linkFolderMovie";
@@ -41,10 +40,20 @@ public class PropertiesServiceImpl implements PropertiesService {
 
     private final String tmdbApiToken;
 
+
+    @Autowired
     public PropertiesServiceImpl(EnvValidator envValidator) {
         this.tmdbApiToken = envValidator.getTmdbApiToken();
         loadPropertiesFromFiles();
         createDataFolder();
+    }
+
+    public PropertiesServiceImpl(EnvValidator envValidator, Path userDataFile) {
+        this.tmdbApiToken = envValidator.getTmdbApiToken();
+        this.EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE = userDataFile.toAbsolutePath().toString().concat(".test");
+        this.EXTERNAL_MEDIA_FOLDER_PROPERTIES_BAK = userDataFile.toAbsolutePath().toString().concat(".test.bak");
+        initUserDataPathsFile(userDataFile);
+        loadPropertiesFromFiles();
     }
 
     @PostConstruct
@@ -56,6 +65,25 @@ public class PropertiesServiceImpl implements PropertiesService {
         return Path.of(EXTERNAL_MEDIA_FOLDER_PROPERTIES_FILE).getParent();
     }
 
+    void initUserDataPathsFile(Path filePath) {
+        if (!Files.exists(filePath)) {
+            createDataFolder(filePath.getParent());
+            createDataFile(filePath);
+        }
+    }
+    /*
+    * Create a file if not exists
+    * */
+    void createDataFile(Path fileName) {
+        if (!Files.exists(fileName)) {
+            try {
+                Files.createFile(fileName);
+                LOG.info("[ props ] Data file created: {}", fileName);
+            } catch (IOException e) {
+                LOG.error("[ props ] Cannot create file: {}", e.getMessage());
+            }
+        }
+    }
     /*
      * Create data application folder if not exists
      * */
@@ -64,6 +92,17 @@ public class PropertiesServiceImpl implements PropertiesService {
         if (!data.exists()) {
             try {
                 Files.createDirectories(data.toPath());
+                LOG.info("[ props ] Data folder created: {}", data);
+            } catch (IOException e) {
+                LOG.error("[ props ] Cannot create folder: {}", e.getMessage());
+            }
+        }
+    }
+
+    void createDataFolder(Path dataFolder) {
+        if (!Files.exists(dataFolder)) {
+            try {
+                Files.createDirectories(dataFolder);
             } catch (IOException e) {
                 LOG.error("[ props ] Cannot create folder: {}", e.getMessage());
             }
@@ -149,7 +188,7 @@ public class PropertiesServiceImpl implements PropertiesService {
      * */
     private boolean isPropertyEmpty(Properties props, String propertyKey) {
         String propertyValue = props.getProperty(propertyKey);
-        if (propertyValue == null) return true;
+        if (propertyValue == null || propertyValue.isEmpty()) return true;
         else {
             return Arrays
                     .stream(propertyValue.split(";"))
@@ -268,11 +307,15 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     private void addTargetPath(Path targetPath, String propertyKey) {
-        List<Path> typeListProperty = getTypeListProperty(mediaFilesProperties, propertyKey);
         StringBuilder targetPathString = new StringBuilder();
-        for (Path path : typeListProperty) {
-            targetPathString.append(path).append(";");
+        if (isPropertyEmpty(mediaFilesProperties, propertyKey)) {
+            targetPathString.append(targetPath.toString()).append(";");
+        } else {
+            for (Path path : getTypeListProperty(mediaFilesProperties, propertyKey)) {
+                targetPathString.append(path).append(";");
+            }
         }
+//        List<Path> typeListProperty = getTypeListProperty(mediaFilesProperties, propertyKey);
         mediaFilesProperties.setProperty(
                 propertyKey,
                 targetPathString.append(targetPath.toString()).toString()

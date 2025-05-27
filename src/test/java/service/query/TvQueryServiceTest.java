@@ -41,7 +41,10 @@ class TvQueryServiceTest {
     static FileSystem fileSystem;
     private static final String incomingFolder = "incoming";
     private static final String linkFolder = "complete";
+    private static final String dataFolder = "data";
+    private static final String dataFile = "userFolders.properties";
     private static Path workPath;
+    private static Path dataPath;
     private MediaLinkRepository mediaLinkRepository;
     @Autowired
     private CacheManager cacheManager;
@@ -52,7 +55,7 @@ class TvQueryServiceTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, dataPath);
         propertiesService.addTargetPathTv(workPath.resolve("Seriale"));
         pagination = new PaginationImpl<>();
         mediaQueryService = new TvQueryService(mediaTrackerDao, mediaFilesScanner,
@@ -76,11 +79,7 @@ class TvQueryServiceTest {
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
         Path next = fileSystem.getRootDirectories().iterator().next();
         workPath = next.resolve(incomingFolder);
-    }
-
-    @AfterAll
-    static void deletePathFromConfig() throws NoApiKeyException, ConfigurationException {
-        propertiesService.removeTargetPathTv(workPath.resolve("Seriale"));
+        dataPath = next.resolve(dataFolder).resolve(dataFile);
     }
 
     @DisplayName("Create folders and files based of list from text file")
