@@ -709,7 +709,9 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
 
     @Override
     public void removeEmptyFolders(String path) {
-        cleanerService.clearEmptyFolders(Path.of(path));
+        if (path != null && !path.isBlank()) {
+            cleanerService.clearEmptyFolders(Path.of(path));
+        }
     }
 
     /*

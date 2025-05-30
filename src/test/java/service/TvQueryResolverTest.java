@@ -22,6 +22,7 @@ import util.MediaFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -61,7 +62,7 @@ class TvQueryResolverTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         moviesFileScanner = new MoviesFileScanner();
         envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, FileSystems.getDefault());
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao,
                 moviesFileScanner, propertiesService, pagination,

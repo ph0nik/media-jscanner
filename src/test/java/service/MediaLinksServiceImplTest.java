@@ -70,7 +70,7 @@ class MediaLinksServiceImplTest {
         mediaFilesScanner = new MoviesFileScanner();
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, fileSystem);
         cleanerService = new CleanerServiceImpl();
         fileService = new FileService();
         linkPagination = new PaginationImpl<>();

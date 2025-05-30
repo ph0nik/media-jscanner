@@ -24,10 +24,21 @@ public class AppConfig implements WebMvcConfigurer {
         this.userPathValidator = userPathValidator;
     }
 
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(userPathValidator)
-                .excludePathPatterns(CommonHandler.CONFIG + "/**")
+                .excludePathPatterns(
+                        CommonHandler.CONFIG + "/**",
+                        "/css/**",
+                        "/js/**",
+                        "/webjars/**",
+                        "/images/**",
+                        "/webfonts/**",
+                        "/style.css",
+                        "/favicon.ico",
+                        "/error"
+                )
                 .addPathPatterns("/**");
     }
 
@@ -37,4 +48,5 @@ public class AppConfig implements WebMvcConfigurer {
                 .addResourceHandler("/webjars/**")
                 .addResourceLocations("/webjars/");
     }
+
 }

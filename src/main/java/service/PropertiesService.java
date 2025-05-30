@@ -14,11 +14,11 @@ public interface PropertiesService {
     public Path getDataFolder();
     public Properties getNetworkProperties();
 
-    public boolean userMoviePathsExist();
+    public boolean isMoviePathsProvided();
 
-    public boolean userTvPathsExist();
+    public boolean isTvPathsProvided();
 
-    public boolean userPathsPresent();
+    public boolean areUserPathsProvided();
 
     public boolean doUserPathsExist(MediaType mediaType);
     /*

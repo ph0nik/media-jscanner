@@ -129,35 +129,39 @@ public class ConfigController {
     @PostMapping(value = MOVIE_NEW_LINK_PATH)
     public String addLinksPath(LinksPathForm linksPathForm, Model model)
             throws NoApiKeyException, ConfigurationException {
-        Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
-//        if (linksPathForm.isMoveContent()) { // TODO
+        if (!linksPathForm.getLinksFilePath().isBlank()) {
+            Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
+            propertiesService.setLinksPathMovie(newLinksPath);
+            //        if (linksPathForm.isMoveContent()) { // TODO
 //            mediaLinksService.moveLinksToNewLocation(
 //                    propertiesService.getLinksFolderMovie(),
 //                    newLinksPath
 //            );
 //        }
-        propertiesService.setLinksPathMovie(newLinksPath);
+        }
         webPagePosition = POSITION_MOVIE;
         return "redirect:" + CommonHandler.CONFIG;
     }
 
     /*
-    * TODO read addidtional parameter from form and set value in the controller
-    *  Then set it to the model so it gets set into invisible element as id
-    * for some class, then let js script pick up this value and scroll page
-    * to given id
-    * */
+     * TODO read addidtional parameter from form and set value in the controller
+     *  Then set it to the model so it gets set into invisible element as id
+     * for some class, then let js script pick up this value and scroll page
+     * to given id
+     * */
 
     @PostMapping(value = TV_NEW_LINK_PATH)
     public String addLinkTv(LinksPathForm linksPathForm, Model model) throws NoApiKeyException, ConfigurationException {
-        Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
-        if (linksPathForm.isMoveContent()) {
-            mediaLinksService.moveLinksToNewLocation(
-                    propertiesService.getLinksFolderMovie(),
-                    newLinksPath
-            );
+        if (!linksPathForm.getLinksFilePath().isBlank()) {
+            Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
+            if (linksPathForm.isMoveContent()) {
+                mediaLinksService.moveLinksToNewLocation(
+                        propertiesService.getLinksFolderMovie(),
+                        newLinksPath
+                );
+            }
+            propertiesService.setLinksPathTv(newLinksPath);
         }
-        propertiesService.setLinksPathTv(newLinksPath);
         webPagePosition = POSITION_TV;
         return "redirect:" + CommonHandler.CONFIG;
     }

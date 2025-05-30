@@ -22,6 +22,7 @@ import util.MediaType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,7 +54,7 @@ class MovieQueryServiceTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, FileSystems.getDefault());
 //        propertiesService.addTargetPathMovie(Path.of("E:\\Filmy SD\\"));
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,

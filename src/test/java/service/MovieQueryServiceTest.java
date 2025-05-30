@@ -18,8 +18,9 @@ import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
 import service.query.MovieQueryService;
 
+import java.nio.file.FileSystems;
+
 @SpringBootTest(classes = CacheConfig.class)
-//@Import(CacheConfig.class)
 class MovieQueryServiceTest {
 
     private MovieQueryService movieQueryService;
@@ -37,7 +38,7 @@ class MovieQueryServiceTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, FileSystems.getDefault());
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(
                 mediaTrackerDao, mediaFilesScanner,

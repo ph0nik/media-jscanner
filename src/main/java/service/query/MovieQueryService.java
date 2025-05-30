@@ -44,7 +44,7 @@ public class MovieQueryService extends GeneralQueryService {
     // except ones that are already ignored or already has links
     @Override
     public List<MediaQuery> scanForNewMediaQueries() {
-        if (propertiesService.userPathsPresent()) {
+        if (propertiesService.areUserPathsProvided()) {
             List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
                             propertiesService.getTargetFolderListMovie(),
                             mediaTrackerDao.getAllMediaLinks()

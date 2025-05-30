@@ -14,6 +14,7 @@ import service.parser.MovieResults;
 import util.MediaType;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +35,7 @@ public class ResponseParserTest {
         multiSearch = Paths.get("src/test/resources/json-multisearch.txt");
         tmdbSearchResults = Files.readString(tmdbSearch);
         EnvValidator envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator);
+        propertiesService = new PropertiesServiceImpl(envValidator, FileSystems.getDefault());
         responseParser = new ResponseParser(propertiesService);
     }
 
