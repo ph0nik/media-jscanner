@@ -13,17 +13,16 @@
     <link rel="stylesheet" type="text/css"
           href="../bootstrap-5.3.3-dist/css/bootstrap.min.css"
           th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
-    <link href="../static/css/all.css" rel="stylesheet">
-    <link th:href="@{/css/all.css}" rel="stylesheet"/>
-    <link href="../static/style.css" rel="stylesheet">
-    <link th:href="@{/style.css}" rel="stylesheet"/>
+    <link th:href="@{/css/all.css}" href="../static/css/all.css" rel="stylesheet">
+    <link th:href="@{/style.css}" href="../static/style.css" rel="stylesheet">
+    <link href="../static/css/fontawesome.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript" th:src="@{/js/sockjs.js}"></script>
     <script type="text/javascript" th:src="@{/js/stomp.js}"></script>
     <script type="text/javascript" th:src="@{/js/script.js}"></script>
 </head>
 <body class="container-fluid">
-<div class="row sticky-top" id="top" th:fragment="top_menu">
+<div class="row" id="top" th:fragment="top_menu">
     <!--    top menu-->
     <nav class="navbar-dark bg-dark bg-gradient">
         <a class="navbar-brand" href="#">media-jScanner</a>
@@ -150,8 +149,9 @@
                             <span th:if="${page.getNumber() <= 0}" class="page-link disabled">< Previous</span>
                         </li>
                         <!--number of pages-->
-                        <li class="page-item disabled" aria-current="page">
-                    <span class="page-link"
+                        <!-- TODO check if col-1 is enough width -->
+                        <li class="page-item col-1 disabled" aria-current="page">
+                    <span class="page-link text-center"
                           th:text="${page_min + ' - ' + page_max + ' of ' + query_list_movie.size()}"></span>
                         </li>
                         <!--next-->

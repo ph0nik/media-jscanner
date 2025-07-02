@@ -25,14 +25,12 @@ public class IgnoredController {
     @Autowired
     private MovieQueryService movieQueryService;
     private int sessionPageSize = 25;
-    private static final String SEARCH_IGNORED = "/search-ignore/";
     private static final String DELETE_IGNORED = "/remove-ignore/";
 
     @ModelAttribute
     private void setIgnoreEndpoints(Model model) {
-        model.addAttribute("ignore_search", SEARCH_IGNORED);
         model.addAttribute("ignore_delete", DELETE_IGNORED);
-        model.addAttribute("link_clear", LinksController.CLEAR_LINKS);
+        model.addAttribute("find_invalid_media", LinksController.FIND_INVALID_MEDIA);
         model.addAttribute("current_menu", 3);
     }
 

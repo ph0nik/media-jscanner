@@ -24,17 +24,9 @@
 <div th:replace="~{query_list :: top_menu}"></div>
 <!--status message-->
 <div th:replace="~{query_list :: info_console}"></div>
-<!--<div class="row console-bar justify-content-start text-secondary-emphasis" id="console">
-    <div class="col-1 text-end">
-        <span>[ status ]</span>
-    </div>
-    <div class="col">
-        <span th:text="${message}"></span>
-    </div>
-</div>-->
-
 <!--page title-->
 <div class="row">
+    <div class="col">
     <div class="col">
         <h2 class="col text-secondary p-2">
             <i class="fa-solid fa-link mx-2"></i>Links</h2>
@@ -95,7 +87,7 @@
                         Delete records pointing to files that no longer exist
                     </span>
                     <li class="page-item" aria-current="page">
-                        <a class="page-link" href="#" th:href="@{__${link_clear}__}">
+                        <a class="page-link" href="#" th:href="@{__${find_invalid_media}__}">
                             <i class="fa-regular fa-trash-can me-1"></i>Clear
                         </a>
                     </li>

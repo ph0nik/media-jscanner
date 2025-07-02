@@ -37,9 +37,11 @@ public class ConfigController {
     private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
     private static final String CLEAR_FOLDERS = "/config/clear-folders/";
     private static final String BACKUP_DATABASE = "/config/backup-database/";
+    private static final String SET_API_KEY = "/config/set-api-key/";
     private String webPagePosition = "";
     private static final String POSITION_TV = "tv";
     private static final String POSITION_MOVIE = "movie";
+    private static final String POSITION_API_KEY = "api_key";
     private static final String POSITION_BACKUP = "backup";
     private static final String POSITION_EXTENSIONS = "extensions";
 
@@ -53,6 +55,7 @@ public class ConfigController {
         model.addAttribute("tv_delete_target", TV_DELETE_SOURCE_PATH);
         model.addAttribute("clear_folders", CLEAR_FOLDERS);
         model.addAttribute("backup_database", BACKUP_DATABASE);
+        model.addAttribute("set_api_key", SET_API_KEY);
         model.addAttribute("current_menu", 5);
     }
 
@@ -76,6 +79,7 @@ public class ConfigController {
         model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.TV));
         model.addAttribute("links_path_form", new LinksPathForm());
         model.addAttribute("current_position", webPagePosition);
+        model.addAttribute("api_key", propertiesService.getApiKeyPartial());
         return "config";
     }
 
@@ -131,7 +135,7 @@ public class ConfigController {
             throws NoApiKeyException, ConfigurationException {
         if (!linksPathForm.getLinksFilePath().isBlank()) {
             Path newLinksPath = Path.of(linksPathForm.getLinksFilePath());
-            propertiesService.setLinksPathMovie(newLinksPath);
+            propertiesService.addLinksPathMovie(newLinksPath);
             //        if (linksPathForm.isMoveContent()) { // TODO
 //            mediaLinksService.moveLinksToNewLocation(
 //                    propertiesService.getLinksFolderMovie(),
@@ -160,7 +164,7 @@ public class ConfigController {
                         newLinksPath
                 );
             }
-            propertiesService.setLinksPathTv(newLinksPath);
+            propertiesService.addLinksPathTv(newLinksPath);
         }
         webPagePosition = POSITION_TV;
         return "redirect:" + CommonHandler.CONFIG;
@@ -170,6 +174,13 @@ public class ConfigController {
     @PostMapping(value = CLEAR_FOLDERS)
     public String clearSelectedFolder(@RequestParam String path, Model model) {
         mediaLinksService.removeEmptyFolders(path);
+        return "redirect:" + CommonHandler.CONFIG;
+    }
+
+    @PostMapping(value = SET_API_KEY)
+    public String provideNewApiKey(@RequestParam String apikey, Model model) {
+        System.out.println(apikey);
+        webPagePosition = POSITION_API_KEY;
         return "redirect:" + CommonHandler.CONFIG;
     }
 

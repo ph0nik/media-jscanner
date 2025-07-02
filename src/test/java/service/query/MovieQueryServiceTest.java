@@ -10,6 +10,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.Pagination;
@@ -22,7 +23,6 @@ import util.MediaType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Disabled
 @SpringBootTest(classes = {CacheConfig.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-//@EnableCaching
+@ActiveProfiles("dev")
 class MovieQueryServiceTest {
 
     static MediaQueryService movieQueryService;
@@ -54,7 +54,7 @@ class MovieQueryServiceTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator, FileSystems.getDefault());
+        propertiesService = new PropertiesServiceImpl(envValidator, null);
 //        propertiesService.addTargetPathMovie(Path.of("E:\\Filmy SD\\"));
         pagination = new PaginationImpl<>();
         movieQueryService = new MovieQueryService(mediaTrackerDao, mediaFilesScanner,
@@ -124,14 +124,11 @@ class MovieQueryServiceTest {
                 .stream()
                 .findFirst()
                 .orElse(null);
-        System.out.println(Path.of(mediaQuery.getFilePath()));
-        if (mediaQuery != null) {
-            List<MediaQuery> groupedQueries =
-                    movieQueryService
-                            .getGroupedQueriesWithId(mediaQuery.getQueryUuid());
+        List<MediaQuery> groupedQueries =
+                movieQueryService
+                        .getGroupedQueriesWithId(mediaQuery.getQueryUuid());
 
-            Assertions.assertEquals(1, groupedQueries.size());
-        }
+        Assertions.assertEquals(1, groupedQueries.size());
 
 
     }
@@ -169,6 +166,7 @@ class MovieQueryServiceTest {
     }
 
     @Test
+    @Disabled
     void matchingParentPath() {
         List<MediaQuery> mediaQuery = movieQueryService.getCurrentMediaQueries();
         String title = "magic";
@@ -180,9 +178,19 @@ class MovieQueryServiceTest {
                 .findFirst()
                 .orElse(null);
         List<MediaQuery> mediaQueries = movieQueryService.extractParentPath(first, mediaQuery);
-        mediaQueries.stream().forEach(System.out::println);
+        // TODO
 
 
+    }
+
+
+    @Test
+    void searchForMultipleWordsInSentence() {
+        String sampleFolder = "Lepa.Sela.Lepo.Gore-1996-Pretty.Village.Pretty.Flame.x264-GHETTO";
+        String[] words = {"sela", "village", "ghe"};
+
+        boolean b = movieQueryService.containsAllWords(words, sampleFolder);
+        Assertions.assertTrue(b);
     }
 
 }

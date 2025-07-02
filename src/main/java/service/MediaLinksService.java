@@ -108,7 +108,15 @@ public interface MediaLinksService {
     * */
     List<MediaLink> getMediaIgnoredList();
 
-    List<MediaLink> clearInvalidIgnoreAndLinks();
+    List<MediaLink> removeInvalidIgnoreAndLinks();
+
+    List<MediaLink> getInvalidLinksForDeletion();
+
+    List<MediaLink> getInvalidIgnoreForDeletion();
+
+    void findInvalidLinks();
+
+    void findInvalidIgnore();
 
     /*
     * Remove link and add target path back to the queue
@@ -141,4 +149,8 @@ public interface MediaLinksService {
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 
     void resetProcessLists();
+
+    void clearInvalidLists();
+
+    void findInvalidElements();
 }

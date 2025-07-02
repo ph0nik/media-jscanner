@@ -82,8 +82,8 @@
 <div class="bd-example m-0 pb-4 border-0">
     <div class="card">
         <div class="card-header border-0 row align-items-center">
-            <div class="col text-white-50">
-                <i class="fa-solid fa-folder"></i>
+            <div class="col text-white-50 text-center">
+                <i class="fa-solid fa-folder font-yellow-custom"></i>
                 <span th:text="${query.filePath}" class="">
                     some_example_file.mkv</span>
             </div>
@@ -91,10 +91,11 @@
         <div class="card-body row m-0 p-0">
             <table class="table">
                 <thead>
-                <tr class="row mx-1">
-                    <th class="col-1 text-center">poster</th>
-                    <th class="col-9">title</th>
-                    <th class="col-2">action</th>
+                <tr class="row mx-1 text-center">
+                    <th class="col-1 text-white-50">poster</th>
+                    <th class="col-9 text-white-50">title & description</th>
+                    <th class="col-auto text-white-50">action</th>
+                    <th class="col text-white-50">type</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -113,18 +114,22 @@
                                 <span th:if="${result.year != null && !result.year.isEmpty()}"
                                       th:text="${'(' + result.year + ')'}"
                                       class="fs-6 fw-bold"></span>
-                                <span th:text="${result.mediaType}" class="badge bg-info">movie</span>
+                                <span th:text="${result.mediaType}" class="badge movie-badge">movie</span>
                             </div>
                             <!-- ids -->
                             <div class="col-1 text-center" th:switch="${result.theMovieDbId == 0}">
-                                <span class="badge text-bg-success" th:case="${false}"
-                                      th:text="'tmdb: ' + ${result.theMovieDbId}">tmdb: 123435</span>
+                                <a class="badge tmdb-badge" href="#" th:href="|https://www.themoviedb.org/movie/${result.theMovieDbId}|"
+                                      th:case="${false}" target="_blank"
+                                      th:text="'tmdb: ' + ${result.theMovieDbId}">tmdb: 123435</a>
                                 <span th:case="${true}" th:text="'-'">-</span>
                             </div>
                             <div class="col-1 text-center"
                                  th:switch="${result.imdbId == null || result.imdbId.isEmpty()}">
-                                <span class="badge text-bg-warning" th:case="${false}"
-                                      th:text="'imdb: ' + ${result.imdbId}">imdb: tt12345</span>
+<!--                                <span class="badge text-bg-warning" th:case="${false}"-->
+<!--                                      th:text="'imdb: ' + ${result.imdbId}">imdb: tt12345</span>-->
+                                <a class="badge imdb-badge" href="#" th:href="|https://www.imdb.com/title/${result.imdbId}|"
+                                      th:case="${false}" target="_blank"
+                                      th:text="'imdb: ' + ${result.imdbId}">imdb: tt12345</a>
                                 <span th:case="${true}" th:text="'-'">-</span>
                             </div>
                         </div>
@@ -139,7 +144,7 @@
                     <td class="col-2">
                         <!-- tv item -->
                         <div th:if="${result.mediaType == T(util.MediaType).TV}">
-                            <p>Not possible to create movie link based of tv show info.</p>
+                            <p>Impossible to create movie link based of tv show info.</p>
                         </div>
                         <!-- movie item -->
                         <form th:if="${result.mediaType == T(util.MediaType).MOVIE}"

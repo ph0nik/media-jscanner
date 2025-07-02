@@ -11,14 +11,18 @@ import java.util.Properties;
 
 public interface PropertiesService {
 
+    String getApiKey();
+
+    String getApiKeyPartial();
+
     public Path getDataFolder();
     public Properties getNetworkProperties();
 
-    public boolean isMoviePathsProvided();
+    public boolean areMoviePathsProvided();
 
-    public boolean isTvPathsProvided();
+    public boolean areTvPathsProvided();
 
-    public boolean areUserPathsProvided();
+//    public boolean areUserPathsProvided();
 
     public boolean doUserPathsExist(MediaType mediaType);
     /*
@@ -43,7 +47,7 @@ public interface PropertiesService {
     /*
      * Set links path
      * */
-    public void setLinksPathMovie(Path linksRoot) throws NoApiKeyException, ConfigurationException;
+    public void addLinksPathMovie(Path linksRoot) throws NoApiKeyException, ConfigurationException;
 
 
     void removeTargetPathMovie(Path of) throws ConfigurationException;
@@ -55,5 +59,5 @@ public interface PropertiesService {
     /*
     * Set tv links path
     * */
-    void setLinksPathTv(Path linksRoot) throws NoApiKeyException, ConfigurationException;
+    void addLinksPathTv(Path linksRoot) throws NoApiKeyException, ConfigurationException;
 }

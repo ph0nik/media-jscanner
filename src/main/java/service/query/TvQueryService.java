@@ -53,7 +53,7 @@ public class TvQueryService extends GeneralQueryService {
 
     @Override
     public List<MediaQuery> scanForNewMediaQueries() {
-        if (propertiesService.areUserPathsProvided()) {
+        if (propertiesService.areTvPathsProvided()) {
             List<MediaQuery> collect = tvFilesScanner.scanMediaFolders(
                             propertiesService.getTargetFolderListTv(),
                             mediaTrackerDao.getAllMediaLinks()

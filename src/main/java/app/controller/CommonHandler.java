@@ -55,7 +55,7 @@ public class CommonHandler {
         model.addAttribute("query_list_tv", tvQueryService.getParentFolders()); // temp
         model.addAttribute("link_list", mediaLinksService.getMediaLinks());
         model.addAttribute("media_ignored", mediaLinksService.getMediaIgnoredList());
-        model.addAttribute("user_paths", propertiesService.isMoviePathsProvided());
+        model.addAttribute("user_paths", propertiesService.areMoviePathsProvided());
         model.addAttribute("error", errorNotificationService.getCurrentResult());
         model.addAttribute("future", liveDataService.getAutoMatcherFutureTask() == null
                 || liveDataService.getAutoMatcherFutureTask().isDone());

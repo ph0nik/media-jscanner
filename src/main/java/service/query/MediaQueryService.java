@@ -64,6 +64,8 @@ public interface MediaQueryService {
 
     MediaQuery getMediaQueryByPath(Path path);
 
+    boolean containsAllWords(String[] words, String filePath);
+
     Page<MediaQuery> getPageableQueries(Pageable pageable, List<MediaQuery> mediaQueryList);
 
 //    void setCurrentMediaQueries(List<MediaQuery> mediaQueries);

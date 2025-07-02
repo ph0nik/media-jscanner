@@ -41,6 +41,8 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     private static final String CHANGE_LINKS_KEY = "change-links";
     private static final String CHANGE_IGNORE_KEY = "change-ignored";
     private static final String ERROR_LINKS_KEY = "error-links";
+    private static final String INVALID_LINKS_KEY = "invalid-links";
+    private static final String INVALID_IGNORE_KEY = "invalid-ignore";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
@@ -129,11 +131,9 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
 
     @Override
     public void addMediaLinkToProcess(MediaLink mediaLink) {
-        System.out.println("\t" + mediaLink);
         if (getMediaLinksToProcess() == null) {
             setMediaLinksToProcess(List.of(mediaLink));
         } else {
-            System.out.println(getMediaLinksToProcess());
             List<MediaLink> mediaLinksToProcess = new ArrayList<>(getMediaLinksToProcess());
             mediaLinksToProcess.add(mediaLink);
             setMediaLinksToProcess(mediaLinksToProcess);
@@ -605,14 +605,70 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     }
 
     @Override
-    public List<MediaLink> clearInvalidIgnoreAndLinks() {
+    public List<MediaLink> removeInvalidIgnoreAndLinks() {
         List<MediaLink> deletedLinks = clearInvalidLinks();
         List<MediaLink> deletedIgnore = clearInvalidIgnore();
         setChangedIgnoreCount(-deletedIgnore.size());
         setChangedLinksCount(-deletedLinks.size());
-        deletedLinks
-                .addAll(deletedIgnore);
+        // change to mutable here
+//        deletedLinks
+//                .addAll(deletedIgnore);
         return deletedLinks;
+    }
+
+    void setInvalidLinksForDeletion(List<MediaLink> invalidLinks) {
+        updateCache(INVALID_LINKS_KEY, invalidLinks);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<MediaLink> getInvalidLinksForDeletion() {
+        return getFromCache(INVALID_LINKS_KEY, List.class);
+    }
+
+    void setInvalidIgnoreForDeletion(List<MediaLink> invalidIgnore) {
+        updateCache(INVALID_IGNORE_KEY, invalidIgnore);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<MediaLink> getInvalidIgnoreForDeletion() {
+        return getFromCache(INVALID_IGNORE_KEY, List.class);
+    }
+
+    @Override
+    public void clearInvalidLists() {
+        clearCache(INVALID_LINKS_KEY);
+        clearCache(INVALID_IGNORE_KEY);
+    }
+
+    @Override
+    public void findInvalidElements() {
+        findInvalidLinks();
+        findInvalidIgnore();
+    }
+
+    @Override
+    public void findInvalidLinks() {
+        LOG.info("Invalid media:");
+        List<MediaLink> list = getMediaLinks()
+                .stream()
+                .filter(ml -> !ml.isOriginalPresent())
+                .filter(ml -> !fileService.doesPathExist(ml.getLinkPath()))
+                .peek(e -> LOG.info("\t {} -> {}", e.getOriginalPath(), e.getLinkPath()))
+                .toList();
+        setInvalidLinksForDeletion(list);
+    }
+
+    @Override
+    public void findInvalidIgnore() {
+        LOG.info("Invalid ignored media:");
+        List<MediaLink> list = getMediaIgnoredList()
+                .stream()
+                .filter(mi -> !mi.isOriginalPresent())
+                .peek(e -> LOG.info("\t {}", e.getOriginalPath()))
+                .toList();
+        setInvalidIgnoreForDeletion(list);
     }
 
     /*
@@ -620,24 +676,27 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
      * Returns list of removed media links
      * */
     List<MediaLink> clearInvalidLinks() {
-        return getMediaLinks().stream()
-                .filter(ml -> !ml.isOriginalPresent())
-                .filter(ml -> !fileService.doesPathExist(ml.getLinkPath()))
+//        return getMediaLinks().stream()
+        LOG.info("Removing invalid links:");
+        return getInvalidLinksForDeletion()
+                .stream()
                 .peek(ml -> {
                     mediaTrackerDao.removeLink(ml.getMediaId());
-                    LOG.info("[ remove_link ] Link removed for file: {}", ml);
+                    LOG.info("\t {} -> {}", ml.getOriginalPath(), ml.getLinkPath());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     List<MediaLink> clearInvalidIgnore() {
-        return getMediaIgnoredList().stream()
-                .filter(mi -> !mi.isOriginalPresent())
+        LOG.info("Removing invalid ignored media");
+//        return getMediaIgnoredList().stream()
+        return getInvalidIgnoreForDeletion()
+                .stream()
                 .peek(mi -> {
                     mediaTrackerDao.removeLink(mi.getMediaId());
-                    LOG.info("[ remove_ignore ] Link removed for file: {}", mi);
+                    LOG.info("\t {}", mi.getOriginalPath());
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // TODO when scanning for new files show creation date (last modified) and file size

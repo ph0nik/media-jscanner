@@ -44,7 +44,7 @@ public class MovieQueryService extends GeneralQueryService {
     // except ones that are already ignored or already has links
     @Override
     public List<MediaQuery> scanForNewMediaQueries() {
-        if (propertiesService.areUserPathsProvided()) {
+        if (propertiesService.areMoviePathsProvided()) {
             List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
                             propertiesService.getTargetFolderListMovie(),
                             mediaTrackerDao.getAllMediaLinks()
@@ -156,7 +156,10 @@ public class MovieQueryService extends GeneralQueryService {
     }
 
     @Override
-    public List<MediaQuery> extractParentPath(MediaQuery selectedMediaQuery, List<MediaQuery> mediaQueryList) {
+    public List<MediaQuery> extractParentPath(
+            MediaQuery selectedMediaQuery,
+            List<MediaQuery> mediaQueryList
+    ) {
         Path selectedParent = Path.of(selectedMediaQuery.getFilePath()).getParent();
         List<Path> sourceRootArray = propertiesService
                 .getTargetFolderListMovie();
@@ -190,7 +193,6 @@ public class MovieQueryService extends GeneralQueryService {
                 : mediaQueryList
                 .stream()
                 .filter(path -> Path.of(path.getParentPath()).equals(selectedParent))
-                .peek(System.out::println)
                 .toList();
     }
 

@@ -5,6 +5,7 @@ import com.google.common.jimfs.Jimfs;
 import model.QueryResult;
 import model.validator.RequiredFieldException;
 import org.junit.jupiter.api.*;
+import org.springframework.test.context.ActiveProfiles;
 import util.MediaIdentifier;
 import util.MediaType;
 
@@ -21,7 +22,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 //@Disabled
-
+//@SpringBootTest(classes = {PropertiesService.class})
+//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("dev")
 class FileServiceTest {
 
     private FileSystem fileSystem;
@@ -48,9 +51,6 @@ class FileServiceTest {
     void closeFileSystem() throws IOException {
         if (fileSystem.isOpen()) {
             fileSystem.close();
-            System.out.println("File system is closed");
-        } else {
-            System.out.println("No file system found");
         }
     }
 

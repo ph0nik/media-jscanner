@@ -13,6 +13,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
 import service.exceptions.NoApiKeyException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 @SpringBootTest(classes = CacheConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("dev")
 class TvQueryResolverTest {
 
     private MediaTrackerDao mediaTrackerDao;

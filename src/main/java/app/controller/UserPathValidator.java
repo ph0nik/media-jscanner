@@ -27,7 +27,7 @@ public class UserPathValidator implements HandlerInterceptor {
             HttpServletResponse response,
             Object handler) throws Exception {
         if (
-                propertiesService.isMoviePathsProvided()
+                propertiesService.areMoviePathsProvided()
                         && propertiesService.doUserPathsExist(MediaType.MOVIE)
         ) {
             LOG.info("[ interceptor ] user paths exist, allowing request: {}", request.getRequestURI());

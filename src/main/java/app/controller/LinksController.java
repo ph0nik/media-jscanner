@@ -7,7 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import service.MediaLinksService;
 import service.PropertiesService;
 import service.SortBy;
@@ -32,6 +35,8 @@ public class LinksController {
     private int sessionPageSize = 25;
     private static final String CREATE_NEW_LINK = "/newlink";
     public static final String CLEAR_LINKS = "/clear-links/";
+    public static final String FIND_INVALID_MEDIA = "/find-invalid/";
+    public static final String ABORT_CLEANSING = "/abort-cleansing/";
     private static final String SEARCH_LINKS = "/search-link/";
     private static final String REMOVE_LINK = "/remove-link/";
     private static final String DELETE_SOURCE_FILE = "/delete-original/";
@@ -41,7 +46,9 @@ public class LinksController {
     @ModelAttribute
     private void setMenuLinks(Model model) {
 //        model.addAttribute("link_new", CREATE_NEW_LINK);
-        model.addAttribute("link_clear", CLEAR_LINKS);
+        model.addAttribute("clear_links", CLEAR_LINKS);
+        model.addAttribute("find_invalid_media", FIND_INVALID_MEDIA);
+        model.addAttribute("abort_cleansing", ABORT_CLEANSING);
         model.addAttribute("link_search", SEARCH_LINKS);
         model.addAttribute("link_remove", REMOVE_LINK);
         model.addAttribute("link_delete_org", DELETE_SOURCE_FILE);
@@ -49,6 +56,8 @@ public class LinksController {
         model.addAttribute("current_menu", 2);
     }
 
+    // TODO set color coding for links source based on folder
+    //
     /*
      * Show all existing symlinks.
      * */
@@ -99,9 +108,24 @@ public class LinksController {
         return "links";
     }
 
+    @GetMapping(value = FIND_INVALID_MEDIA)
+    public String getInvalidMedia(Model model) {
+        System.out.println("Im here");
+        mediaLinksService.findInvalidElements();
+        model.addAttribute("invalid_links_for_deletion", mediaLinksService.getInvalidLinksForDeletion());
+        model.addAttribute("invalid_ignore_for_deletion", mediaLinksService.getInvalidIgnoreForDeletion());
+        return "media_deletion_confirm";
+    }
+
     @GetMapping(value = CLEAR_LINKS)
-    public String clearLinks(Model model) {
-        mediaLinksService.clearInvalidIgnoreAndLinks();
+    public String clearInvalidLinks(Model model) {
+        mediaLinksService.removeInvalidIgnoreAndLinks();
+        return "redirect:" + CommonHandler.LINKS;
+    }
+
+    @GetMapping(value = ABORT_CLEANSING)
+    public String abortCleansing(Model model) {
+        mediaLinksService.clearInvalidLists();
         return "redirect:" + CommonHandler.LINKS;
     }
 

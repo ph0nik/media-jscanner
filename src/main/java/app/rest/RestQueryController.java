@@ -48,7 +48,6 @@ public class RestQueryController {
         movieQueryService.setReferenceQuery(queryId);
         List<MediaQuery> groupedQueries = movieQueryService.getGroupedQueriesWithId(queryId);
         // TODO set multipart
-        System.out.println(groupedQueries);
         return groupedQueries;
     }
 

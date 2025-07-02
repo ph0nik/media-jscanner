@@ -8,10 +8,14 @@ import dao.MediaLinkRepository;
 import dao.MediaTrackerDao;
 import dao.MediaTrackerDaoJpa;
 import model.MediaQuery;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.*;
@@ -30,6 +34,7 @@ import java.util.stream.Collectors;
 
 @SpringBootTest(classes = CacheConfig.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ActiveProfiles("dev")
 class TvQueryServiceTest {
     static MediaQueryService mediaQueryService;
     static MediaTrackerDao mediaTrackerDao;
@@ -44,7 +49,6 @@ class TvQueryServiceTest {
     private static final String dataFolder = "data";
     private static final String dataFile = "userFolders.properties";
     private static Path workPath;
-    private static Path dataPath;
     private MediaLinkRepository mediaLinkRepository;
     @Autowired
     private CacheManager cacheManager;
@@ -55,7 +59,7 @@ class TvQueryServiceTest {
         mediaTrackerDao = new MediaTrackerDaoJpa(mediaLinkRepository);
         mediaFilesScanner = new MoviesFileScanner();
         EnvValidator envValidator = new EnvValidator(null);
-        propertiesService = new PropertiesServiceImpl(envValidator, dataPath);
+        propertiesService = new PropertiesServiceImpl(envValidator, fileSystem);
         propertiesService.addTargetPathTv(workPath.resolve("Seriale"));
         pagination = new PaginationImpl<>();
         mediaQueryService = new TvQueryService(mediaTrackerDao, mediaFilesScanner,
@@ -79,7 +83,6 @@ class TvQueryServiceTest {
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
         Path next = fileSystem.getRootDirectories().iterator().next();
         workPath = next.resolve(incomingFolder);
-        dataPath = next.resolve(dataFolder).resolve(dataFile);
     }
 
     @DisplayName("Create folders and files based of list from text file")

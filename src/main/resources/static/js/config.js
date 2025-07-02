@@ -18,10 +18,13 @@ function scrollToId() {
     if (select == "extensions") {
         element = document.getElementById("extensions_list");
     }
+    if (select == "api_key") {
+        element = document.getElementById("tmdb_api_key");
+    }
     if (select != null && select != "") {
         window.scrollTo({
             top: element.getBoundingClientRect().top + window.pageYOffset - getTopHeight(),
-            behavior: 'smooth'
+            behavior: 'instant'
         });
     }
 };

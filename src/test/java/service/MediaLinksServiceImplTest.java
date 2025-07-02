@@ -13,6 +13,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import scanner.MediaFilesScanner;
 import scanner.MoviesFileScanner;
 import service.exceptions.ConfigurationException;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(classes = {CacheConfig.class})
+@ActiveProfiles("dev")
 class MediaLinksServiceImplTest {
 
     private MediaTrackerDao mediaTrackerDao;
@@ -102,9 +104,6 @@ class MediaLinksServiceImplTest {
     void closeFileSystem() throws IOException {
         if (fileSystem.isOpen()) {
             fileSystem.close();
-            System.out.println("File system is closed");
-        } else {
-            System.out.println("No file system found");
         }
     }
 

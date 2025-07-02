@@ -117,7 +117,7 @@ public abstract class GeneralQueryService implements MediaQueryService {
                 .collect(Collectors.toList());
     }
 
-    //    @Override
+    @Override
     public boolean containsAllWords(String[] words, String filePath) {
         return Arrays
                 .stream(words)
