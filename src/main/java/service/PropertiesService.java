@@ -28,7 +28,7 @@ public interface PropertiesService {
     /*
      * Returns list of folders to be watched.
      * */
-    public List<Path> getTargetFolderListMovie();
+    public List<Path> getSourceFolderListMovie();
 
     List<SourcePathDto> getSourcePathsDto(MediaType mediaType);
 
@@ -36,7 +36,7 @@ public interface PropertiesService {
      * Returns folder where symlinks should be stored.
      * */
     public Path getLinksFolderMovie();
-    List<Path> getTargetFolderListTv();
+    List<Path> getSourceFolderListTv();
     /*
      * Add target folder path to path list.
      * */

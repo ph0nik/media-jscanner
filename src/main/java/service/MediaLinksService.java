@@ -11,6 +11,7 @@ import service.exceptions.NetworkException;
 import service.query.MediaQueryService;
 import service.query.TvQueryService;
 import util.MediaIdentifier;
+import util.MediaType;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -144,7 +145,14 @@ public interface MediaLinksService {
 
     List<MediaLink> searchMediaLinks(String search);
 
-    void removeEmptyFolders(String path);
+    @SuppressWarnings("unchecked")
+    List<Path> getFoldersForClearing();
+
+    void abortFolderClearing();
+
+    boolean findEmptyFolders(MediaType mediaType) throws IOException;
+
+    void persistRemoveEmptyFolders();
 
     void moveLinksToNewLocation(Path oldLinksFolder, Path newLinksFolder);
 

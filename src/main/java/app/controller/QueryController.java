@@ -58,6 +58,7 @@ public class QueryController {
     private static final String RESOLVE_DUPLICATE_LINKS = "/resolve-duplicate-links/";
     private static final String ACCEPT_RENAMED_LINKS = "/accept-renamed-links/";
     private static final String ABORT_CREATING_LINKS = "/abort-creating-links";
+
     @ModelAttribute
     private void setMenuLinks(Model model) {
         model.addAttribute("movie_search", SEARCH_WITH_QUERY);
@@ -303,13 +304,14 @@ public class QueryController {
     @GetMapping(value = PERSIST_NEW_MOVIE_LINKS)
     public String persistWithGivenListOfLinks(Model model) {
         List<MediaLink> errorMediaLinks = mediaLinksService.persistsCollectedMediaLinks(movieQueryService);
-        System.out.println(errorMediaLinks);
         // check for duplicates
-        if (!mediaLinksService.getDuplicateLinks().isEmpty())
-            // if found go to resolver
-            return "redirect:" + RESOLVE_DUPLICATE_LINKS;
-        model.addAttribute("error_links", errorMediaLinks);
-        return "redirect:" + CommonHandler.MOVIE;
+        if (mediaLinksService.getDuplicateLinks().isEmpty()) {
+            model.addAttribute("error_links", errorMediaLinks);
+            return "redirect:" + CommonHandler.MOVIE;
+        }
+        // if found go to resolver
+        return "redirect:" + RESOLVE_DUPLICATE_LINKS;
+
     }
 
     @GetMapping(value = NEW_MOVIE_LINK)

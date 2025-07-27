@@ -22,7 +22,7 @@ class PropertiesServiceImplTest {
 
     private static PropertiesService propertiesService;
     private static FileSystem fileSystem;
-    private static String dataFolder = "data_bak";
+    private static String dataFolder = "data";
     private static String dataFile = "mediafolders.properties";
     private static String incomingFolderMovies = "incomingMovies";
     private static String linksFolderMovies = "completeMovies";
@@ -31,7 +31,8 @@ class PropertiesServiceImplTest {
     private static Path otherIncomingMoviesPath;
     private static Path incomingMoviesPath;
     private static Path linksMoviesPath;
-//    static Path dataPath;
+    private static Path dataPath;
+    private static Path propertiesPath;
 
     @BeforeEach
     void init() {
@@ -47,6 +48,8 @@ class PropertiesServiceImplTest {
         incomingMoviesPath = next.resolve(incomingFolderMovies);
         linksMoviesPath = next.resolve(linksFolderMovies);
         otherIncomingMoviesPath = next.resolve(otherIncomingFolderMovies);
+//        dataPath = next.resolve(dataFolder);
+//        propertiesPath = dataPath.resolve(dataFile);
     }
 
     @AfterAll
@@ -80,7 +83,7 @@ class PropertiesServiceImplTest {
         propertiesService.addTargetPathMovie(incomingMoviesPath);
         Assertions.assertFalse(
                 propertiesService
-                        .getTargetFolderListMovie()
+                        .getSourceFolderListMovie()
                         .contains(incomingMoviesPath)
         );
     }
@@ -98,11 +101,11 @@ class PropertiesServiceImplTest {
         propertiesService
                 .addTargetPathMovie(incomingMoviesPath)
                 .addTargetPathMovie(otherIncomingMoviesPath);
-        System.out.println(propertiesService.getTargetFolderListMovie());
-        Assertions.assertEquals(2, propertiesService.getTargetFolderListMovie().size());
+        System.out.println(propertiesService.getSourceFolderListMovie());
+        Assertions.assertEquals(2, propertiesService.getSourceFolderListMovie().size());
         propertiesService.removeTargetPathMovie(incomingMoviesPath);
-        Assertions.assertEquals(1, propertiesService.getTargetFolderListMovie().size());
-        Assertions.assertFalse(propertiesService.getTargetFolderListMovie().contains(incomingMoviesPath));
+        Assertions.assertEquals(1, propertiesService.getSourceFolderListMovie().size());
+        Assertions.assertFalse(propertiesService.getSourceFolderListMovie().contains(incomingMoviesPath));
     }
 
     @Test
@@ -112,7 +115,7 @@ class PropertiesServiceImplTest {
         propertiesService.addTargetPathMovie(nonExistentPath);
         propertiesService.addLinksPathMovie(linksMoviesPath);
         // check if paths are added
-        Assertions.assertFalse(propertiesService.getTargetFolderListMovie().isEmpty());
+        Assertions.assertFalse(propertiesService.getSourceFolderListMovie().isEmpty());
         Assertions.assertFalse(propertiesService.getLinksFolderMovie().toString().isEmpty());
         // create one of paths in the filesystem
         Files.createDirectory(linksMoviesPath);

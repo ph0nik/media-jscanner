@@ -55,7 +55,7 @@ public class TvQueryService extends GeneralQueryService {
     public List<MediaQuery> scanForNewMediaQueries() {
         if (propertiesService.areTvPathsProvided()) {
             List<MediaQuery> collect = tvFilesScanner.scanMediaFolders(
-                            propertiesService.getTargetFolderListTv(),
+                            propertiesService.getSourceFolderListTv(),
                             mediaTrackerDao.getAllMediaLinks()
                     )
                     .stream()
@@ -92,7 +92,7 @@ public class TvQueryService extends GeneralQueryService {
                 .map(Path::of)
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
-        mediaQueriesByRootMap = findCommonFolderForSortedPaths(collect, propertiesService.getTargetFolderListTv());
+        mediaQueriesByRootMap = findCommonFolderForSortedPaths(collect, propertiesService.getSourceFolderListTv());
         return Collections.emptyMap(); // TODO temp
     }
 
@@ -147,7 +147,7 @@ public class TvQueryService extends GeneralQueryService {
      * */
     @Override
     public Path getMatchingParentPath(MediaQuery mediaQuery) {
-        List<Path> targetFolderListTv = propertiesService.getTargetFolderListTv();
+        List<Path> targetFolderListTv = propertiesService.getSourceFolderListTv();
         return targetFolderListTv
                 .stream()
                 .filter(path -> Path.of(mediaQuery.getFilePath()).startsWith(path))

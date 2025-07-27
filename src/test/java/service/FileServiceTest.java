@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 //@Disabled
 //@SpringBootTest(classes = {PropertiesService.class})
@@ -137,7 +136,7 @@ class FileServiceTest {
 //                .limit(1000)
 //                .peek(System.out::println)
 //                .forEach(this::createDirectoriesAndPath);
-                .collect(Collectors.toList());
+                .toList();
 //        collect.forEach(this::createDirectoriesAndPath);
 
     }
@@ -164,6 +163,5 @@ class FileServiceTest {
                 throw new RuntimeException(e);
             }
         }
-
     }
 }

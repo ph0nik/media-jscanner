@@ -12,6 +12,9 @@ import util.MediaType;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.nio.file.*;
 import java.util.*;
 
@@ -24,7 +27,7 @@ public class PropertiesServiceImpl implements PropertiesService {
     private final String USER_LINKS_TV = "linkFolderSeries";
     private final String USER_TARGET_TV = "targetFolderSeries";
     private final String API_KEY = "api_key_v4";
-    // TODO let user input api key in config screen
+    // TODO check if api key is correct, show in config its state
     private Properties networkProperties;
     private Properties mediaFilesProperties;
     private FileSystem fs;
@@ -41,11 +44,14 @@ public class PropertiesServiceImpl implements PropertiesService {
     @Autowired
     public PropertiesServiceImpl(EnvValidator envValidator, FileSystem fs) {
         this.fs = (fs != null) ? fs : FileSystems.getDefault(); //fs;
+        LOG.info("[ props ] Current filesystem: {}", fs);
         this.tmdbApiToken = envValidator.getTmdbApiToken();
         initUserDataPathsFile(this.fs.getPath(mediaFolders));
 //        initUserDataPathsFile(Path.of(mediaFolders));
         loadPropertiesFromFiles();
     }
+
+    // TODO after launch read data from db and check which model version is currently used
 
 //    public PropertiesServiceImpl(EnvValidator envValidator, FileSystem fs, String userDataFile) {
 //        this.tmdbApiToken = envValidator.getTmdbApiToken();
@@ -64,8 +70,38 @@ public class PropertiesServiceImpl implements PropertiesService {
     }
 
     @PostConstruct
+    void executeExtras() {
+        showAppPath();
+        showAppRunningDir();
+    }
+
     void showAppPath() {
-        LOG.info("\u001B[32m**** Application running at: http:\\\\localhost:{} ****\u001B[0m", serverPort);
+        LOG.info("\u001B[32m**** Application running at: http://{}:{}\u001B[0m", getLocalAddress(), serverPort);
+    }
+
+    void showAppRunningDir() {
+        LOG.info("\u001B[32m**** Current working directory: {} \u001B[0m", System.getProperty("user.dir"));
+    }
+
+    String getLocalAddress() {
+        try {
+            Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
+            while (nics.hasMoreElements()) {
+                NetworkInterface nic = nics.nextElement();
+                if (nic.isUp() && !nic.isLoopback()) {
+                    Enumeration<InetAddress> inetAddresses = nic.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        InetAddress address = inetAddresses.nextElement();
+                        if (!address.isLoopbackAddress() && address.getHostAddress().indexOf(':') < 0) {
+                            return address.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            LOG.error("[ props ] Socket Exception: {}", e.getMessage());
+        }
+        return "No IP addres found";
     }
 
     @Override
@@ -246,10 +282,10 @@ public class PropertiesServiceImpl implements PropertiesService {
     public boolean doUserPathsExist(MediaType mediaType) {
         List<Path> checkList = null;
         if (mediaType == MediaType.MOVIE && areMoviePathsProvided()) {
-            checkList = getTargetFolderListMovie();
+            checkList = getSourceFolderListMovie();
         }
         if (mediaType == MediaType.TV && areTvPathsProvided()) {
-            checkList = getTargetFolderListTv();
+            checkList = getSourceFolderListTv();
         }
         if (checkList == null) return false;
         String propertyKey = (mediaType == MediaType.MOVIE)
@@ -274,10 +310,10 @@ public class PropertiesServiceImpl implements PropertiesService {
     @Override
     public List<SourcePathDto> getSourcePathsDto(MediaType mediaType) {
         if (mediaType == MediaType.MOVIE) {
-            return getTargetFolderListMovie()
+            return getSourceFolderListMovie()
                     .stream().map(SourcePathDto::new).toList();
         } else {
-            return getTargetFolderListTv()
+            return getSourceFolderListTv()
                     .stream().map(SourcePathDto::new).toList();
         }
     }
@@ -321,12 +357,12 @@ public class PropertiesServiceImpl implements PropertiesService {
      * Returns list of folders to be scanned.
      * */
     @Override
-    public List<Path> getTargetFolderListMovie() {
+    public List<Path> getSourceFolderListMovie() {
         return getTypeListProperty(mediaFilesProperties, USER_TARGET_MOVIE);
     }
 
     @Override
-    public List<Path> getTargetFolderListTv() {
+    public List<Path> getSourceFolderListTv() {
         return getTypeListProperty(mediaFilesProperties, USER_TARGET_TV);
     }
 

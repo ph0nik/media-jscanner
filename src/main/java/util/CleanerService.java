@@ -3,6 +3,7 @@ package util;
 import dao.MediaTrackerDao;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface CleanerService {
 
@@ -26,6 +27,8 @@ public interface CleanerService {
     * Directory is considered empty if it contains no directory and no media files.
     * */
     void clearEmptyFolders(Path root);
+
+    List<Path> checkPathForClearing(List<Path> paths);
 
     /*
     * Deletes all database entries with invalid paths

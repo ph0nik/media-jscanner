@@ -34,7 +34,7 @@ public class NotificationsController {
 
     @MessageMapping("/runauto")
     public void auto(StompHeaderAccessor stompHeaderAccessor) {
-        System.out.println(stompHeaderAccessor.getMessage());
+//        System.out.println(stompHeaderAccessor.getMessage());
         AutoMatcherStatus status = new AutoMatcherStatus();
         status.setEnabled(true);
         status.setTotalElements(10);

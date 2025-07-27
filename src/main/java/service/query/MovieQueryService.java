@@ -46,7 +46,7 @@ public class MovieQueryService extends GeneralQueryService {
     public List<MediaQuery> scanForNewMediaQueries() {
         if (propertiesService.areMoviePathsProvided()) {
             List<MediaQuery> collect = moviesFileScanner.scanMediaFolders(
-                            propertiesService.getTargetFolderListMovie(),
+                            propertiesService.getSourceFolderListMovie(),
                             mediaTrackerDao.getAllMediaLinks()
                     )
                     .stream()
@@ -81,7 +81,7 @@ public class MovieQueryService extends GeneralQueryService {
 
     @Override
     public Map<Path, List<UUID>> groupByParentPathBatch(List<MediaQuery> mediaQueryList) {
-        List<Path> targetFolderListMovie = propertiesService.getTargetFolderListMovie();
+        List<Path> targetFolderListMovie = propertiesService.getSourceFolderListMovie();
         return mediaQueryList
                 .stream()
                 .filter(
@@ -106,7 +106,7 @@ public class MovieQueryService extends GeneralQueryService {
      * */
     @Override
     public Path getMatchingParentPath(MediaQuery mediaQuery) {
-        List<Path> sourceFolderListMovie = propertiesService.getTargetFolderListMovie();
+        List<Path> sourceFolderListMovie = propertiesService.getSourceFolderListMovie();
         return sourceFolderListMovie
                 .stream()
                 .filter(
@@ -162,7 +162,7 @@ public class MovieQueryService extends GeneralQueryService {
     ) {
         Path selectedParent = Path.of(selectedMediaQuery.getFilePath()).getParent();
         List<Path> sourceRootArray = propertiesService
-                .getTargetFolderListMovie();
+                .getSourceFolderListMovie();
 
         // if any of the root paths equals to given parent path
         if (sourceRootArray

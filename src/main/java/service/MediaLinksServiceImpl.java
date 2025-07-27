@@ -43,6 +43,7 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
     private static final String ERROR_LINKS_KEY = "error-links";
     private static final String INVALID_LINKS_KEY = "invalid-links";
     private static final String INVALID_IGNORE_KEY = "invalid-ignore";
+    private static final String EMPTY_FOLDERS = "empty-folders";
     private final MediaTrackerDao mediaTrackerDao;
     private final CleanerService cleanerService;
     private final PropertiesService propertiesService;
@@ -766,10 +767,59 @@ public class MediaLinksServiceImpl extends CounterCacheService implements MediaL
         return mediaLink;
     }
 
+    private void setFoldersForClearing(List<Path> paths) {
+        updateCache(EMPTY_FOLDERS, paths);
+    }
+
+    private void clearFoldersForClearing() {
+        clearCache(EMPTY_FOLDERS);
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public void removeEmptyFolders(String path) {
-        if (path != null && !path.isBlank()) {
-            cleanerService.clearEmptyFolders(Path.of(path));
+    public List<Path> getFoldersForClearing() {
+        return getFromCache(EMPTY_FOLDERS, List.class);
+    }
+
+    @Override
+    public void abortFolderClearing() {
+        clearFoldersForClearing();
+    }
+
+    @Override
+    public boolean findEmptyFolders(MediaType mediaType) throws IOException {
+        List<Path> rootPaths = (mediaType == MediaType.MOVIE)
+                ? propertiesService.getSourceFolderListMovie()
+                : propertiesService.getSourceFolderListTv();
+        if (!rootPaths.isEmpty()) {
+            System.out.println(rootPaths);
+            List<Path> output = new LinkedList<>();
+            for (Path p : rootPaths) {
+                try (Stream<Path> rootContent = Files.list(p)) {
+                    rootContent
+                            .filter(Files::isDirectory)
+                            .filter(cleanerService::containsNoMediaFiles)
+                            .forEach(output::add);
+                }
+                // TODO check for nested folders
+//                if (Files.isDirectory(p) && cleanerService.containsNoMediaFiles(p)) {
+//
+//                    output.add(p);
+//                }
+            }
+//            List<Path> foundPaths = cleanerService.checkPathForClearing(rootPaths);
+            if (!output.isEmpty()) {
+                setFoldersForClearing(output);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void persistRemoveEmptyFolders() {
+        for (Path path : getFoldersForClearing()) {
+            cleanerService.clearEmptyFolders(path);
         }
     }
 

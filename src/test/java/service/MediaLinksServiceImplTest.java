@@ -111,7 +111,8 @@ class MediaLinksServiceImplTest {
     @DisplayName("Create folders and files based of list from text file")
     void createFolderStructureWithFilesBasedOfListing() throws IOException {
         for (String path : testFiles) {
-            Path of = Path.of(path);
+            Path of = fileSystem.getPath(path);
+//            Path of = Path.of(path);
             String file = of.getFileName().toString();
             Iterator<Path> iterator = of.getParent().iterator();
             Path dirPath = incomingPath;

@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 
 class CleanerServiceImplTest {
 
-    private List<String> testFiles;
     private Path incomingPath;
     private Path linksPath;
     private String incomingFolder = "incoming";
@@ -29,8 +28,7 @@ class CleanerServiceImplTest {
     @BeforeEach
     void createFileSystem() throws IOException {
         System.out.println("Creating file system...");
-        Path hd = Paths.get("src/test/resources/relative_paths.txt");
-        testFiles = Files.readAllLines(hd, StandardCharsets.ISO_8859_1);
+
         fileSystem = Jimfs.newFileSystem(Configuration.windows());
         filepath = fileSystem.getPath("");
         incomingPath = filepath.resolve(incomingFolder);
@@ -45,8 +43,12 @@ class CleanerServiceImplTest {
     }
 
     void createFolderStructureWithFilesBasedOfListing() throws IOException {
+        Path hd = Paths.get("src/test/resources/relative_paths.txt");
+        List<String> testFiles = Files.readAllLines(hd, StandardCharsets.ISO_8859_1);
+        System.out.println(testFiles);
         for (String path : testFiles) {
-            Path of = Path.of(path);
+            Path of = fileSystem.getPath(path);
+//            Path of = Path.of(path);
             String file = of.getFileName().toString();
             Iterator<Path> iterator = of.getParent().iterator();
             Path dirPath = incomingPath;

@@ -169,7 +169,6 @@ public class ResponseParser {
      * Parse single MovieItem object into QueryResult
      * */
     QueryResult parseMovieItem(MovieItem movieItem, QueryResult queryResult) {
-        System.out.println(movieItem);
         queryResult.setTheMovieDbId(movieItem.getId());
         queryResult.setTitle(movieItem.getTitle());
         queryResult.setDescription(movieItem.getDescription());

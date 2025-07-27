@@ -23,6 +23,8 @@ import java.util.List;
 
 @Controller
 public class ConfigController {
+    private static final String CLEAR_FOLDERS_MOVIE_CONFIRM = "/config/clear-folders-movie-confirm/";
+    private static final String CLEAR_FOLDERS_MOVIE_ABORT = "/config/clear-folders-movie-abort/";
     @Autowired
     private MediaLinksService mediaLinksService;
     @Autowired
@@ -35,9 +37,8 @@ public class ConfigController {
     private static final String TV_NEW_LINK_PATH = "/config/tv-new-link-path/";
     private static final String TV_NEW_SOURCE_PATH = "/config/tv-new-source-path/";
     private static final String TV_DELETE_SOURCE_PATH = "/config/tv-delete-source-path/";
-    private static final String CLEAR_FOLDERS = "/config/clear-folders/";
+    private static final String CLEAR_FOLDERS_MOVIE = "/config/clear-folders/";
     private static final String BACKUP_DATABASE = "/config/backup-database/";
-    private static final String SET_API_KEY = "/config/set-api-key/";
     private String webPagePosition = "";
     private static final String POSITION_TV = "tv";
     private static final String POSITION_MOVIE = "movie";
@@ -53,9 +54,10 @@ public class ConfigController {
         model.addAttribute("tv_new_link", TV_NEW_LINK_PATH);
         model.addAttribute("tv_new_source", TV_NEW_SOURCE_PATH);
         model.addAttribute("tv_delete_target", TV_DELETE_SOURCE_PATH);
-        model.addAttribute("clear_folders", CLEAR_FOLDERS);
+        model.addAttribute("clear_folders", CLEAR_FOLDERS_MOVIE);
+        model.addAttribute("confirm_clear_folders", CLEAR_FOLDERS_MOVIE_CONFIRM);
+        model.addAttribute("abort_clear_folders", CLEAR_FOLDERS_MOVIE_ABORT);
         model.addAttribute("backup_database", BACKUP_DATABASE);
-        model.addAttribute("set_api_key", SET_API_KEY);
         model.addAttribute("current_menu", 5);
     }
 
@@ -69,11 +71,12 @@ public class ConfigController {
      * */
     @GetMapping(value = CommonHandler.CONFIG)
     public String configuration(Model model) {
+        webPagePosition = "top";
         Path movieLinksPath = propertiesService.getLinksFolderMovie();
         Path tvLinksPath = propertiesService.getLinksFolderTv();
-        model.addAttribute("links_folder_movie", movieLinksPath);
+        model.addAttribute("links_folder_movie", movieLinksPath.toString());
         model.addAttribute("links_folder_movie_exists", movieLinksPath.toFile().exists());
-        model.addAttribute("links_folder_tv", tvLinksPath);
+        model.addAttribute("links_folder_tv", tvLinksPath.toString());
         model.addAttribute("links_folder_tv_exists", tvLinksPath.toFile().exists());
         model.addAttribute("target_folder_movie", propertiesService.getSourcePathsDto(MediaType.MOVIE));
         model.addAttribute("target_folder_tv", propertiesService.getSourcePathsDto(MediaType.TV));
@@ -171,16 +174,25 @@ public class ConfigController {
     }
 
     // Rename to something meaningful to let user know what action is being taken
-    @PostMapping(value = CLEAR_FOLDERS)
-    public String clearSelectedFolder(@RequestParam String path, Model model) {
-        mediaLinksService.removeEmptyFolders(path);
+    @PostMapping(value = CLEAR_FOLDERS_MOVIE)
+    public String clearSelectedFolder(@RequestParam String path, Model model) throws IOException {
+        webPagePosition = POSITION_MOVIE;
+        if (mediaLinksService.findEmptyFolders(MediaType.MOVIE)) {
+            model.addAttribute("folders_for_clearing", mediaLinksService.getFoldersForClearing());
+            return "clear_folders_confirmation";
+        }
         return "redirect:" + CommonHandler.CONFIG;
     }
 
-    @PostMapping(value = SET_API_KEY)
-    public String provideNewApiKey(@RequestParam String apikey, Model model) {
-        System.out.println(apikey);
-        webPagePosition = POSITION_API_KEY;
+    @GetMapping(value = CLEAR_FOLDERS_MOVIE_CONFIRM)
+    public String confirmClearFoldersMovie(Model model) {
+        mediaLinksService.persistRemoveEmptyFolders();
+        return "redirect:" + CommonHandler.CONFIG;
+    }
+
+    @GetMapping(value = CLEAR_FOLDERS_MOVIE_ABORT)
+    public String abortClearFoldersMovie(Model model) {
+        mediaLinksService.abortFolderClearing();
         return "redirect:" + CommonHandler.CONFIG;
     }
 
